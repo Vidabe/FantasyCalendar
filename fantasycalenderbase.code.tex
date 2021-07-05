@@ -1,0 +1,698 @@
+
+%\ProvidesFileRCS{fantasycalendar.code.tex}
+
+\RequirePackage{pgf}
+
+\makeatletter
+
+\ExplSyntaxOn
+
+\int_new:N \l__fantasycalendar_nr_days_per_year_int
+\int_new:N \l__fantasycalendar_nr_months_per_year_int
+\int_new:N \l__fantasycalendar_nr_days_per_week_int
+
+\int_new:N \l__fantasycalendar_tmpa_int
+\int_new:N \l__fantasycalendar_tmpb_int
+
+\int_new:N \l__fantasycalendar_year_int
+\int_new:N \l__fantasycalendar_month_int
+\int_new:N \l__fantasycalendar_day_int
+\int_new:N \l__fantasycalendar_ordinal_date_int
+\int_new:N \l__fantasycalendar_zero_day_shift_int
+\int_new:N \l__fantasycalendar_day_shift_per_year_int
+
+\int_new:N \l__fantasycalendar_month_at_half_year_int
+\int_new:N \l__fantasycalendar_nr_days_of_half_year_int
+
+
+\seq_new:N \l__fantasycalendar_day_names_seq
+\seq_new:N \l__fantasycalendar_month_names_seq
+\seq_new:N \l__fantasycalendar_number_days_of_months_seq
+\seq_new:N \l__fantasycalendar_cumulative_number_days_seq
+\seq_new:N \l__fantasycalendar_cumulative_number_days_invers_seq
+
+\bool_new:N \l__fantasycalendar_date_match_bool
+
+
+\int_new:N \l_fantasycalendar_weekday_int
+\int_new:N \l_fantasycalendar_current_ordinal_int
+
+\tl_new:N \l_fantasycalendar_current_weekday_tl
+
+
+\tl_new:N \l__fantasycalendar_calendar_prefix_tl
+\tl_new:N \l__fantasycalendar_begin_ordinal_tl
+\tl_new:N \l__fantasycalendar_end_ordinal_tl
+\tl_new:N \l__fantasycalendar_end_ordinal_plus_tl
+\tl_new:N \l__fantasycalendar_begin_iso_tl
+\tl_new:N \l__fantasycalendar_end_iso_tl
+
+\tl_new:N \l_fantasycalendar_current_year_tl
+\tl_new:N \l_fantasycalendar_current_month_tl
+\tl_new:N \l_fantasycalendar_current_day_tl
+
+\NewDocumentCommand \basefantasycalendar { m m m +m }
+  {
+    \__fantasycalendar_base_fantasycalendar:nnnn {#1} {#2} {#3} {#4}
+  }
+
+\cs_new:Npn \__fantasycalendar_base_fantasycalendar:nnnn #1#2#3#4
+  {
+    \group_begin:
+%    % Setup local \ifdate
+      \cs_set_eq:NN \ifdate \__fantasycalendar_if_date:nTF
+%    % Let's start with computing start and end dates...
+    \tl_set:Nn \l__fantasycalendar_calendar_prefix_tl {#1}%
+    \tl_set:Nx \l__fantasycalendar_begin_iso_tl {#2}%
+    \tl_set:Nx \l__fantasycalendar_end_iso_tl {#3}%
+%
+    \__fantasycalendar_iso_to_ordinal:nN {#2} \l_fantasycalendar_current_ordinal_int
+    \__fantasycalendar_iso_to_ordinal:nN {#3} \l__fantasycalendar_tmpa_int%
+%
+    \tl_set:NV \l__fantasycalendar_begin_ordinal_tl \l_fantasycalendar_current_ordinal_int
+    \tl_set:NV \l__fantasycalendar_end_ordinal_tl \l__fantasycalendar_tmpa_int
+    \int_incr:N \l__fantasycalendar_tmpa_int
+    \tl_set:NV \l__fantasycalendar_end_ordinal_plus_tl \l__fantasycalendar_tmpa_int
+    %
+    % Start main loop
+    %
+    \let \tikznrdaysperweek \l__fantasycalendar_nr_days_per_week_int
+    \loop%
+    \ifnum \l_fantasycalendar_current_ordinal_int <\l__fantasycalendar_end_ordinal_plus_tl \relax%
+      % Setup information about current date
+      \__fantasycalendar_ordinal_to_date:nNNN 
+        {\l_fantasycalendar_current_ordinal_int}
+        \l_fantasycalendar_current_year_tl 
+        \l_fantasycalendar_current_month_tl 
+        \l_fantasycalendar_current_day_tl
+      \__fantasycalendar_ordinal_to_weekday:nN 
+        {\l_fantasycalendar_current_ordinal_int}
+        \l_fantasycalendar_weekday_int
+      \tl_set:NV \l_fantasycalendar_current_weekday_tl \l_fantasycalendar_weekday_int
+      % Render:
+      #4%
+      % Advance day:
+      \int_incr:N \l_fantasycalendar_current_ordinal_int
+    \repeat%
+  \group_end:%
+  }
+
+
+\cs_new:Npn \__fantasycalendar_if_date:nTF #1#2#3
+  {
+    \__fantasycalendar_launch_if_date:nnn {#1} {#2} {#3}
+  }
+
+\cs_new:Npn \__fantasycalendar_if_date:nnnn #1#2#3#4{%
+  \__fantasycalendar_iso_to_ordinal:nN {#1} \l__fantasycalendar_tmpa_int
+      \__fantasycalendar_ordinal_to_date:nNNN 
+        {\l__fantasycalendar_tmpa_int}
+        \l__fantasycalendar_current_year_tl 
+        \l__fantasycalendar_current_month_tl 
+        \l__fantasycalendar_current_day_tl
+   \tl_set:NV  \l__fantasycalendar_current_ordinal_tl \l__fantasycalendar_tmpa_int
+  % Compute info about date
+  \__fantasycalendar_ordinal_to_weekday:nN \l__fantasycalendar_tmpa_int
+    {\l__fantasycalendar_tmpb_int}%
+  \tl_set:NV \l_fantasycalendar_current_weekday_tl{\l__fantasycalendar_tmpb_int}%
+  %
+  \__fantasycalendar_launch_if_date:nnn{#2}{#3}{#4}%
+}
+
+
+\cs_new:Npn \__fantasycalendar_launch_if_date:nnn #1#2#3 {
+  % When this macro is called, the pgfcalendarifdatexxxx macros must
+  % be setup correctly
+  %
+  % Set match to false
+  \bool_set_false:N \l__fantasycalendar_date_match_bool
+  \pgfqkeys{/pgf}{#1}%
+  \bool_if:NTF \l__fantasycalendar_date_match_bool {#2} {#3}
+}
+
+
+
+
+%\cs_new:Npn \__fantasycalendar_new:n #1
+%  {
+%%    Nope
+%  }
+
+\NewDocumentCommand \FantasyCalendarAddMonths { m m }
+  {
+    \__fantasycalendar_set_first_day_shift:n {#1}
+    \__fantasycalendar_add_list_of_months:n {#2}
+    \__fantasycalendar_define_month_at_half_year:NN 
+      \l__fantasycalendar_nr_months_per_year_int
+      \l__fantasycalendar_cumulative_number_days_seq
+  }
+
+\cs_new:Npn \__fantasycalendar_set_first_day_shift:n #1
+  {
+    \int_set:Nn \l__fantasycalendar_zero_day_shift_int {#1}
+  }
+
+\cs_new:Npn \__fantasycalendar_add_list_of_months:n #1
+  {
+    \int_zero:N \l__fantasycalendar_nr_months_per_year_int
+    \seq_clear:N \l__fantasycalendar_month_names_seq
+    \seq_clear:N \l__fantasycalendar_number_days_of_months_seq
+    \seq_clear:N \l__fantasycalendar_cumulative_number_days_seq
+    \keyval_parse:NNn
+      \__fantasycalendar_parse_keys_error:n
+      \__fantasycalendar_parse_keys:nn
+      {#1}
+    \seq_set_eq:NN \l_tmpa_seq \l__fantasycalendar_cumulative_number_days_seq
+    \seq_reverse:N \l_tmpa_seq
+    \seq_set_eq:NN \l__fantasycalendar_cumulative_number_days_invers_seq \l_tmpa_seq
+  }
+
+\cs_new:Npn \__fantasycalendar_parse_keys_error:n #1
+  {
+    \tl_show:n {ERROR! No ~number ~of ~days ~ given! -- #1}
+  }
+\cs_new:Npn \__fantasycalendar_parse_keys:nn #1#2
+  {
+    %% count months
+    \int_incr:N \l__fantasycalendar_nr_months_per_year_int
+    \seq_put_right:Nn \l__fantasycalendar_month_names_seq {#1}
+    \seq_put_right:Nn \l__fantasycalendar_number_days_of_months_seq {#2}
+    \seq_put_right:NV \l__fantasycalendar_cumulative_number_days_seq 
+      \l__fantasycalendar_nr_days_per_year_int
+    \int_add:Nn \l__fantasycalendar_nr_days_per_year_int {#2}
+  }
+
+\cs_new:Npn \__fantasycalendar_define_month_at_half_year:NN #1#2
+  {
+    \int_set:Nn \l__fantasycalendar_month_at_half_year_int
+      { #1 / 2 }
+    \int_set:Nn \l__fantasycalendar_nr_days_of_half_year_int
+      { \seq_item:Nn #2 { \l__fantasycalendar_month_at_half_year_int } }
+  }
+
+
+
+
+\NewDocumentCommand \FantasyCalendarAddDays { m }
+  {
+    \__fantasycalendar_add_list_of_days:n {#1}
+  }
+
+\cs_new:Npn \__fantasycalendar_add_list_of_days:n #1
+  {
+    \seq_set_from_clist:Nn \l__fantasycalendar_day_names_seq {#1}
+    \int_set:Nn \l__fantasycalendar_nr_days_per_week_int 
+      { \seq_count:N \l__fantasycalendar_day_names_seq }
+    \__fantasycalendar_create_pgf_keys:NN 
+      \l__fantasycalendar_day_names_seq
+      \l__fantasycalendar_nr_days_per_week_int
+  }
+
+
+
+
+\NewDocumentCommand \FantasyCalendarDateEntry { m m }
+  {
+    \__fantasycalendar_add_yearly_day:nn {#1} {#2}
+  }
+\NewDocumentCommand \FantasyCalendarOneTimeEntry { m m }
+  {
+    \__fantasycalendar_add_one_year_day:nn {#1} {#2}
+  }
+
+\cs_new:Npn \__fantasycalendar_add_yearly_day:nn #1#2
+  {
+    \tl_new:c { l__fantasycalendar_yearly_day_ #1 _tl }
+    \tl_set:cn { l__fantasycalendar_yearly_day_ #1 _tl } {#2}
+  }
+\cs_new:Npn \__fantasycalendar_add_one_year_day:nn #1#2
+  {
+    \tl_new:c { l__fantasycalendar_one_year_day_ #1 _tl }
+    \tl_set:cn { l__fantasycalendar_one_year_day_ #1 _tl } {#2}
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\pgfkeys{/pgf/all/.code=\bool_set_true:N \l__fantasycalendar_date_match_bool}
+
+\cs_new:Npn \__fantasycalendar_create_pgf_keys:NN #1#2
+  {
+    \seq_map_indexed_inline:Nn #1
+      {
+        \int_set:Nn \l_tmpa_int { \int_mod:nn {##1} {#2} }
+        \__fantasycalendar_new_pdf_weekday:nV {##2} \l_tmpa_int
+      }
+    \__fantasycalendar_new_pdf_weekday:nn { end ~ of ~ week } { 0 }
+    \__fantasycalendar_new_pdf_weekday:nn { begin ~ of ~ week } { 1 }
+  }
+    
+
+\cs_new:Npn \__fantasycalendar_new_pdf_weekday:nn #1#2
+  {
+    \pgfkeys
+      {
+        /pgf/#1/.code=
+          { 
+            \ifnum\l_fantasycalendar_current_weekday_tl=#2\relax
+              \bool_set_true:N \l__fantasycalendar_date_match_bool 
+            \fi 
+          }
+      }
+  }
+\cs_generate_variant:Nn \__fantasycalendar_new_pdf_weekday:nn { VV , nV }
+
+\pgfkeys{
+  /pgf/day ~ of ~ month/.cd,
+    .value ~required,
+    .code=
+      {\ifnum#1=\l_fantasycalendar_current_day_tl\relax
+        \bool_set_true:N \l__fantasycalendar_date_match_bool\fi
+      }
+}
+\pgfkeys{
+  /pgf/start ~ of ~ month/.code=
+      {\ifnum1=\l_fantasycalendar_current_day_tl\relax
+        \bool_set_true:N \l__fantasycalendar_date_match_bool\fi
+      }
+}
+
+\pgfkeys{/pgf/end ~ of ~ month/.cd, .default=1, .code={
+  % Tricky and expensive ... do only if necessary
+  \bool_if:NF \l__fantasycalendar_date_match_bool
+    {
+      \int_set:Nn \l__fantasycalendar_tmpa_int { \l_fantasycalendar_current_ordinal_int }
+      \int_add:Nn \l__fantasycalendar_tmpa_int {#1}
+      \int_set:Nn \l__fantasycalendar_tmpa_int
+        { \int_mod:nn \l__fantasycalendar_tmpa_int \l__fantasycalendar_nr_days_per_year_int }
+      \int_set:Nn \l__fantasycalendar_tmpb_int { 1 - #1 } 
+      \seq_map_inline:Nn \l__fantasycalendar_cumulative_number_days_seq
+        {
+          \int_compare:nNnT 
+            { \l__fantasycalendar_tmpa_int } = { ##1 + \l__fantasycalendar_tmpb_int }
+            {
+              \bool_set_true:N \l__fantasycalendar_date_match_bool
+              \seq_map_break:
+            }
+        } 
+    }
+  }
+}
+%
+
+\pgfkeys{/pgf/equals/.cd,.value ~ required,.code={%
+  \__fantasycalendar_special_date_to_ordinal:n {#1}%
+  \ifnum\l_fantasycalendar_current_ordinal_int=\l__fantasycalendar_tmpa_int\relax%
+    \bool_set_true:N \l__fantasycalendar_date_match_bool
+  \fi
+  }%
+}
+
+\pgfkeys{/pgf/at ~ least/.cd,.value ~ required,.code={%
+  \__fantasycalendar_special_date_to_ordinal:n {#1}%
+  \ifnum \l_fantasycalendar_current_ordinal_int<\l__fantasycalendar_tmpa_int\relax%
+  \else%
+    \bool_set_true:N \l__fantasycalendar_date_match_bool%
+  \fi%
+}}
+%
+\pgfkeys{/pgf/at ~ most/.cd,.value ~ required,.code={%
+  \__fantasycalendar_special_date_to_ordinal:n {#1}%
+  \ifnum\l_fantasycalendar_current_ordinal_int>\l__fantasycalendar_tmpa_int\relax%
+  \else%
+    \bool_set_true:N \l__fantasycalendar_date_match_bool%
+  \fi%
+}}
+%
+\pgfkeys{/pgf/between/.cd,.value ~ required,.code ~ args={#1and#2}{%
+  \__fantasycalendar_special_date_to_ordinal:n {#1}%
+  \ifnum\l_fantasycalendar_current_ordinal_int<\l__fantasycalendar_tmpa_int\relax%
+  \else%
+    \__fantasycalendar_special_date_to_ordinal:n {#2}%
+    \ifnum\l_fantasycalendar_current_ordinal_int>\l__fantasycalendar_tmpa_int\relax%
+    \else%
+      \bool_set_true:N \l__fantasycalendar_date_match_bool%
+    \fi%
+  \fi%
+}}
+
+\cs_new:Npn \__fantasycalendar_special_date_to_ordinal:n #1
+  {
+    \tl_set:Nx \l_tmpa_tl {#1}
+    \exp_after:wN \__fantasycalendar_special_split_test:wwwN
+      \l_tmpa_tl -\relax {#1}
+  }
+\cs_new:Npn \__fantasycalendar_special_split_test:wwwN #1-#2-#3\relax#4
+  {
+    \tl_set:Nx \l_tmpa_tl {#3}
+    \tl_if_empty:NTF \l_tmpa_tl
+      { \tl_set:Nn \l_tmpa_tl { \l_fantasycalendar_current_year_tl-#1-#2 } }
+      { \tl_set:Nn \l_tmpa_tl {#4} }
+    \__fantasycalendar_iso_to_ordinal:nN {\l_tmpa_tl} \l__fantasycalendar_tmpa_int
+  }
+
+
+
+\cs_new:Npn \__fantasycalendar_suggested_name: 
+  {
+    \tl_if_empty:NF \l__fantasycalendar_calendar_prefix_tl
+      { 
+        \l__fantasycalendar_calendar_prefix_tl
+        - \l_fantasycalendar_current_year_tl
+        - \l_fantasycalendar_current_month_tl
+        - \l_fantasycalendar_current_day_tl
+      }
+  }
+
+
+
+\cs_new:Npn \__fantasycalendar_print_days_of_month:n #1
+  {
+    \seq_item:Nn \l__fantasycalendar_number_days_of_months_seq {#1}
+  }
+\cs_new:Npn \__fantasycalendar_print_cumulative_days:n #1
+  {
+    \int_compare:nNnTF {#1} = { 0 }
+      { 0 }
+      { \seq_item:Nn \l__fantasycalendar_cumulative_number_days_seq {#1} }
+  }
+\cs_new:Npn \__fantasycalendar_print_day_name:n #1
+  {
+    \int_compare:nNnTF {#1} = { 0 }
+      { \seq_item:Nn \l__fantasycalendar_day_names_seq { \l__fantasycalendar_nr_days_per_week_int } }
+      { \seq_item:Nn \l__fantasycalendar_day_names_seq {#1} }
+  }
+\cs_new:Npn \__fantasycalendar_print_month_name:n #1
+  {
+    \seq_item:Nn \l__fantasycalendar_month_names_seq {#1}
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+\cs_new:Npn \__fantasycalendar_iso_to_ordinal:nN #1#2
+  {
+    \tl_set:Nx \l_tmpa_tl {#1}
+    \str_compare:nNnTF { \tl_head:N \l_tmpa_tl } = { - }
+      { 
+        \bool_set_true:N \l_tmpa_bool
+        \tl_set:Nx \l_tmpa_tl { \tl_tail:N \l_tmpa_tl }
+      }
+      { \bool_set_false:N \l_tmpa_bool }
+    \exp_after:wN
+    \__fantasycalendar_split_iso:wwwww \l_tmpa_tl +/ {#2}
+  }
+\cs_new:Npn \__fantasycalendar_split_iso:wwwww #1-#2-#3+#4/#5 
+  {
+    \int_set:Nn \l__fantasycalendar_year_int {#1}
+    
+    \tl_set:Nx \l_tmpb_tl {#2}
+    \str_if_eq:VnTF \l_tmpb_tl { last }
+      {
+        \int_set:Nn \l__fantasycalendar_month_int 
+          \l__fantasycalendar_nr_months_per_year_int
+      }{
+        \int_set:Nn \l__fantasycalendar_month_int {#2}
+      }
+    
+
+    \tl_set:Nx \l_tmpb_tl {#3}
+    \str_if_eq:VnTF \l_tmpb_tl { last }
+      { 
+        \int_set:Nn \l__fantasycalendar_day_int
+           { \__fantasycalendar_print_days_of_month:n { \l__fantasycalendar_month_int }}  
+      }
+      { \int_set:Nn \l__fantasycalendar_day_int {#3} }
+
+
+    %% offset
+    \tl_set:Nx \l_tmpb_tl {#4}
+    \tl_if_empty:NTF \l_tmpb_tl
+      { \int_zero:N \l_tmpa_int }
+      { \int_set:Nn \l_tmpa_int { \l_tmpb_tl 0 } }
+    
+    
+    \int_set:Nn \l_tmpb_int
+      {
+        \l__fantasycalendar_year_int * \l__fantasycalendar_nr_days_per_year_int
+         + \__fantasycalendar_print_cumulative_days:n { \l__fantasycalendar_month_int }
+         + \l__fantasycalendar_day_int
+         + \l_tmpa_int
+      }
+    \bool_if:NT \l_tmpa_bool
+      { \int_set:Nn \l_tmpb_int { - \l_tmpb_int } }
+    \int_set_eq:NN #5 \l_tmpb_int
+  }
+
+\cs_new:Npn \__fantasycalendar_ordinal_to_date:nNNN #1#2#3#4
+  {
+    \int_set:Nn \l_tmpa_int {#1}
+    %% year
+    \int_set:Nn \l__fantasycalendar_year_int 
+      { \int_div_truncate:nn \l_tmpa_int \l__fantasycalendar_nr_days_per_year_int }
+    %% days
+    \int_set:Nn \l__fantasycalendar_day_int 
+      { \l_tmpa_int - \l__fantasycalendar_year_int*\l__fantasycalendar_nr_days_per_year_int }
+    \int_compare:nNnTF { \l__fantasycalendar_day_int } = { 0 }
+      {
+        \int_decr:N \l__fantasycalendar_year_int
+        \int_set_eq:NN \l__fantasycalendar_month_int \l__fantasycalendar_nr_months_per_year_int
+        \int_set:Nn \l__fantasycalendar_day_int 
+          { \seq_item:Nn \l__fantasycalendar_number_days_of_months_seq { \l__fantasycalendar_month_int } }
+      }{
+    %% get month and day
+    \__fantasycalendar_ordinal_to_date_get_month:N \l__fantasycalendar_day_int
+%    \seq_map_indexed_inline:Nn \l__fantasycalendar_cumulative_number_days_invers_seq
+%      {
+%        \int_compare:nNnT { \l__fantasycalendar_day_int } > {##2}
+%          { 
+%            \seq_map_break:n
+%              {
+%                \int_set:Nn \l__fantasycalendar_month_int 
+%                  {  \l__fantasycalendar_nr_months_per_year_int - ##1 + 1 } 
+%                \int_sub:Nn \l__fantasycalendar_day_int {##2}
+%              }
+%          }
+%      }
+      }
+    %% Make numbers into tl's
+    \tl_set:NV #2 \l__fantasycalendar_year_int
+    \tl_set:NV #3 \l__fantasycalendar_month_int
+    \tl_set:NV #4 \l__fantasycalendar_day_int
+  }
+
+\cs_new:Npn \__fantasycalendar_ordinal_to_date_get_month:N #1
+  {
+    \int_compare:nNnTF {#1} < { \l__fantasycalendar_nr_days_of_half_year_int }
+      { \__fantasycalendar_ordinal_to_date_get_month_aux_i: }
+      { \__fantasycalendar_ordinal_to_date_get_month_aux_ii: }
+  }
+
+\cs_new:Npn \__fantasycalendar_ordinal_to_date_get_month_aux_i:
+  {
+    \seq_map_indexed_inline:Nn \l__fantasycalendar_cumulative_number_days_seq
+      {
+        % <
+        \int_compare:nNnF { \l__fantasycalendar_day_int } > {##2}
+          { 
+            \seq_map_break:n
+              {
+                \int_set:Nn \l__fantasycalendar_month_int {##1-1} 
+                \int_sub:Nn \l__fantasycalendar_day_int 
+                  { \__fantasycalendar_print_cumulative_days:n { \l__fantasycalendar_month_int } }
+              }
+          }
+      }
+  }
+\cs_new:Npn \__fantasycalendar_ordinal_to_date_get_month_aux_ii:
+  {
+    \seq_map_indexed_inline:Nn \l__fantasycalendar_cumulative_number_days_invers_seq
+      {
+        % <
+        \int_compare:nNnT { \l__fantasycalendar_day_int } > {##2}
+          { 
+            \seq_map_break:n
+              {
+                \int_set:Nn \l__fantasycalendar_month_int 
+                  {  \l__fantasycalendar_nr_months_per_year_int - ##1 + 1 } 
+                \int_sub:Nn \l__fantasycalendar_day_int {##2}
+              }
+          }
+      }
+  }
+
+
+
+\cs_new:Npn \__fantasycalendar_ordinal_to_weekday:nN #1#2
+  {
+    \int_set:Nn \l_tmpa_int {#1}
+    %% Add zero day shift
+    \int_add:Nn \l_tmpa_int { \l__fantasycalendar_zero_day_shift_int }
+    \int_set:Nn \l_tmpb_int 
+      { \int_mod:nn \l_tmpa_int \l__fantasycalendar_nr_days_per_week_int }
+    \int_set_eq:NN #2 \l_tmpb_int
+}
+
+
+
+
+
+
+
+
+\cs_new:Npn \__fantasycalendar_get_end_day_of_last_month:Nnn #1#2#3
+  {
+    \int_set:Nn #1
+      {
+        \l__fantasycalendar_zero_day_shift_int 
+         + \__fantasycalendar_print_cumulative_days:n {#3}
+         + \l__fantasycalendar_nr_days_per_year_int * (#2)
+      }
+    \int_set:Nn #1
+      { \int_mod:nn {#1} { \l__fantasycalendar_nr_days_per_week_int } }
+  }
+
+
+
+
+
+
+% Macro for easy typesetting of days, etc.
+%
+% #1 = kind selection
+% #2 = length and representation selection
+%
+% Description:
+%
+% Replaces the shorthand according to the following rules: The
+% first letter of the shorthand describes the kind of
+% shorthand. Possible kinds are:
+%
+% d = day of current date (in an invocation of \pgfcalendar)
+% m = month of current date
+% y = year of current date
+% w = week day of current date
+%
+% The second parameter determines how the kind is represented:
+%
+% - = shortest possible numerical way (allowed only for d, m, y)
+% = = same, but always of the same length (padded with blanks as
+%     needed, allowed only for d, m, y)
+% 0 = numerical representation for d and m padded with leading zeros.
+% t = textual representation (allowed only for d, m, w)
+% . = abbreviated textual representation (allowed only for d, m, w)
+%
+% It is advised that you say, for example,
+% \let\%=\pgfcalendarshorthand.
+%
+% With this setting, you can typeset an ISO-date by saying \%y0-\%m0-\%d0.
+% For another example, on 2007-02-09, which is a
+% Friday, you can write "\%wt, \%mt \%d-, \%y0" to get "Friday, February 9, 2007"
+
+
+\cs_new:Npn \__fantsycalendar_shorthand:nn #1#2 
+  { 
+    \cs_if_exist_use:cF { __fantasycalendar@shorthand@#1#2 } 
+      { \tl_show:n {#1#2:~Nope! } }
+  }
+
+\cs_new:cpn { __fantasycalendar@shorthand@d-} 
+  {
+    { 
+      \int_set:Nn \l_tmpa_int \l_fantasycalendar_current_day_tl
+      \int_use:N \l_tmpa_int 
+    }
+  }
+\cs_new:cpn { __fantasycalendar@shorthand@d= } 
+  {
+    {
+      \int_set:Nn \l_tmpa_int \l_fantasycalendar_current_day_tl
+      \ifnum\l_tmpa_int<10\relax
+        \setbox0=\hbox{1}\kern\wd0\relax
+      \fi
+      \int_use:N \l_tmpa_int
+    }
+  }
+
+\cs_new:cpn { __fantasycalendar@shorthand@d0} { \l_fantasycalendar_current_day_tl }
+\cs_new:cpn { __fantasycalendar@shorthand@m- } 
+  {
+    {
+      \int_set:Nn \l_tmpa_int \l_fantasycalendar_current_month_tl
+      \int_use:N \l_tmpa_int
+    }
+  }
+\cs_new:cpn { __fantasycalendar@shorthand@m= } 
+  {
+    {
+      \int_set:Nn \l_tmpa_int \l_fantasycalendar_current_month_tl
+      \ifnum\l_tmpa_int<10\relax
+        \setbox0=\hbox{1}\kern\wd0\relax
+      \fi
+      \int_use:N \l_tmpa_int
+    }
+  }
+
+\cs_new:cpn { __fantasycalendar@shorthand@m0 } {\l_fantasycalendar_current_month_tl }
+\cs_new:cpn { __fantasycalendar@shorthand@y-} { \l_fantasycalendar_current_year_tl }
+\cs_new:cpn { __fantasycalendar@shorthand@y=}{ \l_fantasycalendar_current_year_tl }
+\cs_new:cpn { __fantasycalendar@shorthand@y0 }{ \l_fantasycalendar_current_year_tl }
+\cs_new:cpn { __fantasycalendar@shorthand@w.}  
+  { 
+    \__fantasycalendar_print_day_name:n { \l_fantasycalendar_current_day_tl } 
+  }
+\cs_new:cpn { __fantasycalendar@shorthand@wt } 
+  { 
+    \__fantasycalendar_print_day_name:n { \l_fantasycalendar_current_day_tl } 
+  }
+\cs_new:cpn { __fantasycalendar@shorthand@m.}
+  {
+    \__fantasycalendar_print_month_name:n { \l_fantasycalendar_current_month_tl }
+  }
+\cs_new:cpn { __fantasycalendar@shorthand@mt}
+  {
+    \__fantasycalendar_print_month_name:n { \l_fantasycalendar_current_month_tl }
+  }
+
+
+% My own:  \%md, \%yd "<month>-<day>", "<year>-<month>-<day>"
+%
+
+\cs_new:cpn { __fantasycalendar@shorthand@md}
+  {
+    \l_fantasycalendar_current_month_tl - \l_fantasycalendar_current_day_tl
+  }
+\cs_new:cpn { __fantasycalendar@shorthand@yd}
+  {
+    \l_fantasycalendar_current_year_tl -
+    \l_fantasycalendar_current_month_tl - \l_fantasycalendar_current_day_tl
+  }
+
+
+
+\ExplSyntaxOff
+\makeatother
+
+\endinput

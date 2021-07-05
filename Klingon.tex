@@ -1,0 +1,48 @@
+% !TEX encoding = UTF-8 Unicode
+\documentclass[naustrian,paper=landscape]{scrartcl}
+
+\usepackage{color}
+\typearea{30}
+
+\input fantasycalender.code.tex
+
+
+%% https://startreklitverse.com/klingon-calendar.php
+%% https://startreklitverse.com/klingon-calendar-introduction.php
+%% Note that currently leap days are not accounted for!
+\FantasyCalendarAddMonths{0}{
+  Jo'vos=48, 
+  Soo'jen=48, 
+  Lo'Bral=48, 
+  Maktag=48, 
+  Merruthj=48, 
+  Doqath=48, 
+  Xan'lahr=48 , 
+  Nay'Poq=48, 
+  A'Kahless=48, 
+}
+
+
+% http://klingon.wiki/En/Weekdays
+\FantasyCalendarAddDays{DaSjaj, povjaj, ghItlhjaj, loghjaj, buqjaj, ghInjaj, lojmItjaj, jaj wa'}
+
+
+\ExplSyntaxOn
+
+\tl_set:Nn \l__fantasycalendar_text_month_tl 
+  {
+    \bfseries
+    Dim \space \l_fantasycalendar_current_year_tl
+    \space -- \space
+    \%mt \space [\%m0]
+}
+
+
+\ExplSyntaxOff
+
+
+\begin{document}
+
+\PrintFantasyCalendar[box height=2.8cm, box width=3.25cm]{2591}
+
+\end{document}

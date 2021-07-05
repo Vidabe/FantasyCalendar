@@ -1,0 +1,98 @@
+% !TEX encoding = UTF-8 Unicode
+\documentclass[paper=landscape]{scrartcl}
+
+\usepackage{color}
+\typearea{30}
+
+\input fantasycalender.code.tex
+
+%\FantasyCalendarAddMonths{2}
+%  {
+%    A = 24,
+%    B = 36,
+%    C = 47 ,
+%    D = 58,
+%    E = 69,
+%    F = 80,
+%    G = 91
+%  }
+%
+%\FantasyCalendarAddDays{ Q, W, E, R, T, Z }
+
+\FantasyCalendarAddMonths{2}{
+  Basoth=40, 
+  Eganar=45, 
+  Dumena=40, 
+  Sapara=40, 
+  Paraduk=45, 
+  Siduk=45, 
+  Mushera=40 , 
+  Eskian=40, 
+  Zianna=45, 
+  Ribrun=40 ,
+}
+
+\FantasyCalendarAddDays{Agguan, Sielan, Flethan, Wanuran, Usyn, Jundal, Izach, Verhan, Haturan}
+
+
+%
+\FantasyCalendarDateEntry{1-1}{Neujahr}
+\FantasyCalendarDateEntry{2-40}{Erntedankfest}
+\FantasyCalendarOneTimeEntry{0-2-40}{Noping}
+
+
+\begin{document}
+\ExplSyntaxOn
+
+
+\newcount\cnta
+%\newcount\theyear
+%\newcount\themonth
+\newcount\cntday
+\__fantasycalendar_iso_to_ordinal:nN { 0-1-1 } \cnta
+
+\the \cnta
+
+\__fantasycalendar_ordinal_to_date:nNNN { \cnta } \theyear \themonth \theday
+
+\par
+\the \cnta
+\space\theyear \space \themonth \space \theday
+\par
+\__fantasycalendar_ordinal_to_weekday:nN { \cnta } \cntday
+\the\cntday
+\__fantasycalendar_print_day_name:n{\cntday}
+
+\par
+
+\basefantasycalendar{stuff}{0-1-1}{0-last-last}{ \ifdate {start ~ of ~ month} {\par} {\space}\l_fantasycalendar_current_day_tl  }
+
+
+\par
+\newpage
+\tikzpicture\PrintFantasycalendarBase[months=0-1 to 0-1, week~list, box ~  size=2cm,days={rectangle,draw},month ~ label ~ above ~ centered];\endtikzpicture
+
+\newpage
+
+\DefineNewMoon\Solena { 16 } { 0 }
+\NewFantasyMoon \Surios {17} { 16 }
+\NewFantasyMoon \Eria {42} { 23 }
+
+%\printmoon{}{}{}
+A
+\Solena { 0 }
+\Solena { 8 }
+\Solena { 10 }
+\Solena { 5 }
+\Solena { 4 }
+\Solena { 12 }
+\Solena { 15 }
+\Solena { 1 }
+\Solena { 99 }
+
+
+
+\newpage
+\PrintFantasyCalendar{0}
+
+\end{document}

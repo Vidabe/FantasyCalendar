@@ -1,0 +1,218 @@
+
+\RequirePackage{tikz}
+%\input fantasycalenderbase.code.tex
+
+\makeatletter
+\ExplSyntaxOn
+
+%% https://tex.stackexchange.com/questions/34785/how-to-typeset-moon-phase-symbols
+
+\tl_new:N \l__fantasycalendarmoon_left_tl
+\tl_new:N \l__fantasycalendarmoon_right_tl
+
+\int_new:N \__fantasycalendarmoon_lunar_cycle_int
+\int_new:N \__fantasycalendarmoon_moon_phase_int
+\int_new:N \__fantasycalendarmoon_moon_phase_shift_int
+
+
+\int_new:N \__fantasycalendarmoon_rounding_precision_int
+\int_set:Nn \__fantasycalendarmoon_rounding_precision_int { 2 }
+
+\bool_new:N \l__fantasycalendarmoon_revert_colors_bool
+\int_new:N \__fantasycalendarmoon_moon_case_int
+
+
+
+\cs_new:Npn \__fantasycalendarmoon_calculate_moon_phases:nnn #1#2#3
+  {
+    \int_set:Nn \__fantasycalendarmoon_lunar_cycle_int {#1}
+    \int_set:Nn \__fantasycalendarmoon_moon_phase_shift_int {#2}
+    
+    \int_set:Nn \__fantasycalendarmoon_moon_phase_int
+      {
+        \int_mod:nn { #3 + \__fantasycalendarmoon_moon_phase_shift_int }
+           \__fantasycalendarmoon_lunar_cycle_int
+      }
+    
+    \int_compare:nNnT
+      { \__fantasycalendarmoon_moon_phase_int }
+      = 
+      { 0 }
+      {
+        %% At full moon (all white)
+        \int_set:Nn \__fantasycalendarmoon_moon_case_int { 0 }
+        \tl_set:Nn \l__fantasycalendarmoon_left_tl { 0 }
+        \tl_set_eq:NN \l__fantasycalendarmoon_right_tl \l__fantasycalendarmoon_left_tl
+        \use_none_delimit_by_q_recursion_stop:w
+      }
+    \fp_compare:nNnT 
+      { \__fantasycalendarmoon_moon_phase_int }
+      =
+      { \__fantasycalendarmoon_lunar_cycle_int * 0.5 }
+      {
+        %% New moon (all black)
+        \int_set:Nn \__fantasycalendarmoon_moon_case_int { 1 }
+        \tl_set:Nn \l__fantasycalendarmoon_left_tl { 0 }
+        \tl_set_eq:NN \l__fantasycalendarmoon_right_tl \l__fantasycalendarmoon_left_tl
+        \use_none_delimit_by_q_recursion_stop:w
+      }
+    \fp_compare:nNnT 
+      { \__fantasycalendarmoon_moon_phase_int }
+      =
+      { \__fantasycalendarmoon_lunar_cycle_int  * 0.25 }
+      {
+        \int_set:Nn \__fantasycalendarmoon_moon_case_int { 2 }
+        \tl_set:Nn \l__fantasycalendarmoon_left_tl { 0 }
+        \tl_set:Nn \l__fantasycalendarmoon_right_tl { 1 }
+        \use_none_delimit_by_q_recursion_stop:w
+      }
+    \fp_compare:nNnT 
+      { \__fantasycalendarmoon_moon_phase_int }
+      =
+      { \__fantasycalendarmoon_lunar_cycle_int  * 0.75 }
+      {
+        \int_set:Nn \__fantasycalendarmoon_moon_case_int { 2 }
+        \tl_set:Nn \l__fantasycalendarmoon_left_tl { -1 }
+        \tl_set:Nn \l__fantasycalendarmoon_right_tl { 0 }
+        \use_none_delimit_by_q_recursion_stop:w
+      }
+
+    \int_set:Nn \__fantasycalendarmoon_moon_case_int { 2 }
+    \fp_set:Nn \l_tmpa_fp 
+      {
+        360*\__fantasycalendarmoon_moon_phase_int 
+          / \__fantasycalendarmoon_lunar_cycle_int
+      }
+    \fp_set:Nn \l_tmpa_fp { cosd ( \l_tmpa_fp ) }
+    \fp_set:Nn \l_tmpa_fp 
+      { 
+        round ( \l_tmpa_fp , \__fantasycalendarmoon_rounding_precision_int ) 
+      }
+
+    
+    \fp_compare:nNnT
+      { \__fantasycalendarmoon_moon_phase_int }
+      <
+      { \__fantasycalendarmoon_lunar_cycle_int / 4 }
+      {
+        \fp_compare:nNnT
+          { \__fantasycalendarmoon_moon_phase_int }
+          >
+          { \__fantasycalendarmoon_lunar_cycle_int * 3 / 4 }
+          {
+            \bool_set_true:N \l__fantasycalendarmoon_revert_colors_bool
+          }
+      }
+
+
+    \fp_compare:nNnTF
+      { \__fantasycalendarmoon_moon_phase_int }
+      >
+      { \__fantasycalendarmoon_lunar_cycle_int * 0.5 }
+      {
+        \tl_set:Nn \l__fantasycalendarmoon_left_tl { -1 }
+        \tl_set:Nx \l__fantasycalendarmoon_right_tl { - \fp_use:N \l_tmpa_fp }
+      }{
+        \tl_set:Nx \l__fantasycalendarmoon_left_tl { \fp_use:N \l_tmpa_fp }
+        \tl_set:Nn \l__fantasycalendarmoon_right_tl { 1 }
+      }
+    
+    
+    \use_none_delimit_by_q_recursion_stop:w
+    \q_recursion_stop
+  }
+
+\cs_new:Npn \__fantasycalendarmoon_moon:nnn #1#2#3 
+  {
+    \__fantasycalendarmoon_calculate_moon_phases:nnn {#1} {#2} {#3}
+    \__fantasycalendarmoon_setup_savebox:
+    \__fantasycalendarmoon_provide_savebox_use:Nn
+      \l__fantasycalendarmoon_setup_str
+      { \__fantasycalendarmoon_print_moon: }
+}
+
+\cs_new:Npn \__fantasycalendarmoon_print_moon:
+  {
+    \dim_set:Nn \l_tmpb_dim { 1ex + 0.6\pgflinewidth  }
+    \dim_set:Nn \l_tmpa_dim { 1ex + 0.1\pgflinewidth  }
+    \tikz 
+      [
+        , inner ~ sep=0
+        , scale = 0.85
+%        , every ~ node/.style={ transform ~ shape , scale=0.85 }
+        , baseline= -1ex + 2.5\pgflinewidth %% Give moons a bit of a depth
+        , minimum~size=0pt %% or else things go foo-bar
+        ]
+    {
+      \scope
+      \ifcase \__fantasycalendarmoon_moon_case_int\relax
+        \draw [fill=white, draw=black,] (0,0) 
+          circle [radius=\l_tmpb_dim]
+          node [centered]  {\tiny \textsf{V}}
+          ;
+      \or
+        \draw [fill=black, draw=black] 
+          node [anchor=center]  { \textsf{\tiny\textcolor{white}{N} } }
+          circle [radius=\l_tmpb_dim]
+          ;
+      \or
+        \draw [fill=white, draw=black, text~depth=10pt] (0,0) 
+          circle [radius=\l_tmpb_dim];
+        %% Remove linewidth to make moon look better
+        \draw [fill=black,line~width=0pt] (0,\l_tmpa_dim)
+            arc [ start ~ angle = 90, end ~ angle = -90, x ~ radius = \l__fantasycalendarmoon_right_tl ex, y ~ radius = \l_tmpa_dim ]
+            arc [ start ~ angle = -90, end ~ angle = 90, x ~ radius = \l__fantasycalendarmoon_left_tl ex, y ~ radius = \l_tmpa_dim ]
+            -- cycle;
+      \fi
+      \endscope
+    }
+  }
+
+
+%% Copied from tikzsymbols
+\str_new:N \l__fantasycalendarmoon_setup_str
+\cs_new:Npn \__fantasycalendarmoon_setup_savebox:
+  {
+    \str_set:Nx \l__fantasycalendarmoon_setup_str
+      {
+        \l__fantasycalendarmoon_moon_name_tl _ 
+        \int_use:N \__fantasycalendarmoon_moon_case_int _
+        \l__fantasycalendarmoon_left_tl _ 
+        \l__fantasycalendarmoon_right_tl
+      }
+  }
+
+\cs_new:Npn \__fantasycalendarmoon_provide_savebox_use:Nn #1#2
+  {
+    \box_if_exist:cF { g__fantasycalendarmoon_savebox_ #1 _box }
+      { 
+        \box_new:c { g__fantasycalendarmoon_savebox_ #1  _box } 
+        \exp_args:NNc \global \sbox 
+           { g__fantasycalendarmoon_savebox_ #1 _box } {#2}
+      }
+    \__fantasycalendarmoon_use_savebox:N #1
+  }
+\cs_new:Npn \__fantasycalendarmoon_use_savebox:N #1
+  {
+    \exp_args:Nc \usebox { g__fantasycalendarmoon_savebox_ #1 _box }
+  }
+
+
+\tl_new:N \l__fantasycalendarmoon_moon_name_tl
+
+%% #1: \Name, #2: Lunar Cycle; #3: Offset
+\NewDocumentCommand \DefineNewMoon { m m m }
+  {
+    \NewDocumentCommand #1 { m }
+      {
+        \tl_set:Nx \l__fantasycalendarmoon_moon_name_tl { \cs_to_str:N #1 }
+        \__fantasycalendarmoon_moon:nnn {#2} {#3} {##1}
+      }
+  }
+
+
+\ExplSyntaxOff
+\makeatother
+
+
+\endinput
