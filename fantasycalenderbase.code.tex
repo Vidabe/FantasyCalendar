@@ -354,7 +354,7 @@
   {
     \tl_set:Nx \l_tmpa_tl {#3}
     \tl_if_empty:NTF \l_tmpa_tl
-      { \tl_set:Nn \l_tmpa_tl { \l_fantasycalendar_current_year_tl-#1-#2 } }
+      { \tl_set:Nn \l_tmpa_tl { \l_fantasycalendar_current_year_tl - #1-#2 } }
       { \tl_set:Nn \l_tmpa_tl {#4} }
     \__fantasycalendar_iso_to_ordinal:nN {\l_tmpa_tl} \l__fantasycalendar_tmpa_int
   }
