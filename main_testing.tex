@@ -75,8 +75,8 @@
 \newpage
 
 \DefineNewMoon\Solena { 419 } { 0 }
-\NewFantasyMoon \Surios { 24 } { 0 }
-\NewFantasyMoon \Eria { 42 } { 23 }
+\NewFantasyMoon \Surios { 21 } { 0 }
+\NewFantasyMoon \Eria { 42 } { 0 } %% 23
 
 %\printmoon{}{}{}
 A
@@ -91,18 +91,38 @@ A
 \Solena { 99 }
 \par
 
-\GetNextMoonphase [new-moon] \Solena { iso=0-1-1 } {  \int_use:N \l__fantasycalendarmoon_next_phase_day_int ;Next-moon-phase-in: \space \int_use:N \l__fantasycalendarmoon_in_days_int \ days. Iso-Date: \ \l_fantasycalendar_current_year_tl-\l_fantasycalendar_current_month_tl-\l_fantasycalendar_current_day_tl \par}
+\GetNextMoonphase \Solena { new-moon } { iso=0-1-1 } 
+  {  
+     \%{ordinal}\space In: \%{in-days}\ days. Iso-Date: \%{iso} \par
+  }
 
-\GetNextMoonphase [new-moon] \Surios { iso=0-1-1 } {  \int_use:N \l__fantasycalendarmoon_next_phase_day_int ;Next-moon-phase-in: \space \int_use:N \l__fantasycalendarmoon_in_days_int \ days. Iso-Date: \ \l_fantasycalendar_current_year_tl-\l_fantasycalendar_current_month_tl-\l_fantasycalendar_current_day_tl \par}
+\GetNextMoonphase \Solena { new-moon } { iso=0-1-1 } 
+  {  
+     \%{ordinal}\space In: \%{in-days}\ days. Iso-Date: \%{iso} \par
+  }
 
-\GetNextMoonphase [new-moon] \Eria { iso=0-1-1 } {  \int_use:N \l__fantasycalendarmoon_next_phase_day_int ;Next-moon-phase-in: \space \int_use:N \l__fantasycalendarmoon_in_days_int \ days. Iso-Date: \ \l_fantasycalendar_current_year_tl-\l_fantasycalendar_current_month_tl-\l_fantasycalendar_current_day_tl \par}
+\GetNextMoonphase \Surios {new-moon} { iso=0-1-1 } 
+  {       
+    \%{ordinal}\space In: \%{in-days}\ days. Iso-Date: \%{iso} \par
+  }
+
+\GetNextMoonphase  \Eria {new-moon} { iso=0-1-1 } 
+  {  
+     \%{ordinal}\space In: \%{in-days}\ days. Iso-Date: \%{iso} \par
+  }
 
 \par
 
-\__fantasycalendarmoon_compare_moons:nnn { \Solena, \Eria } { new-moon } { iso=0-1-1 }
+\CompareMoons { \Solena, \Eria } { 0 } { iso=0-1-1, nr-of-entries=10 } 
+  {
+    \%{ordinal}\space In: \%{in-days}\ days. \%{iso} \par
+ }
 
 
-\newpage
-%\PrintFantasyCalendar{0}
+
+
+\Solena { 9009 }
+\Eria { 9009 }
+
 
 \end{document}
