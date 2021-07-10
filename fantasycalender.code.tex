@@ -633,7 +633,7 @@
   }
 \cs_new:Npn \__fantasycalendar_print_if_else_code: #1 #2 #3 
   {
-    \exp_args:NNo \cs_new:Npn  \__fantasycalendar_print_if_s:
+    \exp_args:NNo \cs_set:Npn  \__fantasycalendar_print_if_s:
       { 
         \__fantasycalendar_print_if_s:
         \ifdate {#1} {#2} {#3} 
@@ -664,11 +664,22 @@
     \endgroup
   }
 
-\tikzoption{if}{%
-  \let\__fantasycalendar_print_scanner_orig:=\__fantasycalendar_print_scanner:%
-  \let\__fantasycalendar_print_scanner:=\relax%
-  \__fantasycalendar_print_if: f#1\relax%
-  \let \__fantasycalendar_print_scanner: =\__fantasycalendar_print_scanner_orig:}
+
+\tikzset{ 
+  if /.code=
+    {
+      \cs_set_eq:NN \__fantasycalendar_print_scanner_orig: \__fantasycalendar_print_scanner:
+      \cs_set_eq:NN \__fantasycalendar_print_scanner: \relax
+      \__fantasycalendar_print_if: f #1\relax%
+      \cs_set_eq:NN \__fantasycalendar_print_scanner: \__fantasycalendar_print_scanner_orig:
+  }
+}
+%\tikzoption{if}{%
+%  \let\__fantasycalendar_print_scanner_orig:=\__fantasycalendar_print_scanner:%
+%  \let\__fantasycalendar_print_scanner:=\relax%
+%  \__fantasycalendar_print_if: f#1\relax%
+%  \let \__fantasycalendar_print_scanner: =\__fantasycalendar_print_scanner_orig:
+%  }
 
 
 

@@ -76,7 +76,6 @@
     %
     % Start main loop
     %
-    \let \tikznrdaysperweek \l__fantasycalendar_nr_days_per_week_int
     \loop%
     \ifnum \l_fantasycalendar_current_ordinal_int <\l__fantasycalendar_end_ordinal_plus_tl \relax%
       % Setup information about current date
@@ -225,13 +224,6 @@
     \tl_new:c { l__fantasycalendar_one_year_day_ #1 _tl }
     \tl_set:cn { l__fantasycalendar_one_year_day_ #1 _tl } {#2}
   }
-
-
-
-
-
-
-
 
 
 

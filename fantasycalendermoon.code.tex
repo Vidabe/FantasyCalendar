@@ -54,29 +54,32 @@
         \int_set:Nn \__fantasycalendarmoon_moon_case_int { 0 }
         \use_none_delimit_by_q_recursion_stop:w
       }
-    \fp_compare:nNnT 
+    \int_compare:nNnT
+%    \fp_compare:nNnT 
       { \__fantasycalendarmoon_moon_phase_int }
       =
-      { \__fantasycalendarmoon_lunar_cycle_int * 0.5 }
+      { \__fantasycalendarmoon_lunar_cycle_int / 2 }
       {
         %% New moon (all black)
         \int_set:Nn \__fantasycalendarmoon_moon_case_int { 1 }
         \use_none_delimit_by_q_recursion_stop:w
       }
-    \fp_compare:nNnT 
+    \int_compare:nNnT
+%    \fp_compare:nNnT 
       { \__fantasycalendarmoon_moon_phase_int }
       =
-      { \__fantasycalendarmoon_lunar_cycle_int  * 0.25 }
+      { \__fantasycalendarmoon_lunar_cycle_int  / 4 }
       {
         \int_set:Nn \__fantasycalendarmoon_moon_case_int { 2 }
         \tl_set:Nn \l__fantasycalendarmoon_left_tl { 0 }
         \tl_set:Nn \l__fantasycalendarmoon_right_tl { 1 }
         \use_none_delimit_by_q_recursion_stop:w
       }
-    \fp_compare:nNnT 
+    \int_compare:nNnT
+%    \fp_compare:nNnT 
       { \__fantasycalendarmoon_moon_phase_int }
       =
-      { \__fantasycalendarmoon_lunar_cycle_int  * 0.75 }
+      { \__fantasycalendarmoon_lunar_cycle_int  * 3/4 }
       {
         \int_set:Nn \__fantasycalendarmoon_moon_case_int { 2 }
         \tl_set:Nn \l__fantasycalendarmoon_left_tl { -1 }
@@ -85,10 +88,11 @@
       }
 
 
-    \fp_compare:nNnTF
+%    \fp_compare:nNnTF
+    \int_compare:nNnTF
       { \__fantasycalendarmoon_moon_phase_int }
       >
-      { \__fantasycalendarmoon_lunar_cycle_int * 0.5 }
+      { \__fantasycalendarmoon_lunar_cycle_int / 2 }
       { \bool_set_true:N \l__fantasycalendarmoon_decreasing_bool }
       { \bool_set_false:N \l__fantasycalendarmoon_decreasing_bool }
 
@@ -230,6 +234,7 @@
         \tl_set:Nx \l__fantasycalendarmoon_moon_name_str { \cs_to_str:N #1 }
         \__fantasycalendarmoon_moon:nnn {#2} {#3} {##1}
       }
+    \__fantasycalendar_add_pgf_moon_keys:Nx #1 { \cs_to_str:N #1 }
      \__fantasycalendarmoon_storage:Nnn #1 {#2} {#3}
   }
 
@@ -238,6 +243,80 @@
     \int_const:cn { c__fantasycalendarmoon_ \cs_to_str:N #1 _lunar_cycle_int } {#2}
     \int_const:cn { c__fantasycalendarmoon_ \cs_to_str:N #1 _offset_int } {#3}
   }
+\cs_new:Npn \__fantasycalendarmoon_get_stored:NNN #1 #2#3
+  {
+    \int_set_eq:Nc #2 { c__fantasycalendarmoon_ \cs_to_str:N #1 _lunar_cycle_int }
+    \int_set_eq:Nc #3 { c__fantasycalendarmoon_ \cs_to_str:N #1 _offset_int }
+  }
+
+
+
+\cs_new:Npn \__fantasycalendar_get_moon_phase:Nn #1 #2
+  {
+    \__fantasycalendarmoon_get_stored:NNN #1 
+      \__fantasycalendarmoon_lunar_cycle_int 
+      \__fantasycalendarmoon_moon_phase_shift_int
+    \__fantasycalendarmoon_set_moon_phase:n \l_fantasycalendar_current_ordinal_int
+    \int_compare:nNnT \__fantasycalendarmoon_moon_phase_int 
+      = 
+      { \__fantasycalendarmoon_lunar_cycle_int * #2 }
+      { 
+        \bool_set_true:N \l__fantasycalendar_date_match_bool 
+      }
+  }
+
+\cs_new:Npn \__fantasycalendar_add_pgf_moon_keys:Nn #1#2
+  {
+    \pgfkeys
+      {
+        /pgf/#2/.is~choice ,
+        /pgf/#2/full-moon/ .code= 
+          {  \__fantasycalendar_get_moon_phase:Nn #1 { 0 } } ,
+        /pgf/#2/new-moon/ .code= 
+          { \__fantasycalendar_get_moon_phase:Nn #1 { 1/2 } } ,
+        /pgf/#2/half-moon-1/ .code= 
+          { \__fantasycalendar_get_moon_phase:Nn #1 { 1/4 } } ,
+        /pgf/#2/half-moon-2/ .code= 
+          { \__fantasycalendar_get_moon_phase:Nn #1 { 3/4 } } ,
+        /pgf/#2/half-moon-2/ .code= 
+          { \__fantasycalendar_get_moon_phase:Nn #1 { 3/4 } } ,
+%        /pgf/#1/.code=
+%          { 
+%            \__fantasycalendar_get_moon_phase:N #1 
+%            \int_compare:nNnT \__fantasycalendarmoon_moon_phase_int = { \__fantasycalendarmoon_lunar_cycle_int }
+%              { }
+%              { }
+%          }
+      }
+  }
+\cs_generate_variant:Nn \__fantasycalendar_add_pgf_moon_keys:Nn { Nx }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 %% Get next  moon-phase

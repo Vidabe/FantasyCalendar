@@ -40,6 +40,10 @@
 \FantasyCalendarDateEntry{2-40}{Erntedankfest}
 \FantasyCalendarOneTimeEntry{0-2-40}{Noping}
 
+%\DefineNewMoon\Solena { 21 } { 0 }
+\DefineNewMoon\Solena { 419 } { 0 }
+\NewFantasyMoon \Surios { 26 } { 0 }
+\NewFantasyMoon \Eria { 45 } { 23 }
 
 \begin{document}
 \ExplSyntaxOn
@@ -65,19 +69,32 @@
 
 \par
 
-\basefantasycalendar{stuff}{0-1-1}{0-last-last}{ \ifdate {start ~ of ~ month} {\par} {\space}\l_fantasycalendar_current_day_tl  }
+\basefantasycalendar{stuff}{0-1-1}{0-last-last}
+  { 
+    \ifdate {start ~ of ~ month} {\par} {\space}
+    \ifdate {Surios=full-moon}
+      { \textcolor{green} }
+      {
+        \ifdate {end ~ of ~ week}
+          { \textcolor{red} }
+          { }
+      }
+    \l_fantasycalendar_current_day_tl  
+  }
 
 
 \par
 \newpage
-\tikzpicture\PrintFantasycalendarBase[months=0-1 to 0-1, week~list, box ~  size=2cm,days={rectangle,draw},month ~ label ~ above ~ centered];\endtikzpicture
+\tikzpicture
+  \PrintFantasycalendarBase[months=0-1 to 0-1, week~list, box ~  size=2cm,days={rectangle,draw},month ~ label ~ above ~ centered]
+    if (Haturan) [red]
+    if (Surios=full-moon) [green]
+  ;
+\endtikzpicture
+
 
 \newpage
 
-%\DefineNewMoon\Solena { 21 } { 0 }
-\DefineNewMoon\Solena { 419 } { 0 }
-\NewFantasyMoon \Surios { 26 } { 0 }
-\NewFantasyMoon \Eria { 45 } { 23 }
 
 %\printmoon{}{}{}
 A
