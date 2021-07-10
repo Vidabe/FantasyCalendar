@@ -250,19 +250,44 @@
   }
 
 
-
-\cs_new:Npn \__fantasycalendar_get_moon_phase:Nn #1 #2
+\cs_new:Npn \__fantasycalendar_if_moon_phase_setup:N #1
   {
     \__fantasycalendarmoon_get_stored:NNN #1 
       \__fantasycalendarmoon_lunar_cycle_int 
       \__fantasycalendarmoon_moon_phase_shift_int
     \__fantasycalendarmoon_set_moon_phase:n \l_fantasycalendar_current_ordinal_int
+  }
+\cs_new:Npn \__fantasycalendar_if_moon_phase_match:Nnn #1 #2#3
+  {
+    \__fantasycalendar_if_moon_phase_setup:N #1
     \int_compare:nNnT \__fantasycalendarmoon_moon_phase_int 
-      = 
-      { \__fantasycalendarmoon_lunar_cycle_int * #2 }
-      { 
-        \bool_set_true:N \l__fantasycalendar_date_match_bool 
+      #2
+      { \__fantasycalendarmoon_lunar_cycle_int * #3 }
+      { \bool_set_true:N \l__fantasycalendar_date_match_bool }
+  }
+\cs_new:Npn \__fantasycalendar_if_moon_phase_behavior:Nnn #1 #2#3
+  {
+    \__fantasycalendar_if_moon_phase_setup:N #1
+    \int_compare:nNnF { \__fantasycalendarmoon_moon_phase_int } = { 0 }
+      {
+        \int_compare:nNnT \__fantasycalendarmoon_moon_phase_int 
+          #2
+          { \__fantasycalendarmoon_lunar_cycle_int * #3 }
+          { \bool_set_true:N \l__fantasycalendar_date_match_bool }
       }
+  }
+\cs_new:Npn \__fantasycalendar_if_moon_phase_behavior_ii:Nnnnn #1 #2#3#4#5
+  {
+    \__fantasycalendar_if_moon_phase_setup:N #1
+    \int_compare:nNnT \__fantasycalendarmoon_moon_phase_int 
+    #2
+    { \__fantasycalendarmoon_lunar_cycle_int * #3 }
+    { 
+      \int_compare:nNnT \__fantasycalendarmoon_moon_phase_int
+        #4
+        { \__fantasycalendarmoon_lunar_cycle_int * #5 }
+        { \bool_set_true:N \l__fantasycalendar_date_match_bool }
+    }
   }
 
 \cs_new:Npn \__fantasycalendar_add_pgf_moon_keys:Nn #1#2
@@ -271,22 +296,37 @@
       {
         /pgf/#2/.is~choice ,
         /pgf/#2/full-moon/ .code= 
-          {  \__fantasycalendar_get_moon_phase:Nn #1 { 0 } } ,
+          {  \__fantasycalendar_if_moon_phase_match:Nnn #1 = { 0 } } ,
         /pgf/#2/new-moon/ .code= 
-          { \__fantasycalendar_get_moon_phase:Nn #1 { 1/2 } } ,
+          { \__fantasycalendar_if_moon_phase_match:Nnn #1 = { 1/2 } } ,
         /pgf/#2/half-moon-1/ .code= 
-          { \__fantasycalendar_get_moon_phase:Nn #1 { 1/4 } } ,
+          { \__fantasycalendar_if_moon_phase_match:Nnn #1 = { 1/4 } } ,
         /pgf/#2/half-moon-2/ .code= 
-          { \__fantasycalendar_get_moon_phase:Nn #1 { 3/4 } } ,
-        /pgf/#2/half-moon-2/ .code= 
-          { \__fantasycalendar_get_moon_phase:Nn #1 { 3/4 } } ,
-%        /pgf/#1/.code=
-%          { 
-%            \__fantasycalendar_get_moon_phase:N #1 
-%            \int_compare:nNnT \__fantasycalendarmoon_moon_phase_int = { \__fantasycalendarmoon_lunar_cycle_int }
-%              { }
-%              { }
-%          }
+          { \__fantasycalendar_if_moon_phase_match:Nnn #1 = { 3/4 } } ,
+        /pgf/#2/waxing/ .code= 
+          { 
+            \__fantasycalendar_if_moon_phase_behavior:Nnn #1 < { 1/2 } 
+          } , % >
+        /pgf/#2/waning/ .code=  % <
+          { 
+            \__fantasycalendar_if_moon_phase_behavior:Nnn #1 > { 1/2 } 
+          } , 
+        /pgf/#2/waxing-crescent/ .code=  % <
+          { 
+            \__fantasycalendar_if_moon_phase_behavior_ii:Nnnnn #1 > { 0 } < { 1/2 }  % >
+          } , 
+        /pgf/#2/waxing-gibbous/ .code=  % <
+          { 
+            \__fantasycalendar_if_moon_phase_behavior_ii:Nnnnn #1 > { 1/4 } < { 1/2 }  % >
+          } , 
+        /pgf/#2/waning-gibbous/ .code=  % <
+          { 
+            \__fantasycalendar_if_moon_phase_behavior_ii:Nnnnn #1 > { 1/2 } < { 3/4 }  % >
+          } , 
+        /pgf/#2/waning-crescent/ .code=  % <
+          { 
+            \__fantasycalendar_if_moon_phase_behavior_ii:Nnnnn #1 > { 3/4 } < { 1 }  % >
+          } , 
       }
   }
 \cs_generate_variant:Nn \__fantasycalendar_add_pgf_moon_keys:Nn { Nx }
