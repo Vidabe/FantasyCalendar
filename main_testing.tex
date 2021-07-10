@@ -74,9 +74,10 @@
 
 \newpage
 
+%\DefineNewMoon\Solena { 21 } { 0 }
 \DefineNewMoon\Solena { 419 } { 0 }
-\NewFantasyMoon \Surios { 21 } { 0 }
-\NewFantasyMoon \Eria { 42 } { 0 } %% 23
+\NewFantasyMoon \Surios { 26 } { 0 }
+\NewFantasyMoon \Eria { 45 } { 23 }
 
 %\printmoon{}{}{}
 A
@@ -113,11 +114,14 @@ A
 
 \par
 
-\CompareMoons { \Solena, \Eria } { 0 } { iso=0-1-1, nr-of-entries=10 } 
+\CompareMoons { \Solena, \Eria, \Surios } { new-moon} { iso=0-1-1, nr-of-entries=10 } 
   {
-    \%{ordinal}\space In: \%{in-days}\ days. \%{iso} \par
+    \Solena{\%{ordinal}}\  \Surios{\%{ordinal}} \ \Eria{\%{ordinal}}\
+    \%{ordinal}\space In: \%{in-days}\ days. \%{iso} 
+    \par
  }
 
+\Eria{107055}
 
 
 

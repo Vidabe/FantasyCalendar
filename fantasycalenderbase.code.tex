@@ -479,18 +479,6 @@
       }{
     %% get month and day
     \__fantasycalendar_ordinal_to_date_get_month:N \l__fantasycalendar_day_int
-%    \seq_map_indexed_inline:Nn \l__fantasycalendar_cumulative_number_days_invers_seq
-%      {
-%        \int_compare:nNnT { \l__fantasycalendar_day_int } > {##2}
-%          { 
-%            \seq_map_break:n
-%              {
-%                \int_set:Nn \l__fantasycalendar_month_int 
-%                  {  \l__fantasycalendar_nr_months_per_year_int - ##1 + 1 } 
-%                \int_sub:Nn \l__fantasycalendar_day_int {##2}
-%              }
-%          }
-%      }
       }
     %% Make numbers into tl's
     \tl_set:NV #2 \l__fantasycalendar_year_int
@@ -516,7 +504,7 @@
               {
                 \int_set:Nn \l__fantasycalendar_month_int {##1-1} 
                 \int_sub:Nn \l__fantasycalendar_day_int 
-                  { \__fantasycalendar_print_cumulative_days:n { \l__fantasycalendar_month_int } }
+                  { \__fantasycalendar_print_cumulative_days:n {##1-1} }
               }
           }
       }
