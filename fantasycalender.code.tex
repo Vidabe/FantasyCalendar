@@ -22,13 +22,16 @@
 \tl_new:N \l__fantasycalendar_draw_month_yshift_tl 
 
 \tl_new:N \l__fantasycalendar_text_day_tl
+\tl_new:N \l__fantasycalendar_text_week_day_tl
 \tl_new:N \l__fantasycalendar_text_month_tl
 \tl_new:N \l__fantasycalendar_text_year_tl
 \tl_new:N \l__fantasycalendar_code_day_tl
+\tl_new:N \l__fantasycalendar_code_week_day_tl
 \tl_new:N \l__fantasycalendar_code_month_tl
 \tl_new:N \l__fantasycalendar_code_year_tl
 
 \tl_new:N \l__fantasycalendar_draw_width_tl
+
 
 \cs_new:Npn \__fantasycalendar_sanitize_weekday_for_tikz:N #1
   {
@@ -167,15 +170,18 @@
 \tl_set:Nn \l__fantasycalendar_code_day_tl 
   {
     \node
-      [name=\__fantasycalendar_suggested_name:, every ~ day]
+      [name=\__fantasycalendar_suggested_name: , every ~ day]
       {\l__fantasycalendar_text_day_tl};
   }
+\tl_set:Nn \l__fantasycalendar_code_week_day_tl 
+  { \node [every ~ weekday] { \l__fantasycalendar_text_week_day_tl } ; }
 \tl_set:Nn \l__fantasycalendar_code_month_tl 
-  {\node[every ~ month]{\l__fantasycalendar_text_month_tl};}
+  { \node [every ~ month] { \l__fantasycalendar_text_month_tl } ; }
 \tl_set:Nn \l__fantasycalendar_code_year_tl 
-  {\node[every ~ year]{\l__fantasycalendar_text_year_tl};}
+  { \node [every ~ year] { \l__fantasycalendar_text_year_tl } ; }
 
 \tl_set:Nn \l__fantasycalendar_text_day_tl {\%d-}
+\tl_set:Nn \l__fantasycalendar_text_week_day_tl { \%wt }
 \tl_set:Nn \l__fantasycalendar_text_month_tl {\bfseries \%mt \space [\%m0]}
 \tl_set:Nn \l__fantasycalendar_text_year_tl {\%y0}
 
@@ -221,13 +227,23 @@
 
 
 
-\tl_set:Nn \l__fantasycalendar_draw_width_tl { 1 }
+\tl_set:Nn \l__fantasycalendar_draw_width_tl { 10 }
 \tikzset
   { 
     l__fantasycalendar_draw_width_tl/.code= 
       { \tl_set:Nn \l__fantasycalendar_draw_width_tl {#1} } 
   }
 
+\bool_new:N \l__fantasycalendar_draw_weekday_bool
+\tikzset
+  { 
+    print-weekdays/.is ~ choice ,
+    print-weekdays/true/.code= 
+      { \bool_set_true:N \l__fantasycalendar_draw_weekday_bool }  ,
+    print-weekdays/false/.code= 
+      { \bool_set_false:N \l__fantasycalendar_draw_weekday_bool }  ,
+    print-weekdays/.default= { true } ,
+  }
 
 
 
@@ -252,33 +268,32 @@
       {
         execute ~ before ~ day ~ scope =
           {
-            \ifdate{day ~ of ~ month = 1}
+            \ifdateT{day ~ of ~ month = 1}
               {
-                \ifdate { equals = \l__fantasycalendar_dates_start_tl }
-                  { }
+                \ifdateF { equals = \l__fantasycalendar_dates_start_tl }
                   { 
                     % On first of month, except when first date in calendar.
                     \pgfmathsetlength{\pgf@y}{\l__fantasycalendar_draw_month_yshift_tl}%
                     \pgftransformyshift{-\pgf@y}
                   } 
-              } { }
+              }
           }
         ,
         execute ~ at ~ begin ~ day ~ scope =
           {
-            \pgfmathsetlength\pgf@x{\l__fantasycalendar_draw_day_xshift_tl}%
+            \pgfmathsetlength \l_tmpa_dim { \l__fantasycalendar_draw_day_xshift_tl}
             \__fantasycalendar_sanitize_weekday_for_tikz:N \l_tmpa_int
-            \pgf@x=\l_tmpa_int\pgf@x%
-            \pgftransformxshift{\pgf@x}%
+            \dim_set:Nn \l_tmpa_dim { \l_tmpa_int \l_tmpa_dim }
+            \pgftransformxshift { \l_tmpa_dim }
           }
         ,
         execute ~ after ~ day ~ scope=
           {
-            \ifdate{end ~ of ~ week}
+            \ifdateT {end ~ of ~ week}
               {
-                \pgfmathsetlength{\pgf@y}{\l__fantasycalendar_draw_day_yshift_tl}%
-                \pgftransformyshift{-\pgf@y}
-              }{ }%
+                \pgfmathsetlength{\l_tmpb_dim}{\l__fantasycalendar_draw_day_yshift_tl}%
+                \pgftransformyshift{-\l_tmpb_dim}
+              }
           }
         ,
         l__fantasycalendar_draw_width_tl = \l__fantasycalendar_nr_days_per_week_int
@@ -286,30 +301,101 @@
   }
     
     
-%\tikzset
-%  {
-%    weekday ~ label ~ above ~ centered/.style=
-%      {
-%        execute ~ before ~ day ~ scope=
-%          {
-%                {
-%                  \pgfmathsetlength{\pgf@xa}{\l__fantasycalendar_draw_day_xshift_tl}%
-%%                  \pgf@xb=\l__fantasycalendar_draw_width_tl\pgf@xa%
-%%                  \advance\pgf@xb by-\pgf@xa%
-%%                  \pgf@xb=.5\pgf@xb%
-%%                  \pgftransformxshift{\pgf@xb}%
-%%                  \pgftransformxshift{-1.5ex}%
-%                  \pgfmathsetlength{\pgf@y}{\l__fantasycalendar_draw_day_yshift_tl}%
-%                  \pgftransformyshift{0.8\pgf@y}
-%                  \l__fantasycalendar_code_month_tl%
-%                }
-%          }
-%        ,
-%%  every ~ month/.append ~ style={anchor=base}
-%}}
     
 
-%% month ~ labels
+% Month list
+%
+
+\tl_new:N \l__fantasycalendar_month_list_tl
+
+\tikzset
+  {
+    month ~ list/.style=
+      {
+        execute ~ before ~ day ~ scope=
+          {
+            \ifdateT {day ~ of ~ month=1}
+              {
+                \ifdateF { equals = \l__fantasycalendar_dates_start_tl }
+                  {
+                    % On first of month, except when first date in calendar.
+                    \pgfmathsetlength{\l_tmpa_dim}{\l__fantasycalendar_draw_month_yshift_tl}
+                    \pgftransformyshift{-\l_tmpa_dim}
+                  }
+              }
+            \ifdateT {day ~ of ~ month=1}
+              {
+                \__fantasycalendar_sanitize_weekday_for_tikz:N \l_tmpa_int
+                \tl_set:NV \l__fantasycalendar_month_list_tl \l_tmpa_int
+              }  
+            \ifdateT {equals=\l__fantasycalendar_dates_start_tl}
+              {
+                {
+                  \int_set_eq:NN \l_tmpa_int \l_fantasycalendar_current_ordinal_int
+                  \int_sub:Nn \l_tmpa_int \l_fantasycalendar_current_day_tl
+                  \int_incr:N \l_tmpa_int
+                  \__fantasycalendar_ordinal_to_weekday:nN 
+                    { \l_tmpa_int } \l_tmpb_int
+                  \__fantasycalendar_sanitize_weekday_for_tikz:N \l_tmpb_int
+                  \xdef \pgf@temp { \int_use:N \l_tmpb_int }
+                }
+                \tl_set_eq:NN \l__fantasycalendar_month_list_tl \pgf@temp
+              }
+          }
+          ,
+        execute ~ at ~ begin ~ day ~ scope=
+          {
+            \pgfmathsetlength \l_tmpa_dim { \l__fantasycalendar_draw_day_xshift_tl }
+            \int_set:Nn \l_tmpb_dim { \l_fantasycalendar_current_day_tl \l_tmpa_dim }
+            \dim_add:Nn \l_tmpb_dim { \l__fantasycalendar_month_list_tl \l_tmpa_dim }
+            \dim_sub:Nn \l_tmpb_dim { \l_tmpa_dim }
+            \pgftransformxshift { \l_tmpb_dim }
+          }
+        ,
+        l__fantasycalendar_draw_width_tl= \fp_eval:n 
+          { 
+            max ( \seq_use:Nn \l__fantasycalendar_number_days_of_months_seq { , } ) 
+            + \l__fantasycalendar_nr_days_per_week_int 
+          }
+      }
+  }
+
+
+
+%
+% week ~ labels
+%
+
+\tikzset
+  {
+    weekday ~ label ~ above/.style=
+      {
+        print-weekdays = true ,
+        execute ~ before ~ day ~ scope=
+          {
+            \ifdateT{day ~ of ~ month=1}
+              {
+                {
+                  \pgfmathsetlength{\pgf@y}{\l__fantasycalendar_draw_day_yshift_tl}%
+                  \pgftransformyshift{0.5\pgf@y + 1\baselineskip}
+                  \pgfmathsetlength{\pgf@xa}{\l__fantasycalendar_draw_day_xshift_tl}%
+                  \pgftransformxshift{0.5\pgf@xa}%
+                  \int_step_inline:nn { \l__fantasycalendar_nr_days_per_week_int }
+                    {
+                      \tl_set:Nx \l_fantasycalendar_current_day_tl { \int_eval:n {##1} }
+                      \l__fantasycalendar_code_week_day_tl
+                      \pgftransformxshift{\pgf@xa}%
+                    }
+                }
+              } 
+          }
+        ,
+        every ~ weekday/.append ~ style={anchor=base~#1}
+      }
+      ,
+   weekday ~ label ~ above / .default = {} ,
+  }
+
 
 %
 % month ~ labels
@@ -321,7 +407,11 @@
   {
     month ~ label ~ left/.style=
       {
-        execute ~ before ~ day ~ scope={\ifdate{day ~ of ~ month=1}{\l__fantasycalendar_code_month_tl}{}},
+        execute ~ before ~ day ~ scope=
+          {
+            \ifdateT {day ~ of ~ month = 1} { \l__fantasycalendar_code_month_tl }
+          }
+        ,
         every ~ month/.append ~ style={anchor=base ~ east, xshift=-3.5ex}
       }
   }
@@ -330,9 +420,13 @@
   {
     month ~ label ~left ~ vertical/.style=
       {
-        execute ~ before ~ day ~ scope={\ifdate{day ~ of ~ month=1}{\l__fantasycalendar_code_month_tl}{}},
-        every ~ month/.append ~ style={anchor=base ~ east,xshift=-4.5ex,yshift=2.25ex,rotate=90}
-    }
+        execute ~ before ~ day ~ scope=
+          {
+            \ifdateT {day ~ of ~ month=1} { \l__fantasycalendar_code_month_tl } 
+          } ,
+        every ~ month/.append ~ style=
+          { anchor=base ~ east , xshift=-4.5ex , yshift=2.25ex , rotate=90 }
+      }
   }
 
 \tikzset
@@ -341,18 +435,18 @@
       {
         execute ~ before ~ day ~ scope=
           {
-            \ifdate{day ~ of ~ month=1}
+            \ifdateT{day ~ of ~ month=1}
               {
                 {
-                  \pgfmathsetlength{\pgf@xa}{\l__fantasycalendar_draw_day_xshift_tl}%
-                  \pgftransformxshift{\l__fantasycalendar_draw_width_tl\pgf@xa}%
-                  \pgftransformxshift{-\pgf@xa}%
-                  \l__fantasycalendar_code_month_tl%
+                  \pgfmathsetlength{\l_tmpa_dim}{\l__fantasycalendar_draw_day_xshift_tl}
+                  \pgftransformxshift{\l__fantasycalendar_draw_width_tl \l_tmpa_dim}
+                  \pgftransformxshift{-\l_tmpa_dim}
+                  \l__fantasycalendar_code_month_tl
                 }
-              }{}
+              }
           }
         ,
-        every ~ month/.append ~ style={anchor=base ~ west,xshift=1ex}
+        every ~ month/.append ~ style={ anchor=base ~ west , xshift=1ex }
     }
   }
 
@@ -362,48 +456,25 @@
       {
         execute ~ before ~ day ~ scope=
           {
-            \ifdate{day ~ of ~ month=1}
+            \ifdateT{day ~ of ~ month=1}
               {
                 {
-                  \pgfmathsetlength{\pgf@xa}{\l__fantasycalendar_draw_day_xshift_tl}%
-                  \pgftransformxshift{\l__fantasycalendar_draw_width_tl\pgf@xa}%
-                  \pgftransformxshift{-\pgf@xa}%
+                  \pgfmathsetlength{\l_tmpa_dim}{\l__fantasycalendar_draw_day_xshift_tl}%
+                  \pgftransformxshift{\l__fantasycalendar_draw_width_tl\l_tmpa_dim}%
+                  \pgftransformxshift{-\l_tmpa_dim}%
                   \l__fantasycalendar_code_month_tl%
                 }
-              }{}
+              }
           }
         ,
-        every ~ month/.append ~ style={anchor=base ~ west,xshift=2ex,yshift=2.25ex,rotate=-90}
+        every ~ month/.append ~ style=
+          { anchor=base ~ west , xshift=2ex , yshift=2.25ex , rotate=-90 }
     }
   }
 
-\tikzset
-  {
-    weekday ~ label ~ above ~ centered/.style=
-      {
-        execute ~ before ~ day ~ scope=
-          {
-            \ifdate{day ~ of ~ month=1}
-              {
-                {
-                  \tl_set:Nn \l__fantasycalendar_text_month_tl { \%wt }
-                  \pgfmathsetlength{\pgf@y}{\l__fantasycalendar_draw_day_yshift_tl}%
-                  \pgftransformyshift{0.6\pgf@y}
-                  \pgfmathsetlength{\pgf@xa}{\l__fantasycalendar_draw_day_xshift_tl}%
-                  \pgftransformxshift{0.5\pgf@xa}%
-                  \int_step_inline:nn { \l__fantasycalendar_nr_days_per_week_int }
-                    {
-                      \tl_set:Nx \l_fantasycalendar_current_day_tl {\int_eval:n {##1} }
-                      \l__fantasycalendar_code_month_tl
-                      \pgftransformxshift{\pgf@xa}%
-                    }
-                }
-              } { }
-          }
-        ,
-  every ~ month/.append ~ style={anchor=base}
-}}
 
+
+%                  \pgftransformyshift{0.5\pgf@y + 1\baselineskip}
 
 \tikzset
   {
@@ -411,18 +482,21 @@
       {
         execute ~ before ~ day ~ scope=
           {
-            \ifdate{day ~ of ~ month=1}
+            \ifdateT {day ~ of ~ month=1}
               {
                 {
                   \pgfmathsetlength{\pgf@xa}{\l__fantasycalendar_draw_day_xshift_tl}%
                   \pgf@xb=\l__fantasycalendar_draw_width_tl\pgf@xa%
                   \pgf@xb=.5\pgf@xb%
-                  \pgftransformxshift{\pgf@xb}%
-                  \pgfmathsetlength{\pgf@y}{\l__fantasycalendar_draw_day_yshift_tl}%
-                  \pgftransformyshift{0.6\pgf@y + 1.25\baselineskip}
-                  \l__fantasycalendar_code_month_tl%
+                  \pgftransformxshift{\pgf@xb}
+                  % y-stuff
+                  \pgfmathsetlength{\pgf@y}{\l__fantasycalendar_draw_day_yshift_tl}
+                  \bool_if:NTF \l__fantasycalendar_draw_weekday_bool
+                    { \pgftransformyshift { 0.5\pgf@y + 2.25\baselineskip } }
+                    { \pgftransformyshift { 0.5\pgf@y + 1\baselineskip } }
+                  \l__fantasycalendar_code_month_tl
                 }
-              } { }
+              } 
           }
         ,
   every ~ month/.append ~ style={anchor=base}
@@ -434,15 +508,16 @@
       {
         execute ~ before ~ day ~ scope=
           {
-            \ifdate{day ~ of ~ month=1}
+            \ifdateT {day ~ of ~ month=1}
               {
                 {
-                  \pgftransformxshift{-3.25ex}%
-                  \pgfmathsetlength{\pgf@y}{\l__fantasycalendar_draw_day_yshift_tl}%
-                  \pgftransformyshift{1.25\pgf@y}
+                  \pgfmathsetlength{\pgf@y}{\l__fantasycalendar_draw_day_yshift_tl}
+                  \bool_if:NTF \l__fantasycalendar_draw_weekday_bool
+                    { \pgftransformyshift { 0.5\pgf@y + 2.25\baselineskip } }
+                    { \pgftransformyshift { 0.5\pgf@y + 1\baselineskip } }
                   \l__fantasycalendar_code_month_tl%
                 }
-              } { }
+              } 
           }
         ,
   every ~ month/.append ~ style={anchor=base ~ west}
@@ -456,18 +531,19 @@
       {
         execute ~ before ~ day ~ scope=
           {
-            \ifdate{day ~ of ~ month=1}
+            \ifdateT {day ~ of ~ month=1}
               {
                 {
                   \pgfmathsetlength{\pgf@xa}{\l__fantasycalendar_draw_day_xshift_tl}%
                   \pgf@xb=\l__fantasycalendar_draw_width_tl\pgf@xa%
-                  \advance\pgf@xb by-\pgf@xa%
                   \pgftransformxshift{\pgf@xb}%
                   \pgfmathsetlength{\pgf@y}{\l__fantasycalendar_draw_day_yshift_tl}%
-                  \pgftransformyshift{1.25\pgf@y}
+                  \bool_if:NTF \l__fantasycalendar_draw_weekday_bool
+                    { \pgftransformyshift { 0.5\pgf@y + 2.25\baselineskip } }
+                    { \pgftransformyshift { 0.5\pgf@y + 1\baselineskip } }
                   \l__fantasycalendar_code_month_tl%
                 }
-              } { }
+              } 
           }
         ,
   every ~ month/.append ~ style={anchor=base ~ east}
@@ -479,7 +555,7 @@
       {
         execute ~ before ~ day ~ scope=
           {
-            \ifdate{day ~ of ~ month=1}
+            \ifdateT {day ~ of ~ month=1}
               {
                 {
                   \pgfmathsetlength{\pgf@xa}{\l__fantasycalendar_draw_day_xshift_tl}%
@@ -492,7 +568,7 @@
                   \pgftransformyshift{-1.25\pgf@y}
                   \l__fantasycalendar_code_month_tl%
                 }
-              } { }
+              } 
           }
         ,
   every ~ month/.append ~ style={anchor=base}
@@ -500,19 +576,18 @@
 
 \tikzset
   {
-    month ~ label below left/.style=
+    month ~ label ~ below ~ left/.style=
       {
         execute ~ before ~ day ~ scope=
           {
-            \ifdate{day ~ of ~ month=1}
+            \ifdateT {day ~ of ~ month=1}
               {
                 {
-                  \pgftransformxshift{-3.25ex}%
                   \pgfmathsetlength{\pgf@y}{\l__fantasycalendar_draw_day_yshift_tl}%
                   \pgftransformyshift{-1.25\pgf@y}
                   \l__fantasycalendar_code_month_tl%
                 }
-              } { }
+              }
           }
         ,
   every ~ month/.append ~ style={anchor=base ~ west}
@@ -537,7 +612,8 @@
 
 \cs_new:Npn \__fantasycalendar_print_fantasycalendar: 
   {
-    \begingroup%
+    \begingroup
+      \bool_set_false:N \l__fantasycalendar_draw_weekday_bool
       \cs_set_eq:NN \__fantasycalendar_print_if_s: \c_empty_tl
       \tikz@resetexpandcount
       \tikzset{name=,at={(0,0)}}%
@@ -636,7 +712,7 @@
     \exp_args:NNo \cs_set:Npn  \__fantasycalendar_print_if_s:
       { 
         \__fantasycalendar_print_if_s:
-        \ifdate {#1} {#2} {#3} 
+        \ifdateTF {#1} {#2} {#3} 
       }
     \__fantasycalendar_print_scanner:
   }
@@ -674,12 +750,6 @@
       \cs_set_eq:NN \__fantasycalendar_print_scanner: \__fantasycalendar_print_scanner_orig:
   }
 }
-%\tikzoption{if}{%
-%  \let\__fantasycalendar_print_scanner_orig:=\__fantasycalendar_print_scanner:%
-%  \let\__fantasycalendar_print_scanner:=\relax%
-%  \__fantasycalendar_print_if: f#1\relax%
-%  \let \__fantasycalendar_print_scanner: =\__fantasycalendar_print_scanner_orig:
-%  }
 
 
 
@@ -713,7 +783,7 @@
   }
 
 
-\NewDocumentCommand \PrintFantasyCalendar { O{} m }
+\NewDocumentCommand \PrintFantasyCalendar { O{} m m }
   {
     \group_begin:
     \tl_set:Nn \l__fantasycalendar_text_day_tl 
@@ -733,11 +803,12 @@
             , month=#2-##1
             , week~list
             , box ~ size=3cm,
-            , days={rectangle,draw}
+            , days={ rectangle , draw }
             , month ~ label ~ above ~ centered
-            , weekday ~ label ~ above ~ centered
+            , weekday ~ label ~ above
             , #1
           ]
+          #3
           ;
         \newpage
       }
