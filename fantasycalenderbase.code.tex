@@ -2,6 +2,7 @@
 %\ProvidesFileRCS{fantasycalendar.code.tex}
 
 \RequirePackage{pgf}
+\RequirePackage{l3benchmark}
 
 \makeatletter
 
@@ -61,6 +62,9 @@
     \group_begin:
 %    % Setup local \ifdate
       \cs_set_eq:NN \ifdate \__fantasycalendar_if_date:nTF
+      \cs_set_eq:NN \ifdateTF \__fantasycalendar_if_date:nTF
+      \cs_set_eq:NN \ifdateT \__fantasycalendar_if_date:nT
+      \cs_set_eq:NN \ifdateF \__fantasycalendar_if_date:nF
 %    % Let's start with computing start and end dates...
     \tl_set:Nn \l__fantasycalendar_calendar_prefix_tl {#1}%
     \tl_set:Nx \l__fantasycalendar_begin_iso_tl {#2}%
@@ -76,60 +80,65 @@
     %
     % Start main loop
     %
-    \loop%
-    \ifnum \l_fantasycalendar_current_ordinal_int <\l__fantasycalendar_end_ordinal_plus_tl \relax%
-      % Setup information about current date
-      \__fantasycalendar_ordinal_to_date:nNNN 
-        {\l_fantasycalendar_current_ordinal_int}
-        \l_fantasycalendar_current_year_tl 
-        \l_fantasycalendar_current_month_tl 
-        \l_fantasycalendar_current_day_tl
-      \__fantasycalendar_ordinal_to_weekday:nN 
-        {\l_fantasycalendar_current_ordinal_int}
-        \l_fantasycalendar_weekday_int
-      \tl_set:NV \l_fantasycalendar_current_weekday_tl \l_fantasycalendar_weekday_int
-      % Render:
-      #4%
-      % Advance day:
-      \int_incr:N \l_fantasycalendar_current_ordinal_int
-    \repeat%
+      \int_while_do:nNnn { \l_fantasycalendar_current_ordinal_int } <
+        { \l__fantasycalendar_end_ordinal_plus_tl }
+        {
+          % Setup information about current date
+          \__fantasycalendar_ordinal_to_date:nNNN 
+            {\l_fantasycalendar_current_ordinal_int}
+            \l_fantasycalendar_current_year_tl 
+            \l_fantasycalendar_current_month_tl 
+            \l_fantasycalendar_current_day_tl
+          \__fantasycalendar_ordinal_to_weekday:nN 
+            {\l_fantasycalendar_current_ordinal_int}
+            \l_fantasycalendar_weekday_int
+          \tl_set:NV \l_fantasycalendar_current_weekday_tl \l_fantasycalendar_weekday_int
+          % Render:
+          #4
+          % Advance day:
+          \int_incr:N \l_fantasycalendar_current_ordinal_int
+        }
   \group_end:%
   }
 
 
-\cs_new:Npn \__fantasycalendar_if_date:nTF #1#2#3
+\prg_new_conditional:Npnn \__fantasycalendar_if_date:n #1 { TF , T , F }
   {
-    \__fantasycalendar_launch_if_date:nnn {#1} {#2} {#3}
+    \__fantasycalendar_launch_if_date:nTF {#1} 
+      { \prg_return_true: } { \prg_return_false: }
   }
 
-\cs_new:Npn \__fantasycalendar_if_date:nnnn #1#2#3#4{%
-  \__fantasycalendar_iso_to_ordinal:nN {#1} \l__fantasycalendar_tmpa_int
-      \__fantasycalendar_ordinal_to_date:nNNN 
-        {\l__fantasycalendar_tmpa_int}
-        \l__fantasycalendar_current_year_tl 
-        \l__fantasycalendar_current_month_tl 
-        \l__fantasycalendar_current_day_tl
-   \tl_set:NV  \l__fantasycalendar_current_ordinal_tl \l__fantasycalendar_tmpa_int
-  % Compute info about date
-  \__fantasycalendar_ordinal_to_weekday:nN \l__fantasycalendar_tmpa_int
-    {\l__fantasycalendar_tmpb_int}%
-  \tl_set:NV \l_fantasycalendar_current_weekday_tl{\l__fantasycalendar_tmpb_int}%
-  %
-  \__fantasycalendar_launch_if_date:nnn{#2}{#3}{#4}%
-}
+
+\prg_new_conditional:Npnn \__fantasycalendar_launch_if_date:n #1 { TF }
+  {
+    % When this macro is called, the pgfcalendarifdatexxxx macros must
+    % be setup correctly
+    %
+    % Set match to false
+    \bool_set_false:N \l__fantasycalendar_date_match_bool
+    \pgfqkeys{/pgf}{#1}%
+    \bool_if:NTF \l__fantasycalendar_date_match_bool 
+      { \prg_return_true: } 
+      { \prg_return_false: }
+  }
 
 
-\cs_new:Npn \__fantasycalendar_launch_if_date:nnn #1#2#3 {
-  % When this macro is called, the pgfcalendarifdatexxxx macros must
-  % be setup correctly
-  %
-  % Set match to false
-  \bool_set_false:N \l__fantasycalendar_date_match_bool
-  \pgfqkeys{/pgf}{#1}%
-  \bool_if:NTF \l__fantasycalendar_date_match_bool {#2} {#3}
-}
-
-
+%\prg_new_conditional:Npnn \__fantasycalendar_if_date:nn #1#2 { TF }
+%  {
+%    \__fantasycalendar_iso_to_ordinal:nN {#1} \l__fantasycalendar_tmpa_int
+%    \__fantasycalendar_ordinal_to_date:nNNN 
+%      { \l__fantasycalendar_tmpa_int }
+%      \l__fantasycalendar_current_year_tl 
+%      \l__fantasycalendar_current_month_tl 
+%      \l__fantasycalendar_current_day_tl
+%    \tl_set:NV  \l__fantasycalendar_current_ordinal_tl \l__fantasycalendar_tmpa_int
+%    % Compute info about date
+%    \__fantasycalendar_ordinal_to_weekday:nN 
+%      \l__fantasycalendar_tmpa_int \l__fantasycalendar_tmpb_int
+%    \tl_set:NV \l_fantasycalendar_current_weekday_tl \l__fantasycalendar_tmpb_int
+%%
+%  \__fantasycalendar_if_date:nTF {#2} { \prg_return_true: } { \prg_return_false: }
+%  }
 
 
 \NewDocumentCommand \FantasyCalendarAddMonths { m m }
@@ -178,8 +187,7 @@
 
 \cs_new:Npn \__fantasycalendar_define_month_at_half_year:NN #1#2
   {
-    \int_set:Nn \l__fantasycalendar_month_at_half_year_int
-      { #1 / 2 }
+    \int_set:Nn \l__fantasycalendar_month_at_half_year_int { #1 / 2 }
     \int_set:Nn \l__fantasycalendar_nr_days_of_half_year_int
       { \seq_item:Nn #2 { \l__fantasycalendar_month_at_half_year_int } }
   }
@@ -469,8 +477,8 @@
         \int_set:Nn \l__fantasycalendar_day_int 
           { \seq_item:Nn \l__fantasycalendar_number_days_of_months_seq { \l__fantasycalendar_month_int } }
       }{
-    %% get month and day
-    \__fantasycalendar_ordinal_to_date_get_month:N \l__fantasycalendar_day_int
+        %% get month and day
+        \__fantasycalendar_ordinal_to_date_get_month:N \l__fantasycalendar_day_int
       }
     %% Make numbers into tl's
     \tl_set:NV #2 \l__fantasycalendar_year_int
@@ -484,37 +492,37 @@
       { \__fantasycalendar_ordinal_to_date_get_month_aux_i: }
       { \__fantasycalendar_ordinal_to_date_get_month_aux_ii: }
   }
+  
 
 \cs_new:Npn \__fantasycalendar_ordinal_to_date_get_month_aux_i:
   {
-    \seq_map_indexed_inline:Nn \l__fantasycalendar_cumulative_number_days_seq
+    \int_zero:N \l__fantasycalendar_month_int
+    \int_zero:N \l_tmpa_int
+    \seq_map_inline:Nn \l__fantasycalendar_cumulative_number_days_seq
       {
         % <
-        \int_compare:nNnF { \l__fantasycalendar_day_int } > {##2}
+        \int_compare:nNnTF { \l__fantasycalendar_day_int } > {##1}
           { 
-            \seq_map_break:n
-              {
-                \int_set:Nn \l__fantasycalendar_month_int {##1-1} 
-                \int_sub:Nn \l__fantasycalendar_day_int 
-                  { \__fantasycalendar_print_cumulative_days:n {##1-1} }
-              }
+            \int_incr:N \l__fantasycalendar_month_int 
+            \int_set:Nn \l_tmpa_int {##1}
+          }{ 
+            \int_sub:Nn \l__fantasycalendar_day_int { \l_tmpa_int }
+            \seq_map_break:
           }
       }
   }
 \cs_new:Npn \__fantasycalendar_ordinal_to_date_get_month_aux_ii:
   {
-    \seq_map_indexed_inline:Nn \l__fantasycalendar_cumulative_number_days_invers_seq
+    \int_set_eq:NN \l__fantasycalendar_month_int \l__fantasycalendar_nr_months_per_year_int
+    \seq_map_inline:Nn \l__fantasycalendar_cumulative_number_days_invers_seq
       {
         % <
-        \int_compare:nNnT { \l__fantasycalendar_day_int } > {##2}
+        \int_compare:nNnTF { \l__fantasycalendar_day_int } > {##1}
           { 
-            \seq_map_break:n
-              {
-                \int_set:Nn \l__fantasycalendar_month_int 
-                  {  \l__fantasycalendar_nr_months_per_year_int - ##1 + 1 } 
-                \int_sub:Nn \l__fantasycalendar_day_int {##2}
-              }
+            \int_sub:Nn \l__fantasycalendar_day_int {##1}
+            \seq_map_break:
           }
+          { \int_decr:N \l__fantasycalendar_month_int }
       }
   }
 
