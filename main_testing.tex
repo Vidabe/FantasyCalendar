@@ -71,13 +71,12 @@
 
 \basefantasycalendar{stuff}{0-1-1}{0-last-last}
   { 
-    \ifdate {start ~ of ~ month} {\par} {\space}
-    \ifdate {Surios=full-moon}
+    \ifdateTF {start ~ of ~ month} {\par} {\space}
+    \ifdateTF {Surios=full-moon}
       { \textcolor{green} }
       {
-        \ifdate {end ~ of ~ week}
+        \ifdateT {end ~ of ~ week}
           { \textcolor{red} }
-          { }
       }
     \l_fantasycalendar_current_day_tl  
   }
@@ -96,6 +95,16 @@
 
 \newpage
 
+\tikzpicture
+  \PrintFantasycalendarBase[months=0-1 to 0-5, month~list]
+    if (Haturan) [red]
+    if (Surios=full-moon) [green]
+    if (Surios=waning) [violet]
+  ;
+\endtikzpicture
+
+\newpage
+
 
 %\printmoon{}{}{}
 A
@@ -110,7 +119,7 @@ A
 \Solena { 99 }
 \par
 
-\GetNextMoonphase \Solena { new-moon } { iso=0-1-1 } 
+\GetNextMoonphase \Solena { new-moon } { iso=0-1-1, nr-of-entries=10 } 
   {  
      \%{ordinal}\space In: \%{in-days}\ days. Iso-Date: \%{iso} \par
   }
