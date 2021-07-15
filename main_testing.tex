@@ -88,9 +88,17 @@
   \PrintFantasycalendarBase[months=0-1 to 0-1, week~list, box ~  size=2cm,days={rectangle,draw},month ~ label ~ above ~ centered]
     if (Haturan) [red]
     if (Surios=full-moon) [green]
+    if (Surios=new-moon) [blue]
     if (Surios=waning) [violet]
   ;
 \endtikzpicture
+
+\par
+
+\GetNextMoonphase \Surios { new-moon } { list-only-month=0-1 } 
+  {  
+      In: \%{in-days}\ days. Iso-Date: \%{iso} \par
+  }
 
 
 \newpage
@@ -102,6 +110,8 @@
     if (Surios=waning) [violet]
   ;
 \endtikzpicture
+
+
 
 \newpage
 
@@ -141,7 +151,7 @@ A
 
 \par
 
-\CompareMoons { \Solena, \Eria, \Surios } { new-moon} { iso=0-1-1, nr-of-entries=10 } 
+\CompareMoons { \Solena, \Eria, \Surios } { new-moon } { iso=0-1-1, nr-of-entries=10 } 
   {
     \Solena{\%{ordinal}}\  \Surios{\%{ordinal}} \ \Eria{\%{ordinal}}\
     \%{ordinal}\space In: \%{in-days}\ days. \%{iso} 

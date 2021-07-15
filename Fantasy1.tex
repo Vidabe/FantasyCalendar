@@ -3,6 +3,7 @@
 
 \usepackage{color}
 \typearea{30}
+\usepackage{multicol}
 
 \input fantasycalender.code.tex
 
@@ -29,8 +30,32 @@
 
 
 \begin{document}
+
+\begin{multicols}{2}
+Moons overlapping new-moon
+\begin{itemize}
+\CompareMoons { \Surios , \Eria } { new-moon } { iso=0-1-1, nr-of-entries=10 } 
+  {
+    \item \Surios{\%{ordinal}} \Eria{\%{ordinal}} \%{iso} 
+ }
+ \end{itemize}
+ 
+Moons overlapping full-moon 
+\begin{itemize}
+\CompareMoons { \Surios , \Eria } { full-moon } { iso=0-1-1, nr-of-entries=10 } 
+  {
+    \item \Surios{\%{ordinal}} \Eria{\%{ordinal}} \%{iso} 
+ }
+ \end{itemize}
+ 
+\end{multicols}
+
+\newpage
+
 \PrintFantasyCalendar{0}
   {
-    if (Haturan) [red]
+    if (all-moons=full) [red]
+    if (all-moons=new) [red]
+    if (Haturan) [blue]
   }
 \end{document}

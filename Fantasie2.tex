@@ -30,7 +30,29 @@
 
 \begin{document}
 
-\tikz \PrintFantasycalendarBase[month=0-1, week list, month  label  above right , weekday  label above, box height=2cm,days={ rectangle , draw }]; 
+
+\tikz \PrintFantasycalendarBase[month=0-1, week list, month  label  above left]; 
+
+%\begin{tikzpicture}
+%  
+%  \pgftransformyshift{1cm}  
+%  \node (0,0) {A};
+%  \pgftransformyshift{-1cm}  
+%
+%  \node[draw=black, minimum width=2cm, minimum height=2cm]{};
+%  \node{H};
+%  \draw (0,0) circle[radius=2mm];
+%  \pgftransformxshift{2cm}
+%  \node[draw=black, minimum width=2cm, minimum height=2cm]{};
+%  \node{H};
+%  \draw (0,0) circle[radius=2mm];
+%\end{tikzpicture}
+%
+\newpage
+
+
+\tikz \PrintFantasycalendarBase[month=0-1, week list, month  label  above left , weekday  label above, box draw=black, box size=fit-square]; 
+% days={ rectangle , draw }
 
 \end{document}
 
