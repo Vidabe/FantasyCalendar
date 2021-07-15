@@ -1,0 +1,40 @@
+% !TEX encoding = UTF-8 Unicode
+\documentclass[paper=landscape]{scrartcl}
+
+\usepackage{color}
+\typearea{30}
+
+\input fantasycalender.code.tex
+
+\FantasyCalendarAddMonths{2}{
+  Basoth=40, 
+  Eganar=45, 
+  Dumena=40, 
+  Sapara=40, 
+  Paraduk=45, 
+  Siduk=45, 
+  Mushera=40 , 
+  Eskian=40, 
+  Zianna=45, 
+  Ribrun=40 ,
+}
+
+\FantasyCalendarAddDays{Agguan, Sielan, Flethan, Wanuran, Usyn, Jundal, Izach, Verhan, Haturan}
+
+\NewFantasyMoon \Surios {17} { 16 }
+\NewFantasyMoon \Eria {42} { 23 }
+
+\FantasyCalendarDateEntry{1-1}{New Year}
+\FantasyCalendarDateEntry{2-40}{Be thankful of still being alive}
+
+
+\begin{document}
+\ExplSyntaxOn
+as
+% 8.1e-6 seconds (23.8 ops)
+% 7.41e-6 seconds (21.9 ops)
+
+\__fantasycalendar_ordinal_to_date:nNNN { 39 } \l_tmpa_tl\l_tmpb_tl\l_tmpv_tl
+\l_tmpa_tl\l_tmpb_tl\l_tmpv_tl 
+
+\end{document}

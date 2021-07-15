@@ -66,17 +66,17 @@
       \cs_set_eq:NN \ifdateT \__fantasycalendar_if_date:nT
       \cs_set_eq:NN \ifdateF \__fantasycalendar_if_date:nF
 %    % Let's start with computing start and end dates...
-    \tl_set:Nn \l__fantasycalendar_calendar_prefix_tl {#1}%
-    \tl_set:Nx \l__fantasycalendar_begin_iso_tl {#2}%
-    \tl_set:Nx \l__fantasycalendar_end_iso_tl {#3}%
+      \tl_set:Nn \l__fantasycalendar_calendar_prefix_tl {#1}%
+      \tl_set:Nx \l__fantasycalendar_begin_iso_tl {#2}%
+      \tl_set:Nx \l__fantasycalendar_end_iso_tl {#3}%
 %
-    \__fantasycalendar_iso_to_ordinal:nN {#2} \l_fantasycalendar_current_ordinal_int
-    \__fantasycalendar_iso_to_ordinal:nN {#3} \l__fantasycalendar_tmpa_int%
+      \__fantasycalendar_iso_to_ordinal:nN {#2} \l_fantasycalendar_current_ordinal_int
+      \__fantasycalendar_iso_to_ordinal:nN {#3} \l__fantasycalendar_tmpa_int%
 %
-    \tl_set:NV \l__fantasycalendar_begin_ordinal_tl \l_fantasycalendar_current_ordinal_int
-    \tl_set:NV \l__fantasycalendar_end_ordinal_tl \l__fantasycalendar_tmpa_int
-    \int_incr:N \l__fantasycalendar_tmpa_int
-    \tl_set:NV \l__fantasycalendar_end_ordinal_plus_tl \l__fantasycalendar_tmpa_int
+      \tl_set:NV \l__fantasycalendar_begin_ordinal_tl \l_fantasycalendar_current_ordinal_int
+      \tl_set:NV \l__fantasycalendar_end_ordinal_tl \l__fantasycalendar_tmpa_int
+      \int_incr:N \l__fantasycalendar_tmpa_int
+      \tl_set:NV \l__fantasycalendar_end_ordinal_plus_tl \l__fantasycalendar_tmpa_int
     %
     % Start main loop
     %
@@ -286,7 +286,6 @@
 }
 
 \pgfkeys{/pgf/end ~ of ~ month/.cd, .default=1, .code={
-  % Tricky and expensive ... do only if necessary
   \bool_if:NF \l__fantasycalendar_date_match_bool
     {
       \int_set:Nn \l__fantasycalendar_tmpa_int { \l_fantasycalendar_current_ordinal_int }
@@ -306,7 +305,7 @@
     }
   }
 }
-%
+
 
 \pgfkeys{/pgf/equals/.cd,.value ~ required,.code={%
   \__fantasycalendar_special_date_to_ordinal:n {#1}%
@@ -448,7 +447,6 @@
       { \int_zero:N \l_tmpa_int }
       { \int_set:Nn \l_tmpa_int { \l_tmpb_tl 0 } }
     
-    
     \int_set:Nn \l_tmpb_int
       {
         \l__fantasycalendar_year_int * \l__fantasycalendar_nr_days_per_year_int
@@ -473,9 +471,15 @@
     \int_compare:nNnTF { \l__fantasycalendar_day_int } = { 0 }
       {
         \int_decr:N \l__fantasycalendar_year_int
-        \int_set_eq:NN \l__fantasycalendar_month_int \l__fantasycalendar_nr_months_per_year_int
+        \int_set_eq:NN \l__fantasycalendar_month_int 
+          \l__fantasycalendar_nr_months_per_year_int
         \int_set:Nn \l__fantasycalendar_day_int 
-          { \seq_item:Nn \l__fantasycalendar_number_days_of_months_seq { \l__fantasycalendar_month_int } }
+          { 
+            %% \seq_get_right:NN would create a tl and not an integer.
+            %% Thus it this way
+            \seq_item:Nn \l__fantasycalendar_number_days_of_months_seq
+               { \l__fantasycalendar_month_int } 
+          }
       }{
         %% get month and day
         \__fantasycalendar_ordinal_to_date_get_month:N \l__fantasycalendar_day_int
