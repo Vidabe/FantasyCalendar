@@ -308,13 +308,13 @@
           { 
             \__fantasycalendar_if_moon_phase_behavior:Nnn #1 > { 1/2 } 
           } , 
-        /pgf/#2/waxing-crescent/ .code=  % <
+        /pgf/#2/waxing-crescent/ .code=  
           { 
-            \__fantasycalendar_if_moon_phase_behavior_ii:Nnnnn #1 > { 0 } < { 1/4 }  % >
+            \__fantasycalendar_if_moon_phase_behavior_ii:Nnnnn #1 < { 1/4 } > { 0 }  
           } , 
         /pgf/#2/waxing-gibbous/ .code=  % <
           { 
-            \__fantasycalendar_if_moon_phase_behavior_ii:Nnnnn #1 > { 1/4 } < { 1/2 }  % >
+            \__fantasycalendar_if_moon_phase_behavior_ii:Nnnnn #1 < { 1/2 } > { 1/4 } 
           } , 
         /pgf/#2/waning-gibbous/ .code=  % <
           { 
@@ -447,20 +447,22 @@
           \l__fantasycalendarmoon_ordinal_day_int
       }
 %      
-    , list-all-year .code:n = 
+    , list-all-in-year .code:n = 
       {  
         \bool_set_true:N \l__fantasycalendarmoon_more_than_one_bool
         \bool_set_false:N \l__fantasycalendarmoon_print_one_beyond_time_frame_bool
         \bool_set_true:N \l__fantasycalendarmoon_check_input_date_bool
         \__fantasycalendar_parse_year:n {#1}
       }
-    , list-all-month .code:n =
+    , list-only-year .meta:n = { list-all-in-year = {#1} }
+    , list-all-in-month .code:n =
       {
         \bool_set_true:N \l__fantasycalendarmoon_more_than_one_bool
         \bool_set_false:N \l__fantasycalendarmoon_print_one_beyond_time_frame_bool
         \bool_set_true:N \l__fantasycalendarmoon_check_input_date_bool
         \__fantasycalendar_parse_month:n {#1}
       }
+    , list-only-month .meta:n = { list-all-in-month = {#1} }
     , check-current-day .bool_set:N = \l__fantasycalendarmoon_check_input_date_bool
     , check-current-day .default:n = false
     , only-given-time .bool_set_inverse:N = \l__fantasycalendarmoon_print_one_beyond_time_frame_bool
@@ -590,7 +592,7 @@
         \__fantasycalendarmoon_ordinal_to_dates:N \l__fantasycalendarmoon_ordinal_day_int
         #1
         \bool_set_true:N \l__fantasycalendarmoon_found_day_bool
-        \__fantasycalendar_check_if_loop_ends:
+        \__fantasycalendar_check_if_loop_ends:F { }
       }
   }
 
@@ -614,7 +616,8 @@
 \cs_new:Npn \__fantasycalendarmoon_calc_continued_phases:
   {      
     %% We already have the wanted phase, just jump to the next one
-    \int_set_eq:NN \l__fantasycalendarmoon_in_days_int \__fantasycalendarmoon_tmpa_int
+    \int_set_eq:NN \l__fantasycalendarmoon_in_days_int 
+      \__fantasycalendarmoon_lunar_cycle_int
     %% Ordinal day is now day of last moon-phase
     \int_set:Nn \l__fantasycalendarmoon_next_phase_day_int
       { \l__fantasycalendarmoon_in_days_int + \l__fantasycalendarmoon_ordinal_day_int }
@@ -931,9 +934,7 @@
     \group_begin:
       \cs_set_eq:NN \% \__fantasycalendarmoon_shortcut:n
       \__fantasycalendarmoon_compare_moons_setup:nnn {#1} {#2} {#3}
-%      \benchmark:n {
       \__fantasycalendarmoon_compare_moons:
-%      }
       \__fantasycalendarmoon_compare_moons_print:n {#4}
     \group_end:
   }
