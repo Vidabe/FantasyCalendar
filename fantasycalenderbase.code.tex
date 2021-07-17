@@ -224,13 +224,21 @@
 
 \cs_new:Npn \__fantasycalendar_add_yearly_day:nn #1#2
   {
-    \tl_new:c { l__fantasycalendar_yearly_day_ #1 _tl }
-    \tl_set:cn { l__fantasycalendar_yearly_day_ #1 _tl } {#2}
+    \tl_if_exist:cTF { l__fantasycalendar_yearly_day_ #1 _tl }
+      { \tl_put_right:cn { l__fantasycalendar_yearly_day_ #1 _tl } {\\ #2} }
+      { 
+        \tl_new:c { l__fantasycalendar_yearly_day_ #1 _tl }
+        \tl_set:cn { l__fantasycalendar_yearly_day_ #1 _tl } {#2}
+      }
   }
 \cs_new:Npn \__fantasycalendar_add_one_year_day:nn #1#2
   {
-    \tl_new:c { l__fantasycalendar_one_year_day_ #1 _tl }
-    \tl_set:cn { l__fantasycalendar_one_year_day_ #1 _tl } {#2}
+    \tl_if_exist:cTF { l__fantasycalendar_one_year_day_ #1 _tl }
+      { \tl_put_right:cn { l__fantasycalendar_one_year_day_ #1 _tl } {\\ #2} }
+      { 
+        \tl_new:c { l__fantasycalendar_one_year_day_ #1 _tl }
+        \tl_set:cn { l__fantasycalendar_one_year_day_ #1 _tl } {#2}
+      }
   }
 
 
@@ -270,84 +278,110 @@
   }
 \cs_generate_variant:Nn \__fantasycalendar_new_pdf_weekday:nn { VV , nV }
 
-\pgfkeys{
-  /pgf/day ~ of ~ month/.cd,
+\pgfkeys
+  {
+    /pgf/day ~ of ~ month/.cd,
     .value ~required,
     .code=
-      {\ifnum#1=\l_fantasycalendar_current_day_tl\relax
-        \bool_set_true:N \l__fantasycalendar_date_match_bool\fi
+      {
+        \ifnum#1=\l_fantasycalendar_current_day_tl\relax
+          \bool_set_true:N \l__fantasycalendar_date_match_bool
+        \fi
       }
-}
-\pgfkeys{
-  /pgf/start ~ of ~ month/.code=
-      {\ifnum1=\l_fantasycalendar_current_day_tl\relax
-        \bool_set_true:N \l__fantasycalendar_date_match_bool\fi
-      }
-}
-
-\pgfkeys{/pgf/end ~ of ~ month/.cd, .default=1, .code={
-  \bool_if:NF \l__fantasycalendar_date_match_bool
-    {
-      \int_set:Nn \l__fantasycalendar_tmpa_int { \l_fantasycalendar_current_ordinal_int }
-      \int_add:Nn \l__fantasycalendar_tmpa_int {#1}
-      \int_set:Nn \l__fantasycalendar_tmpa_int
-        { \int_mod:nn \l__fantasycalendar_tmpa_int \l__fantasycalendar_nr_days_per_year_int }
-      \int_set:Nn \l__fantasycalendar_tmpb_int { 1 - #1 } 
-      \seq_map_inline:Nn \l__fantasycalendar_cumulative_number_days_seq
-        {
-          \int_compare:nNnT 
-            { \l__fantasycalendar_tmpa_int } = { ##1 + \l__fantasycalendar_tmpb_int }
-            {
-              \bool_set_true:N \l__fantasycalendar_date_match_bool
-              \seq_map_break:
-            }
-        } 
-    }
   }
-}
+\pgfkeys
+  {
+    /pgf/start ~ of ~ month/.code=
+      {
+        \ifnum1=\l_fantasycalendar_current_day_tl\relax
+          \bool_set_true:N \l__fantasycalendar_date_match_bool
+        \fi
+      }
+  }
+
+\pgfkeys
+  {
+    /pgf/end ~ of ~ month/.cd, .default=1, .code=
+      {
+        \bool_if:NF \l__fantasycalendar_date_match_bool
+          {
+            \int_set:Nn \l__fantasycalendar_tmpa_int { \l_fantasycalendar_current_ordinal_int }
+            \int_add:Nn \l__fantasycalendar_tmpa_int {#1}
+            \int_set:Nn \l__fantasycalendar_tmpa_int
+              { 
+                \int_mod:nn \l__fantasycalendar_tmpa_int \l__fantasycalendar_nr_days_per_year_int 
+              }
+            \int_set:Nn \l__fantasycalendar_tmpb_int { 1 - #1 } 
+            \seq_map_inline:Nn \l__fantasycalendar_cumulative_number_days_seq
+              {
+                \int_compare:nNnT 
+                  { \l__fantasycalendar_tmpa_int } = { ##1 + \l__fantasycalendar_tmpb_int }
+                  {
+                    \bool_set_true:N \l__fantasycalendar_date_match_bool
+                    \seq_map_break:
+                  }
+              } 
+          }
+      }
+  }
 
 
-\pgfkeys{/pgf/equals/.cd,.value ~ required,.code={%
-  \__fantasycalendar_special_date_to_ordinal:n {#1}%
-  \ifnum\l_fantasycalendar_current_ordinal_int=\l__fantasycalendar_tmpa_int\relax%
-    \bool_set_true:N \l__fantasycalendar_date_match_bool
-  \fi
-  }%
-}
+\pgfkeys
+  {
+    /pgf/equals/.cd , .value ~ required , .code=
+      {
+        \__fantasycalendar_special_date_to_ordinal:n {#1}
+        \ifnum\l_fantasycalendar_current_ordinal_int=\l__fantasycalendar_tmpa_int\relax
+          \bool_set_true:N \l__fantasycalendar_date_match_bool
+        \fi
+      }
+  }
 
-\pgfkeys{/pgf/at ~ least/.cd,.value ~ required,.code={%
-  \__fantasycalendar_special_date_to_ordinal:n {#1}%
-  \ifnum \l_fantasycalendar_current_ordinal_int<\l__fantasycalendar_tmpa_int\relax%
-  \else%
-    \bool_set_true:N \l__fantasycalendar_date_match_bool%
-  \fi%
-}}
+\pgfkeys
+  {
+    /pgf/at ~ least/.cd, .value ~ required, .code=
+      {
+        \__fantasycalendar_special_date_to_ordinal:n {#1}
+        \ifnum \l_fantasycalendar_current_ordinal_int<\l__fantasycalendar_tmpa_int\relax
+        \else
+          \bool_set_true:N \l__fantasycalendar_date_match_bool
+        \fi
+      }
+  }
 %
-\pgfkeys{/pgf/at ~ most/.cd,.value ~ required,.code={%
-  \__fantasycalendar_special_date_to_ordinal:n {#1}%
-  \ifnum\l_fantasycalendar_current_ordinal_int>\l__fantasycalendar_tmpa_int\relax%
-  \else%
-    \bool_set_true:N \l__fantasycalendar_date_match_bool%
-  \fi%
-}}
+\pgfkeys
+  {
+    /pgf/at ~ most/.cd,.value ~ required,.code=
+      {
+        \__fantasycalendar_special_date_to_ordinal:n {#1}
+        \ifnum\l_fantasycalendar_current_ordinal_int>\l__fantasycalendar_tmpa_int\relax
+        \else
+          \bool_set_true:N \l__fantasycalendar_date_match_bool
+        \fi
+      }
+  }
 %
-\pgfkeys{/pgf/between/.cd,.value ~ required,.code ~ args={#1and#2}{%
-  \__fantasycalendar_special_date_to_ordinal:n {#1}%
-  \ifnum\l_fantasycalendar_current_ordinal_int<\l__fantasycalendar_tmpa_int\relax%
-  \else%
-    \__fantasycalendar_special_date_to_ordinal:n {#2}%
-    \ifnum\l_fantasycalendar_current_ordinal_int>\l__fantasycalendar_tmpa_int\relax%
-    \else%
-      \bool_set_true:N \l__fantasycalendar_date_match_bool%
-    \fi%
-  \fi%
-}}
+\pgfkeys
+  {
+    /pgf/between/.cd,.value ~ required,.code ~ args={ #1 and #2 }
+      {
+        \__fantasycalendar_special_date_to_ordinal:n {#1}
+        \ifnum\l_fantasycalendar_current_ordinal_int<\l__fantasycalendar_tmpa_int\relax
+        \else
+          \__fantasycalendar_special_date_to_ordinal:n {#2}
+          \ifnum\l_fantasycalendar_current_ordinal_int>\l__fantasycalendar_tmpa_int\relax
+          \else
+            \bool_set_true:N \l__fantasycalendar_date_match_bool
+          \fi
+        \fi
+      }
+  }
 
 \cs_new:Npn \__fantasycalendar_special_date_to_ordinal:n #1
   {
     \tl_set:Nx \l_tmpa_tl {#1}
     \exp_after:wN \__fantasycalendar_special_split_test:wwwN
-      \l_tmpa_tl -\relax {#1}
+      \l_tmpa_tl - \relax {#1}
   }
 \cs_new:Npn \__fantasycalendar_special_split_test:wwwN #1-#2-#3\relax#4
   {
