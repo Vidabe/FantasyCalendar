@@ -22,9 +22,12 @@ use `\FantasyCalendarAddMonths{offset}{month-key-val-list}`.
 To add days use `\FantasyCalendarAddDays{list of week names}`.  
 
 Calendars can be either printed by \PrintFantasycalendarBase or
-using the more advanced command `\PrintFantasyCalendarYear{year}`, where
+using the more advanced command `\PrintFantasyCalendarYear{year}{if statements}`, where
 `year` is simply the number of the year (I think negative numbers are 
 not yet allowed).
+
+`if statements` are equaivalent to the ones in tikz´ calendar library (see the `tikz` documentation)
+
 
 ### Moons
 Each fantasy world needs moons. More moons=more mystery=more fantasy=more pretended deepness. Moons are defined using `\NewFantasyMoon \MoonName {lunar-cycle} {offset}`. `lunar-cycle` and `offset` should be integers. Those moons
@@ -40,29 +43,47 @@ Adding notes is essential for any calendar. Either yearly events or party specif
 
 ### Custozmizing Stuff
 
+#### Frames around each calendar day
+
+One can set the width and height of each box with the options `box width`, `box height` or `box size` (if you want to set both at once). They accept dimensions (`2cm`, `3in`, etc.), but they  also accept the value `fit` which tries to fit the width or height to the available `\textwidth`/`\textheight`. `box size` also  accepts the key `fit-square` which makes sure the boxes are squares (width=height).
+
+You may set them in the optional arguments of `\PrintFantasycalendarBase` or using `\tikzset`. (See "Fantasy2")
+
+Drawing a frame around each box is rather easy using `box draw=black` (instead of black you may use any colour available).
+
+Alignment of the box content can be changed using `box ragged = left/center/right` or `box vertical=top/center/bottom`. 
+
+The last two options only have an effect if a box size was defined using `box width/height/size`.
+
 #### Printing Dates and Text
 
+Various customization options are offered. Here some examples to change the text of the day, of the month or of the weekday.
 
+```
 \tikzset{day text=
   {\%d-\,\FantasycalendarPrintMoons\\ \FantasycalendarPrinDayNotes}
 }
+```
 
+```
 \tikzset{month text=
   {\bfseries\%mt [\%m0]}
 }
+```
 
+```
 \tikzset{weekday text=
   {weekday text={\%wt}}
 }
+```
 
-
-
-\FantasycalendarTextDay
-\FantasycalendarPrintMoons
-\FantasycalendarPrinDayNotes
 
 ## ToDo
 Write a better ReadMe. Add some optional arguments for customization.
+
+Allow iso the names of months/days?
+Add option to add notes.
+
 
 ## Not Implemented
 Leap years. They make me unhappy.

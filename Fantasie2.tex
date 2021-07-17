@@ -31,7 +31,7 @@
 \begin{document}
 
 
-\tikz \PrintFantasycalendarBase[month=0-1, week list, month  label  above left]; 
+\tikz \PrintFantasycalendarBase[month=0-1, week list, month  label  above centered]; 
 
 %\begin{tikzpicture}
 %  
@@ -50,8 +50,11 @@
 %
 \newpage
 
+\tikzset{box size=fit-square}
+\tikz \PrintFantasycalendarBase[month=0-1, week list, month  label  above left , weekday  label above, box draw=black]; 
 
-\tikz \PrintFantasycalendarBase[month=0-1, week list, month  label  above left , weekday  label above, box draw=black, box size=fit-square]; 
+
+\tikz \PrintFantasycalendarBase[month=0-2, week list, month  label  above left , weekday  label above, box draw=black, box size=fit-square]; 
 % days={ rectangle , draw }
 
 \end{document}
