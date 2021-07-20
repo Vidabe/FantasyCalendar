@@ -1,3 +1,4 @@
+% Based on "pgfcalendar.code.tex" by Till Tantau
 
 \RequirePackage{tikz}
 %\input fantasycalenderbase.code.tex
@@ -193,6 +194,7 @@
   {
     \str_set:Nx \l__fantasycalendarmoon_setup_str
       {
+        \current@color _ \f@size _
         \l__fantasycalendarmoon_moon_name_str _ 
         \int_use:N \__fantasycalendarmoon_moon_case_int _
         % <

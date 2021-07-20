@@ -20,21 +20,28 @@
   Ribrun=40 ,
 }
 
-\FantasyCalendarAddDays{Agguan, Sielan, Flethan, Wanuran, Usyn, Jundal, Izach, Verhan, Haturan}
+\FantasyCalendarAddDays{Sielan, Flethan, Wanuran, Usyn, Jundal, Izach, Verhan, Haturan,Agguan}
 
-\NewFantasyMoon \Surios {17} { 16 }
-\NewFantasyMoon \Eria {42} { 23 }
+\NewFantasyMoon \Eria { 42 } { 21 }
+\NewFantasyMoon \Surios { 17 } { 9 }
 
 \FantasyCalendarDateEntry{1-1}{New Year}
-\FantasyCalendarDateEntry{2-40}{Be thankful of still being alive}
+\FantasyCalendarOneTimeEntry{417-1-20}{Start of campaign}
+\FantasyCalendarOneTimeEntry{417-1-20}{Hero died to Goblin}
+\FantasyCalendarOneTimeEntry{417-1-21}{NewHero arrived}
+\FantasyCalendarDateEntry{2-44}{Be thankful of still being alive}
+
+\FantasyCalendarSpecialEntry{all-moons=full}{THE APOCALYPSE!}
 
 
 \begin{document}
 
 \begin{multicols}{2}
+
+
 Moons overlapping new-moon
 \begin{itemize}
-\CompareMoons { \Surios , \Eria } { new-moon } { iso=0-1-1, nr-of-entries=10 } 
+\CompareMoons { \Surios , \Eria } { new-moon } { iso=417-1-1, nr-of-entries=10 } 
   {
     \item \Surios{\%{ordinal}} \Eria{\%{ordinal}} \%{iso} 
  }
@@ -42,7 +49,7 @@ Moons overlapping new-moon
  
 Moons overlapping full-moon 
 \begin{itemize}
-\CompareMoons { \Surios , \Eria } { full-moon } { iso=0-1-1, nr-of-entries=10 } 
+\CompareMoons { \Surios , \Eria } { full-moon } { iso=417-1-1, nr-of-entries=10 } 
   {
     \item \Surios{\%{ordinal}} \Eria{\%{ordinal}} \%{iso} 
  }
@@ -52,10 +59,10 @@ Moons overlapping full-moon
 
 \newpage
 
-\PrintFantasyCalendarYear{0}
+\PrintFantasyCalendarYear{417}
   {
-    if (all-moons=full) [red]
-    if (all-moons=new) [red]
-    if (Haturan) [blue]
+%    if (all-moons=full) [red]
+%    if (all-moons=new) [red]
+%    if (end of week) [blue]
   }
 \end{document}

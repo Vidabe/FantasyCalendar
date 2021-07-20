@@ -1,3 +1,4 @@
+% Based on "tikzlibrarycalendar.code.tex"  by Till Tantau
 
 \RequirePackage{tikz}
 \RequirePackage{ragged2e}
@@ -248,10 +249,26 @@
 \tl_set:Nn \l__fantasycalendar_code_year_tl 
   { \node [every ~ year] { \l__fantasycalendar_text_year_tl } ; }
 
+\tl_new:N \l__fantasycalendar_text_day_moon_hook_tl
+\tl_new:N \l__fantasycalendar_text_day_note_hook_tl
+\tl_new:N \l__fantasycalendar_text_month_year_hook_left_tl
+\tl_new:N \l__fantasycalendar_text_month_year_hook_right_tl
+
 \tl_set:Nn \l__fantasycalendar_text_box_tl { \phantom{1} } %% text in node shifts thing up
-\tl_set:Nn \FantasycalendarTextDay { \%d-}
+\tl_set:Nn \FantasycalendarTextDay 
+  { 
+    \%d- 
+    \l__fantasycalendar_text_day_moon_hook_tl 
+    \l__fantasycalendar_text_day_note_hook_tl
+  }
 \tl_set:Nn \l__fantasycalendar_text_week_day_tl { \%wt }
-\tl_set:Nn \l__fantasycalendar_text_month_tl { \bfseries \%mt \space [\%m0] }
+\tl_set:Nn \l__fantasycalendar_text_month_tl 
+  { 
+    \bfseries 
+    \l__fantasycalendar_text_month_year_hook_left_tl 
+    \%mt \space [\%m0] 
+    \l__fantasycalendar_text_month_year_hook_right_tl 
+  }
 \tl_set:Nn \l__fantasycalendar_text_year_tl { \%y0 }
 
 
@@ -307,6 +324,24 @@
 \tikzset{every ~ year/.style={}}
 
 \tikzset
+  {
+    , add ~ year ~ to ~ month/ .is ~ choice,
+    , add ~ year ~ to ~ month/left /.code = 
+      { 
+        \tl_clear:N \l__fantasycalendar_text_month_year_hook_right_tl
+        \tl_set:Nn \l__fantasycalendar_text_month_year_hook_left_tl 
+          { \l__fantasycalendar_text_year_tl \space -- \space}
+      }
+    , add ~ year ~ to ~ month/right /.code = 
+      { 
+        \tl_clear:N \l__fantasycalendar_text_month_year_hook_left_tl
+        \tl_set:Nn \l__fantasycalendar_text_month_year_hook_right_tl 
+          { \space -- \space \l__fantasycalendar_text_year_tl}
+      }
+    , add ~ year ~ to ~ month/.default = { left }
+  }
+
+\tikzset
   { 
     box ~ draw/.code={ \tikzset { box = { draw=#1 } } }  
   }
@@ -319,6 +354,7 @@
     , box ~ ragged / left / .code = { \tl_set:Nn \l__fantasycalendar_ragged_day_tl \RaggedLeft }
     , box ~ ragged / center / .code = { \tl_set:Nn \l__fantasycalendar_ragged_day_tl   \Centering }
     , box ~ ragged / right / .code = { \tl_set:Nn \l__fantasycalendar_ragged_day_tl \RaggedRight }
+    , box ~ ragged / .default = { right }
   }
   
 \tl_new:N \l__fantasycalendar_vertical_day_tl
@@ -918,13 +954,96 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+\tikzset
+  {
+    , add ~ moons / .is ~ choice
+    , add ~ moons / true / .code =
+       {
+         \tl_set:Nn \l__fantasycalendar_text_day_moon_hook_tl 
+           { \, \FantasycalendarPrintMoons }
+       }
+    , add ~ moons / false / .code =
+       { \tl_clear:N \l__fantasycalendar_text_day_moon_hook_tl }
+    , add ~ moons / .default = true
+  }
+
 \cs_new:Npn \FantasycalendarPrintMoons
   {
      \l__fantasycalendar_print_moons_tl
   }
 
+
+
+
+
+
+
+
+
+\NewDocumentCommand \FantasyCalendarDateEntry { m m }
+  {
+    \__fantasycalendar_add_yearly_day:nn {#1} {#2}
+  }
+\NewDocumentCommand \FantasyCalendarOneTimeEntry { m m }
+  {
+    \__fantasycalendar_add_one_year_day:nn {#1} {#2}
+  }
+
+\cs_new:Npn \__fantasycalendar_add_yearly_day:nn #1#2
+  {
+    \tl_if_exist:cTF { l__fantasycalendar_yearly_day_ #1 _tl }
+      { \tl_put_right:cn { l__fantasycalendar_yearly_day_ #1 _tl } { \\ #2 } }
+      { 
+        \tl_new:c { l__fantasycalendar_yearly_day_ #1 _tl }
+        \tl_set:cn { l__fantasycalendar_yearly_day_ #1 _tl } {#2}
+      }
+  }
+\cs_new:Npn \__fantasycalendar_add_one_year_day:nn #1#2
+  {
+    \tl_if_exist:cTF { l__fantasycalendar_one_year_day_ #1 _tl }
+      { \tl_put_right:cn { l__fantasycalendar_one_year_day_ #1 _tl } { \\ #2 } }
+      { 
+        \tl_new:c { l__fantasycalendar_one_year_day_ #1 _tl }
+        \tl_set:cn { l__fantasycalendar_one_year_day_ #1 _tl } {#2}
+      }
+  }
+
+\NewDocumentCommand \FantasyCalendarSpecialEntry { m m }
+  {
+    \tikzset
+      {
+        execute ~ at ~ begin ~ day ~ scope = 
+          { \ifdateT{#1}{ \__fantasycalendar_add_yearly_day:nn { \%md } {#2} } }
+      }
+%    \__fantasycalendar_add_yearly_day:nn {#1} {#2}
+  }
+
+
+
+\tikzset
+  {
+    , add ~ day ~ notes / .is ~ choice
+    , add ~ day ~ notes / true / .code =
+       {
+         \tl_set:Nn \l__fantasycalendar_text_day_note_hook_tl \FantasycalendarPrinDayNotes
+       }
+    , add ~ day ~ notes / false / .code =
+       { \tl_clear:N \l__fantasycalendar_text_day_note_hook_tl }
+    , add ~ day ~ notes / .default = true
+  }
 \cs_new:Npn \FantasycalendarPrinDayNotes
   {
+    \small
     \tl_if_exist:cT { l__fantasycalendar_yearly_day_ \%md _tl }
       {
         \\ \textsf { \tl_use:c { l__fantasycalendar_yearly_day_ \%md _tl } }
@@ -939,14 +1058,6 @@
 \NewDocumentCommand \PrintFantasyCalendarYear { O{} m m }
   {
     \group_begin:
-    \tikzset
-      {
-        day ~ text =
-          {
-            \%d- \, \FantasycalendarPrintMoons
-            \FantasycalendarPrinDayNotes
-          }
-      }
     \int_step_inline:nn { \l__fantasycalendar_nr_months_per_year_int }
       {
         \noindent
@@ -954,10 +1065,13 @@
           [
             , month = #2-##1
             , week ~ list
-            , box ~ size = fit-square,
+            , box ~ size = fit-square
             , box ~ draw = black
             , month ~ label ~ above ~ centered
             , weekday ~ label ~ above
+            , add ~ moons 
+            , add ~ day ~ notes
+            , add ~ year ~ to ~ month
             , #1
           ]
           #3

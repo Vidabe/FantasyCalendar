@@ -8,9 +8,14 @@
 
 \ExplSyntaxOn
 
+\int_new:N \l__fantasycalendar_default_nr_days_per_year_int
 \int_new:N \l__fantasycalendar_nr_days_per_year_int
 \int_new:N \l__fantasycalendar_nr_months_per_year_int
 \int_new:N \l__fantasycalendar_nr_days_per_week_int
+
+\tl_new:N \FantasycalendarDaysPerYear
+\tl_new:N \FantasycalendarMonthsPerYear
+\tl_new:N \FantasycalendarDaysPerWeek
 
 \int_new:N \l__fantasycalendar_tmpa_int
 \int_new:N \l__fantasycalendar_tmpb_int
@@ -28,9 +33,14 @@
 
 \seq_new:N \l__fantasycalendar_day_names_seq
 \seq_new:N \l__fantasycalendar_month_names_seq
+\seq_new:N \l__fantasycalendar_default_number_days_of_months_seq
 \seq_new:N \l__fantasycalendar_number_days_of_months_seq
 \seq_new:N \l__fantasycalendar_cumulative_number_days_seq
 \seq_new:N \l__fantasycalendar_cumulative_number_days_invers_seq
+\seq_new:N \l__fantasycalendar_default_cumulative_number_days_seq
+\seq_new:N \l__fantasycalendar_default_cumulative_number_days_invers_seq
+
+\prop_new:N \l__fantasycalendar_number_days_of_months_prop
 
 \bool_new:N \l__fantasycalendar_date_match_bool
 
@@ -158,16 +168,29 @@
 \cs_new:Npn \__fantasycalendar_add_list_of_months:n #1
   {
     \int_zero:N \l__fantasycalendar_nr_months_per_year_int
+    \int_zero:N \l__fantasycalendar_default_nr_days_per_year_int
     \seq_clear:N \l__fantasycalendar_month_names_seq
     \seq_clear:N \l__fantasycalendar_number_days_of_months_seq
     \seq_clear:N \l__fantasycalendar_cumulative_number_days_seq
+    \prop_clear:N \l__fantasycalendar_number_days_of_months_prop
     \keyval_parse:NNn
       \__fantasycalendar_parse_keys_error:n
       \__fantasycalendar_parse_keys:nn
       {#1}
+%    
+    \tl_set:NV \FantasycalendarDaysPerYear \l__fantasycalendar_default_nr_days_per_year_int
+    \tl_set:NV \FantasycalendarMonthsPerYear \l__fantasycalendar_nr_months_per_year_int
     \seq_set_eq:NN \l_tmpa_seq \l__fantasycalendar_cumulative_number_days_seq
     \seq_reverse:N \l_tmpa_seq
     \seq_set_eq:NN \l__fantasycalendar_cumulative_number_days_invers_seq \l_tmpa_seq
+
+%
+    \seq_set_eq:NN \l__fantasycalendar_default_cumulative_number_days_invers_seq 
+      \l__fantasycalendar_cumulative_number_days_invers_seq
+    \seq_set_eq:NN \l__fantasycalendar_default_number_days_of_months_seq
+      \l__fantasycalendar_number_days_of_months_prop
+    \int_set_eq:NN \l__fantasycalendar_nr_days_per_year_int \l__fantasycalendar_default_nr_days_per_year_int
+    \seq_set_eq:NN \l__fantasycalendar_default_cumulative_number_days_seq \l__fantasycalendar_cumulative_number_days_seq
   }
 
 \cs_new:Npn \__fantasycalendar_parse_keys_error:n #1
@@ -178,11 +201,13 @@
   {
     %% count months
     \int_incr:N \l__fantasycalendar_nr_months_per_year_int
+    \int_set:Nn \l_tmpa_int {#2}
+    \prop_put:NnV \l__fantasycalendar_number_days_of_months_prop {#1} \l_tmpa_int
     \seq_put_right:Nn \l__fantasycalendar_month_names_seq {#1}
-    \seq_put_right:Nn \l__fantasycalendar_number_days_of_months_seq {#2}
+    \seq_put_right:NV \l__fantasycalendar_number_days_of_months_seq \l_tmpa_int
     \seq_put_right:NV \l__fantasycalendar_cumulative_number_days_seq 
-      \l__fantasycalendar_nr_days_per_year_int
-    \int_add:Nn \l__fantasycalendar_nr_days_per_year_int {#2}
+      \l__fantasycalendar_default_nr_days_per_year_int
+    \int_add:Nn \l__fantasycalendar_default_nr_days_per_year_int {\l_tmpa_int}
   }
 
 \cs_new:Npn \__fantasycalendar_define_month_at_half_year:NN #1#2
@@ -194,10 +219,10 @@
 
 
 
-
 \NewDocumentCommand \FantasyCalendarAddDays { m }
   {
     \__fantasycalendar_add_list_of_days:n {#1}
+    \tl_set:NV \FantasycalendarDaysPerWeek \l__fantasycalendar_nr_days_per_week_int
   }
 
 \cs_new:Npn \__fantasycalendar_add_list_of_days:n #1
@@ -211,35 +236,6 @@
   }
 
 
-
-
-\NewDocumentCommand \FantasyCalendarDateEntry { m m }
-  {
-    \__fantasycalendar_add_yearly_day:nn {#1} {#2}
-  }
-\NewDocumentCommand \FantasyCalendarOneTimeEntry { m m }
-  {
-    \__fantasycalendar_add_one_year_day:nn {#1} {#2}
-  }
-
-\cs_new:Npn \__fantasycalendar_add_yearly_day:nn #1#2
-  {
-    \tl_if_exist:cTF { l__fantasycalendar_yearly_day_ #1 _tl }
-      { \tl_put_right:cn { l__fantasycalendar_yearly_day_ #1 _tl } {\\ #2} }
-      { 
-        \tl_new:c { l__fantasycalendar_yearly_day_ #1 _tl }
-        \tl_set:cn { l__fantasycalendar_yearly_day_ #1 _tl } {#2}
-      }
-  }
-\cs_new:Npn \__fantasycalendar_add_one_year_day:nn #1#2
-  {
-    \tl_if_exist:cTF { l__fantasycalendar_one_year_day_ #1 _tl }
-      { \tl_put_right:cn { l__fantasycalendar_one_year_day_ #1 _tl } {\\ #2} }
-      { 
-        \tl_new:c { l__fantasycalendar_one_year_day_ #1 _tl }
-        \tl_set:cn { l__fantasycalendar_one_year_day_ #1 _tl } {#2}
-      }
-  }
 
 
 
@@ -309,7 +305,7 @@
             \int_add:Nn \l__fantasycalendar_tmpa_int {#1}
             \int_set:Nn \l__fantasycalendar_tmpa_int
               { 
-                \int_mod:nn \l__fantasycalendar_tmpa_int \l__fantasycalendar_nr_days_per_year_int 
+                \int_mod:nn \l__fantasycalendar_tmpa_int \l__fantasycalendar_default_nr_days_per_year_int 
               }
             \int_set:Nn \l__fantasycalendar_tmpb_int { 1 - #1 } 
             \seq_map_inline:Nn \l__fantasycalendar_cumulative_number_days_seq
@@ -407,6 +403,11 @@
 
 
 
+
+\cs_new:Npn \__fantasyclaendar_get_nr_of_days_until_start_of_year:n #1
+  {
+    #1*\l__fantasycalendar_default_nr_days_per_year_int %+ \l__fantasycalendar_leap_storage_ii_tl
+  }
 \cs_new:Npn \__fantasycalendar_print_days_of_month:n #1
   {
     \seq_item:Nn \l__fantasycalendar_number_days_of_months_seq {#1}
@@ -481,13 +482,16 @@
       { \int_zero:N \l_tmpa_int }
       { \int_set:Nn \l_tmpa_int { \l_tmpb_tl 0 } }
     
+    
     \int_set:Nn \l_tmpb_int
       {
-        \l__fantasycalendar_year_int * \l__fantasycalendar_nr_days_per_year_int
+        \__fantasyclaendar_get_nr_of_days_until_start_of_year:n { \l__fantasycalendar_year_int }
          + \__fantasycalendar_print_cumulative_days:n { \l__fantasycalendar_month_int }
          + \l__fantasycalendar_day_int
          + \l_tmpa_int
       }
+%    \int_add:Nn \l_tmpb_int
+%      { \l__fantasycalendar_leap_storage_ii_tl }
     \bool_if:NT \l_tmpa_bool
       { \int_set:Nn \l_tmpb_int { - \l_tmpb_int } }
     \int_set_eq:NN #5 \l_tmpb_int
@@ -498,10 +502,10 @@
     \int_set:Nn \l_tmpa_int {#1}
     %% year
     \int_set:Nn \l__fantasycalendar_year_int 
-      { \int_div_truncate:nn \l_tmpa_int \l__fantasycalendar_nr_days_per_year_int }
+      { \int_div_truncate:nn \l_tmpa_int \l__fantasycalendar_default_nr_days_per_year_int }
     %% days
     \int_set:Nn \l__fantasycalendar_day_int 
-      { \l_tmpa_int - \l__fantasycalendar_year_int*\l__fantasycalendar_nr_days_per_year_int }
+      { \l_tmpa_int - \l__fantasycalendar_year_int*\l__fantasycalendar_default_nr_days_per_year_int }
     \int_compare:nNnTF { \l__fantasycalendar_day_int } = { 0 }
       {
         \int_decr:N \l__fantasycalendar_year_int
@@ -583,18 +587,18 @@
 
 
 
-\cs_new:Npn \__fantasycalendar_get_end_day_of_last_month:Nnn #1#2#3
-  {
-    \int_set:Nn #1
-      {
-        \l__fantasycalendar_zero_day_shift_int 
-         + \__fantasycalendar_print_cumulative_days:n {#3}
-         + \l__fantasycalendar_nr_days_per_year_int * (#2)
-      }
-    \int_set:Nn #1
-      { \int_mod:nn {#1} { \l__fantasycalendar_nr_days_per_week_int } }
-  }
-
+%\cs_new:Npn \__fantasycalendar_get_end_day_of_last_month:Nnn #1#2#3
+%  {
+%    \int_set:Nn #1
+%      {
+%        \l__fantasycalendar_zero_day_shift_int 
+%         + \__fantasycalendar_print_cumulative_days:n {#3}
+%         + \l__fantasycalendar_default_nr_days_per_year_int * (#2)
+%      }
+%    \int_set:Nn #1
+%      { \int_mod:nn {#1} { \l__fantasycalendar_nr_days_per_week_int } }
+%  }
+%
 
 
 
@@ -710,6 +714,192 @@
     \l_fantasycalendar_current_year_tl -
     \l_fantasycalendar_current_month_tl - \l_fantasycalendar_current_day_tl
   }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+%%%%%%%%% Experimental
+%% Leap year.
+%
+%\bool_new:N \l__fantasycalendar_leap_year_bool
+%\tl_new:N \l__fantasycalendar_leap_storage_tl
+%\tl_new:N \l__fantasycalendar_leap_storage_ii_tl
+%\prop_new:N \l__fantasycalendar_leap_storage_prop
+%\int_new:N \l__fantasycalendar_longest_thingy_int
+%
+%\NewDocumentCommand \AddLeapConditions { +m }
+%  {
+%    \fp_zero:N \l_tmpa_fp
+%    \cs_set_eq:NN \ifdate \__fantasycalendar_experimental_if_leap_condition:nT
+%    #1
+%  }
+%
+%\cs_new:Npn \__fantasycalendar_experimental_if_leap_condition:nT #1#2
+%  {
+%    \int_zero:N \l_tmpa_int
+%    \prop_set_from_keyval:Nn \l__fantasycalendar_leap_storage_prop {#2}
+%    \prop_map_inline:Nn \l__fantasycalendar_leap_storage_prop
+%      { 
+%        \int_add:Nn \l_tmpa_int {##2}
+%      }
+%%
+%    \__fantasycalendar_experimental_parse_leap_condition:ww 
+%      #1 \q_recursion_tail \q_recursion_stop
+%    \tl_put_right:Nn \l__fantasycalendar_leap_storage_tl
+%      {
+%        \bool_if:NT \l__fantasycalendar_leap_year_bool
+%          { \__fantasycalendar_experimental_leap_year_true:n {#2} }
+%      }
+%  }
+%\cs_new:Npn \__fantasycalendar_experimental_parse_leap_condition:ww #1 year ~ #2 divisible ~ by ~ #3;
+%  {
+%    \__fantasycalendar_experimental_add_leap_condition:nn {#2} {#3}
+%    \peek_meaning_ignore_spaces:NTF b
+%      { \__fantasycalendar_experimental_parse_leap_condition_continue:ww }
+%      { \use_none_delimit_by_q_recursion_stop:w }
+%  }
+%\cs_new:Npn \__fantasycalendar_experimental_parse_leap_condition_continue:ww #1 but ~ #2 divisible ~ by ~ #3;
+%  {
+%    \__fantasycalendar_experimental_add_leap_condition:nn {#2} {#3}
+%    \peek_meaning_ignore_spaces:NTF b
+%      { \__fantasycalendar_experimental_parse_leap_condition_continue:ww }
+%      { \use_none_delimit_by_q_recursion_stop:w }
+%  }
+%
+%\cs_new:Npn \__fantasycalendar_experimental_add_leap_condition:nn #1#2
+%  {
+%    \int_compare:nNnF \l__fantasycalendar_longest_thingy_int > {#2}
+%      { \int_set:Nn \l__fantasycalendar_longest_thingy_int {#2} }
+%  
+%    \fp_zero:N \l_tmpa_fp
+%    \str_if_eq:nnTF { not~ } {#1}
+%      { \fp_sub:Nn \l_tmpa_fp }
+%      { \fp_add:Nn \l_tmpa_fp }
+%      { 1 / (#2) }
+%    \__fantasycalendar_experimental_leap_ii:VV \l_tmpa_fp \l_tmpa_int
+%  
+%    \tl_put_right:Nx \l__fantasycalendar_leap_storage_tl
+%      {
+%        \exp_not:n { \int_compare:nNnT { \int_mod:nn { \l__fantasycalendar_year_int } {#2} } = { 0 } }
+%          {
+%            \str_if_eq:nnTF { not~ } {#1}
+%              {
+%                \exp_not:n { \bool_set_false:N \l__fantasycalendar_leap_year_bool }
+%              }{
+%                \exp_not:n { \bool_set_true:N \l__fantasycalendar_leap_year_bool }
+%              }
+%          }
+%      }
+%  }  
+%
+%
+%\int_new:N \l_wefn_int
+%\int_new:N \l_asddfgasf_int
+%\int_new:N \l_fewjkhwfe_int
+%\fp_new:N \l__fantasycalendar_offset_pear_year_fp
+%
+%
+%
+%\cs_new:Npn \__fantasycalendar_experimental_leap_year_true:n #1
+%  {
+%    \int_zero:N \l_fewjkhwfe_int
+%    \seq_clear:N \l__fantasycalendar_number_days_of_months_seq
+%    \seq_clear:N \l__fantasycalendar_cumulative_number_days_seq 
+%    \prop_set_from_keyval:Nn \l__fantasycalendar_leap_storage_prop {#1}
+%    
+%    \seq_set_map_indexed_inline:Nn \l__fantasycalendar_month_names_seq
+%      {
+%        \prop_get:NnNTF \l__fantasycalendar_leap_storage_prop {##2} \l_tmpa_tl
+%          { \int_set:Nn \l_wefn_int { \l_tmpa_tl } }
+%          { \int_zero:N \l_wefn_int}
+%        \int_set:Nn \l_asddfgasf_int
+%          {
+%            \seq_item:Nn \l__fantasycalendar_default_number_days_of_months_seq {##1}
+%            + \l_wefn_int
+%          }
+%        \seq_put_right:NV \l__fantasycalendar_number_days_of_months_seq \l_asddfgasf_int
+%        \seq_put_right:NV \l__fantasycalendar_cumulative_number_days_seq \l_fewjkhwfe_int
+%        \int_add:Nn \l_fewjkhwfe_int \l_asddfgasf_int
+%      }
+%    
+%  }
+%
+%
+%
+%\cs_new:Npn \__fantasycalendar_experimental_leap_ii:nn #1#2
+%  {
+%    \tl_put_right:Nn \l__fantasycalendar_leap_storage_ii_tl
+%      { + \fp_eval:n { floor ( #1 * \l__fantasycalendar_year_int ) * #2 } }
+%  }
+%\cs_generate_variant:Nn \__fantasycalendar_experimental_leap_ii:nn { VV }
+%
+%
+%
+%
+%
+%
+%
+%
+%\cs_new:Npn \hkjwefhjkwehjkewhjf #1
+%  {
+%    \int_set:Nn \l__fantasycalendar_year_int {#1}
+%    \int_set:Nn \l__fantasycalendar_ordinal_date_int 
+%      { \l__fantasycalendar_nr_days_per_year_int*\l__fantasycalendar_year_int  + \l__fantasycalendar_leap_storage_ii_tl }
+%    \int_use:N \l__fantasycalendar_ordinal_date_int
+%  }
+%
+%\cs_new:Npn \__fantasycalendar_experimental_get_sequence_for_year:n #1
+%  {
+%    \int_set:Nn \l__fantasycalendar_year_int {#1}
+%    \int_set:Nn \l__fantasycalendar_ordinal_date_int 
+%      { \l__fantasycalendar_nr_days_per_year_int*\l__fantasycalendar_year_int  + \l__fantasycalendar_leap_storage_ii_tl }
+%    \__fantasycalendar_experimental_get_default:
+%    \__fantasycalendar_experimental_leap_effects_on_parameters:n {#1}
+%    \__fantasycalendar_experimental_get_stuff_until_now:
+%    
+%  }
+%\cs_new:Npn \__fantasycalendar_experimental_get_default:
+%  {
+%    \seq_set_eq:NN \l__fantasycalendar_number_days_of_months_seq \l__fantasycalendar_default_number_days_of_months_seq
+%    \seq_set_eq:NN \l__fantasycalendar_cumulative_number_days_seq \l__fantasycalendar_default_cumulative_number_days_seq
+%    \int_set_eq:NN \l__fantasycalendar_default_nr_days_per_year_int \l__fantasycalendar_nr_days_per_year_int
+%    \prop_clear:N \l_tmpa_prop 
+%  }
+%\cs_new:Npn \__fantasycalendar_experimental_leap_effects_on_parameters:n #1
+%  {
+%    \__fantasycalendar_experimental_parse_leap_options:n {#1}
+%    \seq_clear:N \l__fantasycalendar_number_days_of_months_seq
+%    \seq_map_indexed_inline:nn \l__fantasycalendar_month_names_seq
+%      {
+%        \prop_get:NnNTF \l_tmpa_prop {##2} \l_tmpa_tl
+%          { \int_set:Nn \l_tmpb_int { \l_tmpa_tl } }
+%          { \int_zero:N \l_tmpb_int }
+%        \int_set:Nn \l_tmpa_int
+%          { 
+%            \seq_item:Nn \l__fantasycalendar_default_number_days_of_months_seq {##1} 
+%            + \l_tmpb_int
+%          }
+%        \seq_put_right:NV \l__fantasycalendar_number_days_of_months_seq \l_tmpa_int
+%      }
+%  }
+%%
+%%\cs_new:Npn \__fantasycalendar_experimental_parse_leap_options:n #1
+%%  {
+%%    \prop_set_from_keyval:Nn \l_tmpa_prop {#1}
+%%  }
+%
+
+
 
 
 
