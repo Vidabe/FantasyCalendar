@@ -33,26 +33,45 @@
 
 
 
-%\AddLeapConditions
-%  {
-%    \ifdate
-%      {
-%        year divisible by 4;
-%        but not divisible by 100;
-%        but divisible by 400;
-%      }
-%      { Basoth=+5 , Zianna=+2 }
-%  }
+\AddLeapConditions
+  {
+    \ifdate
+      {
+        year divisible by 4;
+        but not divisible by 100;
+        but divisible by 400;
+      }
+      { Basoth=+5 , Zianna=+2 }
+  }
 \begin{document}
 
 \ExplSyntaxOn
 
+\__fantasycalendar_iso_to_ordinal:nN { 4-1-42 } \l_tmpa_int
+\int_use:N \l_tmpa_int \\
+
+%\benchmark:n 
+%  {
+    \__fantasycalendar_ordinal_to_date:nNNN  { \l_tmpa_int } \l_tmpa_tl \l_tmpb_tl \l_tmpc_tl
+    \l_tmpa_tl \
+    \l_tmpb_tl \
+    \l_tmpc_tl
+%  }
+%\benchmark:n 
+%  {
+%    \__fantasycalendar_experimental_get_year_from_ordinal:n { 1245961478 }
+%  }
+%\benchmark:n 
+%  {
+%    \int_set:Nn \l_tmpa_int { \int_div_truncate:nn {1245961478 }{ \l__fantasycalendar_default_nr_days_per_year_int } }
+%  }
 %\int_set:Nn \l__fantasycalendar_year_int { 100 }
 %\fp_eval:n { \l__fantasycalendar_leap_storage_ii_tl } \\
 %\hkjwefhjkwehjkewhjf{367912}
 
 \ExplSyntaxOff
 
+%\end{document}
 
 
 \tikz \PrintFantasycalendarBase[month=0-1, week list, month  label  above centered]; 
@@ -67,6 +86,10 @@
 
 \tikz \PrintFantasycalendarBase[month=0-2, week list, month  label  above left , weekday  label above, box draw=black, box size=fit-square]; 
 % days={ rectangle , draw }
+
+\newpage
+
+\tikz \PrintFantasycalendarBase[month=4-1, week list, month  label  above centered , weekday  label above, box draw=black, add day notes, add moons]; 
 
 \end{document}
 
