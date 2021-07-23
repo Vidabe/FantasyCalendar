@@ -33,26 +33,24 @@
 
 
 
-\AddLeapConditions
+\DefineLeapYear
   {
-    \ifdate
-      {
-        year divisible by 4;
-        but not divisible by 100;
-        but divisible by 400;
-      }
-      { Basoth=+5 , Zianna=+2 }
+    year divisible by 4;
+    but not divisible by 100;
+    but divisible by 400;
   }
+  { Basoth=+5 , Zianna=+2 }
 \begin{document}
 
 \ExplSyntaxOn
 
-\__fantasycalendar_iso_to_ordinal:nN { 4-1-42 } \l_tmpa_int
+
+\__fantasycal_base_iso_to_ordinal:nN { 4-5-40 } \l_tmpa_int
 \int_use:N \l_tmpa_int \\
 
 %\benchmark:n 
 %  {
-    \__fantasycalendar_ordinal_to_date:nNNN  { \l_tmpa_int } \l_tmpa_tl \l_tmpb_tl \l_tmpc_tl
+    \__fantasycal_base_ordinal_to_date:nNNN  { \l_tmpa_int } \l_tmpa_tl \l_tmpb_tl \l_tmpc_tl
     \l_tmpa_tl \
     \l_tmpb_tl \
     \l_tmpc_tl

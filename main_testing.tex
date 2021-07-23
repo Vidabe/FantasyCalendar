@@ -34,6 +34,13 @@
 
 \FantasyCalendarAddDays{Agguan, Sielan, Flethan, Wanuran, Usyn, Jundal, Izach, Verhan, Haturan}
 
+\DefineLeapYear
+  {
+    year divisible by 4;
+    but not divisible by 100;
+    but divisible by 400;
+  }
+  { Basoth=+5 , Zianna=+2 }
 
 %
 \FantasyCalendarDateEntry{1-1}{Neujahr}
@@ -48,44 +55,57 @@
 \begin{document}
 \ExplSyntaxOn
 
+%
+%\newcount\cnta
+%%\newcount\theyear
+%%\newcount\themonth
+%\newcount\cntday
+%\__fantasycal_base_iso_to_ordinal:nN { 0-1-1 } \cnta
+%
+%\the \cnta
+%
+%\__fantasycal_base_ordinal_to_date:nNNN { \cnta } \theyear \themonth \theday
+%
+%\par
+%\the \cnta
+%\space\theyear \space \themonth \space \theday
+%\par
+%\__fantasycal_base_ordinal_to_weekday:nN { \cnta } \cntday
+%\the\cntday
+%\__fantasycal_base_print_day_name:n{\cntday}
+%
+%\par
+%
+%\basefantasycalendar{stuff}{0-1-1}{0-last-last}
+%  { 
+%    \ifdateTF {start ~ of ~ month} {\par} {\space}
+%    \ifdateTF {Surios=full-moon}
+%      { \textcolor{green} }
+%      {
+%        \ifdateTF {all-moons=new}
+%          { \textcolor{brown} }
+%          {
+%            \ifdateT {end ~ of ~ week}
+%              { \textcolor{red} }
+%          }
+%      }
+%    \l_fantasycal_base_current_day_tl  
+%  }
+%  
+%\par
 
-\newcount\cnta
-%\newcount\theyear
-%\newcount\themonth
-\newcount\cntday
-\__fantasycalendar_iso_to_ordinal:nN { 0-1-1 } \cnta
-
-\the \cnta
-
-\__fantasycalendar_ordinal_to_date:nNNN { \cnta } \theyear \themonth \theday
-
-\par
-\the \cnta
-\space\theyear \space \themonth \space \theday
-\par
-\__fantasycalendar_ordinal_to_weekday:nN { \cnta } \cntday
-\the\cntday
-\__fantasycalendar_print_day_name:n{\cntday}
-
-\par
-
-\basefantasycalendar{stuff}{0-1-1}{0-last-last}
+\basefantasycalendar{stuff}{4-1-1}{4-last-last}
   { 
     \ifdateTF {start ~ of ~ month} {\par} {\space}
-    \ifdateTF {Surios=full-moon}
-      { \textcolor{green} }
-      {
-        \ifdateT {end ~ of ~ week}
-          { \textcolor{red} }
-      }
-    \l_fantasycalendar_current_day_tl  
+    \ifdateTF {end ~ of ~ month} {\textcolor{blue}} {}
+    \l_fantasycal_base_current_day_tl  
   }
 
-
+\end{document}
 \par
 \newpage
 \tikzpicture
-  \PrintFantasycalendarBase[months=0-1 to 0-1, week~list, box ~  size=2cm,days={rectangle,draw},month ~ label ~ above ~ centered]
+  \PrintFantasycalendarBase[months=0-1 to 0-1, week~list, box ~  size=2.5cm,box ~ draw = black,month ~ label ~ above ~ centered]
     if (Haturan) [red]
     if (Surios=full-moon) [green]
     if (Surios=new-moon) [blue]
