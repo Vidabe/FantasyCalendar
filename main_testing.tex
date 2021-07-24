@@ -75,30 +75,46 @@
 %\__fantasycal_base_print_day_name:n{\cntday}
 %
 %\par
-%
-%\basefantasycalendar{stuff}{0-1-1}{0-last-last}
-%  { 
-%    \ifdateTF {start ~ of ~ month} {\par} {\space}
-%    \ifdateTF {Surios=full-moon}
-%      { \textcolor{green} }
-%      {
-%        \ifdateTF {all-moons=new}
-%          { \textcolor{brown} }
-%          {
-%            \ifdateT {end ~ of ~ week}
-%              { \textcolor{red} }
-%          }
-%      }
-%    \l_fantasycal_base_current_day_tl  
-%  }
-%  
-%\par
+
+\basefantasycalendar{stuff}{0-1-1}{0-last-last}
+  { 
+    \ifdateTF {start ~ of ~ month} {\par} {\space}
+    \ifdateTF {Surios=full-moon}
+      { \textcolor{green} }
+      {
+        \ifdateTF {all-moons=new}
+          { \textcolor{brown} }
+          {
+            \ifdateTF {end ~ of ~ week}
+              { \textcolor{red} }
+              {
+                \ifdateTF {start ~ of ~ month}
+                  { \textcolor{blue} }
+                  {
+                  
+                  }
+              }
+          }
+      }
+    \l_fantasycal_base_current_day_tl  
+  }
+  
+\par
 
 \basefantasycalendar{stuff}{4-1-1}{4-last-last}
   { 
     \ifdateTF {start ~ of ~ month} {\par} {\space}
     \ifdateTF {end ~ of ~ month} {\textcolor{blue}} {}
     \l_fantasycal_base_current_day_tl  
+  }
+
+  
+
+\benchmark:n
+  {
+  \basefantasycalendar{stuff}{4-1-1}{4-last-last}
+    { 
+    }
   }
 
 \end{document}
