@@ -1,4 +1,3 @@
-% Based on "pgfcalendar.code.tex" by Till Tantau
 
 \RequirePackage{tikz}
 %\input fantasycalenderbase.code.tex
@@ -27,25 +26,24 @@
 
 \bool_new:N \l__fantasycal_moon_decreasing_bool
 
-\cs_new:Npn \__fantasycal_moon_set_moon_phase:n #1
+\cs_new:Npn \__fantasycal_moon_set_moon_phase:Nn #1#2
   {
     \int_set:Nn \__fantasycal_moon_moon_phase_int
-      { #1 + \__fantasycal_moon_moon_phase_shift_int }
-    \int_set:Nn \__fantasycal_moon_moon_phase_int
+      { #2 + \__fantasycal_moon_moon_phase_shift_int }
+    \int_set:Nn #1
       {
-        \int_mod:nn 
-          \__fantasycal_moon_moon_phase_int  
+        \int_mod:nn \__fantasycal_moon_moon_phase_int  
           \__fantasycal_moon_lunar_cycle_int
       }
   }
 
 \cs_new:Npn \__fantasycal_moon_calculate_moon_phases:nnn #1#2#3
   {
-    \int_set:Nn \__fantasycal_moon_lunar_cycle_int {#1}
-    \int_set:Nn \__fantasycal_moon_moon_phase_shift_int {#2}
     \tl_clear:N \l__fantasycal_moon_right_tl
     \tl_clear:N \l__fantasycal_moon_left_tl
-    \__fantasycal_moon_set_moon_phase:n {#3}
+    \int_set:Nn \__fantasycal_moon_lunar_cycle_int {#1}
+    \int_set:Nn \__fantasycal_moon_moon_phase_shift_int {#2}
+    \__fantasycal_moon_set_moon_phase:Nn \__fantasycal_moon_moon_phase_int {#3}
     
     \int_compare:nNnT
       { \__fantasycal_moon_moon_phase_int } =  { 0 }
@@ -90,12 +88,8 @@
 
 
     \int_set:Nn \__fantasycal_moon_moon_case_int { 2 }
-    \fp_set:Nn \l_tmpa_fp 
-      {
-        360*\__fantasycal_moon_moon_phase_int 
-          / \__fantasycal_moon_lunar_cycle_int
-      }
-    \fp_set:Nn \l_tmpa_fp { cosd ( \l_tmpa_fp ) }
+    \int_set:Nn \l_tmpa_int { 360*\__fantasycal_moon_moon_phase_int }
+    \fp_set:Nn \l_tmpa_fp { cosd ( \l_tmpa_int / \__fantasycal_moon_lunar_cycle_int ) }
     \fp_set:Nn \l_tmpa_fp 
       { 
         round ( \l_tmpa_fp , \__fantasycal_moon_rounding_precision_int ) 
@@ -154,19 +148,19 @@
         , scale = 0.85
 %        , every ~ node/.style={ transform ~ shape , scale=0.85 }
         , baseline= -1ex + 2.5\pgflinewidth %% Give moons a bit of a depth
-        , minimum~size=0pt %% or else things go foo-bar
+        , minimum~size=0pt %% or else things go foobar
         ]
     {
       \scope
       \ifcase \__fantasycal_moon_moon_case_int\relax
         \draw [fill=white, draw=black] (0,0) 
-          circle [radius=\l_tmpb_dim]
-          node [centered]  {\tiny \textsf{V}}
+          circle [ radius = \l_tmpb_dim ]
+          node [ centered ]  { \tiny \textsf { V } }
           ;
       \or
         \draw [fill=black, draw=black] 
-          node [anchor=center]  { \textsf{\tiny\textcolor{white}{N} } }
-          circle [radius=\l_tmpb_dim]
+          node [ anchor=center ]  {\tiny \textsf { \textcolor{white}{ N } } }
+          circle [ radius = \l_tmpb_dim ]
           ;
       \or
         \draw [fill=white, draw=black, text~depth=10pt] (0,0) 
@@ -243,35 +237,31 @@
   }
 
 
-\cs_new:Npn \__fantasycal_moon_if_moon_phase_setup:N #1
+
+
+%%% Define pgfkeys for \ifdate
+
+
+
+\cs_new:Npn \__fantasycal_moon_ifdate_moon_phase_setup:N #1
   {
     \__fantasycal_moon_get_stored:NNN #1 
       \__fantasycal_moon_lunar_cycle_int 
       \__fantasycal_moon_moon_phase_shift_int
-    \__fantasycal_moon_set_moon_phase:n \l_fantasycal_base_current_ordinal_int
+    \__fantasycal_moon_set_moon_phase:Nn \__fantasycal_moon_moon_phase_int
+       \l_fantasycal_base_current_ordinal_int
   }
-\cs_new:Npn \__fantasycal_moon_if_moon_phase_match:Nnn #1 #2#3
+\cs_new:Npn \__fantasycal_moon_ifdate_moon_phase_match:Nnn #1 #2#3
   {
-    \__fantasycal_moon_if_moon_phase_setup:N #1
+    \__fantasycal_moon_ifdate_moon_phase_setup:N #1
     \int_compare:nNnT \__fantasycal_moon_moon_phase_int 
       #2
       { \__fantasycal_moon_lunar_cycle_int * #3 }
       { \bool_set_true:N \l__fantasycal_base_date_match_bool }
   }
-\cs_new:Npn \__fantasycal_moon_if_moon_phase_behavior:Nnn #1 #2#3
+\cs_new:Npn \__fantasycal_moon_ifdate_moon_phase_behavior_ii:Nnnnn #1 #2#3#4#5
   {
-    \__fantasycal_moon_if_moon_phase_setup:N #1
-    \int_compare:nNnF { \__fantasycal_moon_moon_phase_int } = { 0 }
-      {
-        \int_compare:nNnT \__fantasycal_moon_moon_phase_int 
-          #2
-          { \__fantasycal_moon_lunar_cycle_int * #3 }
-          { \bool_set_true:N \l__fantasycal_base_date_match_bool }
-      }
-  }
-\cs_new:Npn \__fantasycal_moon_if_moon_phase_behavior_ii:Nnnnn #1 #2#3#4#5
-  {
-    \__fantasycal_moon_if_moon_phase_setup:N #1
+    \__fantasycal_moon_ifdate_moon_phase_setup:N #1
     \int_compare:nNnT \__fantasycal_moon_moon_phase_int 
     #2
     { \__fantasycal_moon_lunar_cycle_int * #3 }
@@ -289,36 +279,38 @@
       {
         /pgf/#2/.is~choice ,
         /pgf/#2/full-moon/ .code= 
-          {  \__fantasycal_moon_if_moon_phase_match:Nnn #1 = { 0 } } ,
+          {  \__fantasycal_moon_ifdate_moon_phase_match:Nnn #1 = { 0 } } ,
         /pgf/#2/new-moon/ .code= 
-          { \__fantasycal_moon_if_moon_phase_match:Nnn #1 = { 1/2 } } ,
+          { \__fantasycal_moon_ifdate_moon_phase_match:Nnn #1 = { 1/2 } } ,
         /pgf/#2/half-moon-1/ .code= 
-          { \__fantasycal_moon_if_moon_phase_match:Nnn #1 = { 1/4 } } ,
+          { \__fantasycal_moon_ifdate_moon_phase_match:Nnn #1 = { 1/4 } } ,
         /pgf/#2/half-moon-2/ .code= 
-          { \__fantasycal_moon_if_moon_phase_match:Nnn #1 = { 3/4 } } ,
+          { \__fantasycal_moon_ifdate_moon_phase_match:Nnn #1 = { 3/4 } } ,
         /pgf/#2/waxing/ .code= 
           { 
-            \__fantasycal_moon_if_moon_phase_behavior:Nnn #1 < { 1/2 } 
+%            \__fantasycal_moon_if_moon_phase_behavior:Nnn #1 < { 1/2 } 
+              \__fantasycal_moon_ifdate_moon_phase_behavior_ii:Nnnnn #1 < { 1/2 } > { 0 }
           } , % >
         /pgf/#2/waning/ .code=  % <
           { 
-            \__fantasycal_moon_if_moon_phase_behavior:Nnn #1 > { 1/2 } 
+              \__fantasycal_moon_ifdate_moon_phase_behavior_ii:Nnnnn #1 < { 1 } > { 1/2 }
+%            \__fantasycal_moon_if_moon_phase_behavior:Nnn #1 > { 1/2 } 
           } , 
         /pgf/#2/waxing-crescent/ .code=  
           { 
-            \__fantasycal_moon_if_moon_phase_behavior_ii:Nnnnn #1 < { 1/4 } > { 0 }  
+            \__fantasycal_moon_ifdate_moon_phase_behavior_ii:Nnnnn #1 < { 1/4 } > { 0 }  
           } , 
         /pgf/#2/waxing-gibbous/ .code=  % <
           { 
-            \__fantasycal_moon_if_moon_phase_behavior_ii:Nnnnn #1 < { 1/2 } > { 1/4 } 
+            \__fantasycal_moon_ifdate_moon_phase_behavior_ii:Nnnnn #1 < { 1/2 } > { 1/4 } 
           } , 
         /pgf/#2/waning-gibbous/ .code=  % <
           { 
-            \__fantasycal_moon_if_moon_phase_behavior_ii:Nnnnn #1 > { 1/2 } < { 3/4 }  % >
+            \__fantasycal_moon_ifdate_moon_phase_behavior_ii:Nnnnn #1 > { 1/2 } < { 3/4 }  % >
           } , 
         /pgf/#2/waning-crescent/ .code=  % <
           { 
-            \__fantasycal_moon_if_moon_phase_behavior_ii:Nnnnn #1 > { 3/4 } < { 1 }  % >
+            \__fantasycal_moon_ifdate_moon_phase_behavior_ii:Nnnnn #1 > { 3/4 } < { 1 }  % >
           } , 
       }
   }
@@ -376,7 +368,7 @@
 \int_new:N \l__fantasycal_moon_nr_of_entries_int
 \int_new:N \l__fantasycal_moon_max_nr_of_entries_int
 
-\keys_define:nn { fantasycalendar/moon/moon-phase }
+\keys_define:nn { fantasycal/moon/moon-phase }
   {
     full-moon .code:n = 
       { 
@@ -406,7 +398,7 @@
 
 
 
-\keys_define:nn { fantasycalendar/moon/day-type }
+\keys_define:nn { fantasycal/moon/day-type }
   {
     , iso .code:n = 
       { 
@@ -552,14 +544,14 @@
       \__fantasycal_moon_lunar_cycle_int
       \__fantasycal_moon_moon_phase_shift_int
 
-    \keys_set:nn { fantasycalendar/moon/moon-phase } {#2}
-    \keys_set:nn { fantasycalendar/moon/day-type } {#3}
+    \keys_set:nn { fantasycal/moon/moon-phase } {#2}
+    \keys_set:nn { fantasycal/moon/day-type } {#3}
     \int_incr:N \l__fantasycal_moon_ordinal_end_day_plus_one_int
     \int_compare:nNnTF \l__fantasycal_moon_max_nr_of_entries_int = 0
       { \bool_set_false:N } { \bool_set_true:N } 
       \l__fantasycal_moon_nr_entries_are_given_int
 
-    \__fantasycal_moon_set_moon_phase:n { \l__fantasycal_moon_ordinal_day_int }
+    \__fantasycal_moon_set_moon_phase:Nn \__fantasycal_moon_moon_phase_int { \l__fantasycal_moon_ordinal_day_int }
     \int_set:Nn \__fantasycal_moon_tmpa_int 
       { 
         \__fantasycal_moon_lunar_cycle_int
@@ -571,7 +563,7 @@
 \tl_new:N \l_fantasycal_moon_current_month_tl
 \tl_new:N \l_fantasycal_moon_current_day_tl
 
-\cs_new:Npn \__fantasycal_base_ordinal_to_dates:N #1
+\cs_new:Npn \__fantasycal_moon_ordinal_to_dates:N #1
   {
     \__fantasycal_base_ordinal_to_date:nNNN 
       {#1}
@@ -589,7 +581,7 @@
       { \l_tmpa_int } = { \__fantasycal_moon_tmpa_int }  
       {
         \int_zero:N \l__fantasycal_moon_in_days_int
-        \__fantasycal_base_ordinal_to_dates:N \l__fantasycal_moon_ordinal_day_int
+        \__fantasycal_moon_ordinal_to_dates:N \l__fantasycal_moon_ordinal_day_int
         #1
         \bool_set_true:N \l__fantasycal_moon_found_day_bool
         \__fantasycal_moon_check_if_loop_ends:F { }
@@ -647,7 +639,7 @@
           }
         \__fantasycal_moon_check_if_in_time_frame:T
           {
-            \__fantasycal_base_ordinal_to_dates:N 
+            \__fantasycal_moon_ordinal_to_dates:N 
               \l__fantasycal_moon_next_phase_day_int
             #4
           }
@@ -857,7 +849,7 @@
          \l__fantasycal_moon_val_a_int
        \int_set:Nn \l__fantasycal_moon_in_days_int
          { \l__fantasycal_moon_val_a_int - \l__fantasycal_moon_initial_ordinal_day_int }
-       \__fantasycal_base_ordinal_to_dates:N \l__fantasycal_moon_val_a_int
+       \__fantasycal_moon_ordinal_to_dates:N \l__fantasycal_moon_val_a_int
        #1
      }{
        No-overlap-found!
@@ -879,7 +871,7 @@
                \l__fantasycal_moon_val_a_int - 
                \l__fantasycal_moon_initial_ordinal_day_int 
              }
-           \__fantasycal_base_ordinal_to_dates:N \l__fantasycal_moon_val_a_int
+           \__fantasycal_moon_ordinal_to_dates:N \l__fantasycal_moon_val_a_int
            #1
          }
      }
@@ -971,13 +963,6 @@
       }
   }
 
-%\cs_new:Npn \__fantasycal_moon_lcm:NN #1#2
-%  {
-%    \int_set_eq:NN \l_tmpa_int #1
-%    \int_set_eq:NN \l_tmpb_int #2
-%    \__fantasycal_moon_gdc:NN \l_tmpa_int \l_tmpb_int
-%    \int_set:Nn \l__fantasycal_moon_lunarshift_int { #1*#2 / \l_tmpa_int }
-%  }
 \int_new:N \l__fantasycal_moon_lunarshift_int
 
 

@@ -595,59 +595,19 @@
 
 
 
-%\cs_new:Npn \__fantasycal_base_ordinal_to_date:nNNN #1#2#3#4
-%  {
-%    \group_begin:
-%    \int_set:Nn \l_tmpa_int {#1}
-%    %% year
-%    \bool_if:NTF \l__activate_leap_year_bool
-%      { 
-%        \__fantasycal_base_experimental_get_year_from_ordinal:Nn 
-%            \l__fantasycal_base_year_int \l_tmpa_int
-%      }{ 
-%        \int_set:Nn \l__fantasycal_base_year_int 
-%          { \int_div_truncate:nn \l_tmpa_int \l__fantasycal_base_default_nr_days_per_year_int }
-%      }
-%    %% days
-%    \int_set_eq:NN \l__fantasycal_base_day_int \l_tmpa_int
-%    \bool_if:NTF \l__activate_leap_year_bool
-%      {
-%        \__fantasycal_base_experimental_days_til_year_start:NN \l__fantasycal_base_year_int
-%          \l_tmpb_int
-%      }{
-%        \int_set:Nn \l_tmpb_int 
-%          { \l__fantasycal_base_year_int*\l__fantasycal_base_default_nr_days_per_year_int }
-%      }
-%    \int_sub:Nn \l__fantasycal_base_day_int { \l_tmpb_int }
-%
-%    \bool_if:NT \l__activate_leap_year_bool
-%      { 
-%        \__fantasycal_base_check_if_leap_year:n { \l__fantasycal_base_year_int }
-%        \__fantasycal_base_experimental_leap_year_detected: 
-%      }
-%
-%    \int_compare:nNnTF { \l__fantasycal_base_day_int } = { 0 }
-%      {
-%        \int_decr:N \l__fantasycal_base_year_int
-%        \int_set_eq:NN \l__fantasycal_base_month_int 
-%          \l__fantasycal_base_nr_months_per_year_int
-%        \seq_get_right:NN \l__fantasycal_base_number_days_of_months_seq \l_tmpa_tl
-%        \int_set:Nn \l__fantasycal_base_day_int { \l_tmpa_tl }
-%      }{
-%        %% get month and day
-%        \__fantasycal_base_ordinal_to_date_get_month:N \l__fantasycal_base_day_int
-%      }
-%    
-%    \int_gset_eq:NN \g__fantasycal_base_tmpa_int \l__fantasycal_base_year_int
-%    \int_gset_eq:NN \g__fantasycal_base_tmpb_int \l__fantasycal_base_month_int
-%    \int_gset_eq:NN \g__fantasycal_base_tmpc_int \l__fantasycal_base_day_int
-%    
-%    \group_end:
-%    %% Make numbers into tl's
-%    \tl_set:NV #2 \g__fantasycal_base_tmpa_int
-%    \tl_set:NV #3 \g__fantasycal_base_tmpb_int
-%    \tl_set:NV #4 \g__fantasycal_base_tmpc_int
-%  }
+\cs_new:Npn \__fantasycal_base_ordinal_to_date:nNNN #1#2#3#4
+  {
+    \group_begin:
+      \__fantasycal_base_check_and_setup_leap_year:nN {#1} #2
+      \__fantasycal_base_ordinal_to_date_shorter:nNNN #1#2#3#4
+      \int_gset:Nn \g__fantasycal_base_tmpa_int #2
+      \int_gset:Nn \g__fantasycal_base_tmpb_int #3
+      \int_gset:Nn \g__fantasycal_base_tmpc_int #4
+    \group_end:
+    \tl_set:NV #2 \g__fantasycal_base_tmpa_int
+    \tl_set:NV #3 \g__fantasycal_base_tmpb_int
+    \tl_set:NV #4 \g__fantasycal_base_tmpc_int
+  }
 
 \cs_new:Npn \__fantasycal_base_ordinal_to_date_get_month:N #1
   {
