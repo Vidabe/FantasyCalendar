@@ -541,7 +541,7 @@
 \cs_new:Npn \__fantasycal_base_check_and_setup_leap_year:nN #1 #2
   {
     \int_set:Nn \l_tmpa_int {#1}
-    \bool_if:NT \l__activate_leap_year_bool
+    \bool_if:NTF \l__activate_leap_year_bool
       {
         \__fantasycal_base_experimental_get_year_from_ordinal:Nn 
           \l__fantasycal_base_year_int \l_tmpa_int
