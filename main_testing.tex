@@ -117,7 +117,6 @@
 %    }
 %  }
 
-\end{document}
 \par
 \newpage
 \tikzpicture
@@ -165,6 +164,13 @@ A
 \Solena { 99 }
 \par
 
+
+\GetNextMoonphase \Solena { new-moon } { iso=0-1-1 } 
+  {  
+     \%{ordinal}\space In: \%{in-days}\ days. Iso-Date: \%{iso} \par
+  }
+\par
+
 \GetNextMoonphase \Solena { new-moon } { iso=0-1-1, nr-of-entries=10 } 
   {  
      \%{ordinal}\space In: \%{in-days}\ days. Iso-Date: \%{iso} \par
@@ -190,6 +196,14 @@ A
 \CompareMoons { \Solena, \Eria, \Surios } { new-moon } { iso=0-1-1, nr-of-entries=10 } 
   {
     \Solena{\%{ordinal}}\  \Surios{\%{ordinal}} \ \Eria{\%{ordinal}}\
+    \%{ordinal}\space In: \%{in-days}\ days. \%{iso} 
+    \par
+ }
+
+\par
+\CompareMoons { \Solena, \Eria, \Surios } { new-moon } { iso=417-1-1, nr-of-entries=10 } 
+  {
+    
     \%{ordinal}\space In: \%{in-days}\ days. \%{iso} 
     \par
  }
