@@ -63,7 +63,10 @@
 \tl_new:N \l_fantasycal_base_current_day_tl
 
 \tl_new:N \l__fantasycal_base_hook_tl
-
+\NewDocumentCommand \basefantasycalendaraddhook { +m }
+  {
+    \tl_put_right:Nn \l__fantasycal_base_hook_tl {#1}
+  }
 
 %% Main command to print calendar. Stolen from tikz' calendar
 
