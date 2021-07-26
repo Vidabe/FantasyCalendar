@@ -39,9 +39,9 @@
 
 \cs_new:Npn \__fantasycal_sanitize_weekday_for_tikz:N #1
   {
-    \int_set:Nn #1 { \l_fantasycal_base_current_weekday_tl }
-    \int_compare:nNnT {#1} = 0
+    \int_compare:nNnTF { \l_fantasycal_base_current_weekday_tl } = 0
       { \int_set_eq:NN #1 \l__fantasycal_base_nr_days_per_week_int }
+      { \int_set:Nn #1 { \l_fantasycal_base_current_weekday_tl } }
   }
 
 
