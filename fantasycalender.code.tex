@@ -36,6 +36,7 @@
 
 \tl_new:N \l__fantasycal_draw_width_tl
 
+\bool_new:N \l__fantasycal_tmpa_bool
 
 \cs_new:Npn \__fantasycal_sanitize_weekday_for_tikz:N #1
   {
@@ -933,6 +934,7 @@
   {
     all-moons/.code=
       {
+        \group_begin:
         \seq_map_inline:Nn \l__fantasycal_moon_seq
           {
             \bool_set_false:N \l__fantasycal_base_date_match_bool
@@ -944,9 +946,12 @@
                 { half-2 } { \pgfqkeys { /pgf } { ##1 = half-moon-2 } }
               }
               { \tl_show:n { ERROR-#1-##1 } }
-            \bool_if:NF \l__fantasycal_base_date_match_bool
-              { \seq_map_break: }
-        }
+            %% If even one is false, break the loop
+            \bool_if:NF \l__fantasycal_base_date_match_bool { \seq_map_break: }
+          }
+        \bool_if:NTF \l__fantasycal_base_date_match_bool
+          { \group_end: \bool_set_true:N \l__fantasycal_base_date_match_bool }
+          { \group_end: }
       }
   }
 
@@ -1022,7 +1027,10 @@
     \tikzset
       {
         execute ~ at ~ begin ~ day ~ scope = 
-          { \ifdateT{#1}{ \__fantasycal_add_yearly_day:nn { \%md } {#2} } }
+          { 
+            \ifdateT {#1} 
+              { \__fantasycal_add_yearly_day:nn { \%md } {#2} } 
+          }
       }
 %    \__fantasycal_add_yearly_day:nn {#1} {#2}
   }

@@ -107,11 +107,6 @@
             { \l_fantasycal_base_current_ordinal_int }
             \l_fantasycal_base_current_year_tl
           % Setup information about current date
-%          \__fantasycal_base_ordinal_to_date:nNNN 
-%            {\l_fantasycal_base_current_ordinal_int}
-%            \l_fantasycal_base_current_year_tl 
-%            \l_fantasycal_base_current_month_tl 
-%            \l_fantasycal_base_current_day_tl
           \__fantasycal_base_ordinal_to_date_shorter:nNNN
             { \l_fantasycal_base_current_ordinal_int }
             \l_fantasycal_base_current_year_tl
@@ -127,7 +122,7 @@
           % Advance day:
           \int_incr:N \l_fantasycal_base_current_ordinal_int
         }
-  \group_end:
+    \group_end:
   }
 
 
@@ -318,7 +313,7 @@
             \group_begin:
             \int_set:Nn \l__fantasycal_base_tmpa_int { \l_fantasycal_base_current_ordinal_int }
             \int_add:Nn \l__fantasycal_base_tmpa_int { #1-1 }
-            \bool_if:NTF \l__activate_leap_year_bool
+            \bool_if:NTF \l__fantasycal_activate_leap_year_bool
               {
                 \__fantasycal_base_experimental_get_year_from_ordinal:Nn
                   \l__fantasycal_base_year_int \l__fantasycal_base_tmpa_int
@@ -446,7 +441,7 @@
   {
     (
     #1*\l__fantasycal_base_default_nr_days_per_year_int
-    \bool_if:NT \l__activate_leap_year_bool
+    \bool_if:NT \l__fantasycal_activate_leap_year_bool
       { + \__fantasycal_base_check_add_leap_year_days:n { #1 - 1 } }
     )
   }
@@ -493,7 +488,7 @@
   {
     \int_set:Nn \l__fantasycal_base_year_int {#1}
 
-    \bool_if:NT \l__activate_leap_year_bool
+    \bool_if:NT \l__fantasycal_activate_leap_year_bool
       { 
         \__fantasycal_base_check_if_leap_year:n { \l__fantasycal_base_year_int }
         \__fantasycal_base_experimental_leap_year_detected: 
@@ -544,7 +539,7 @@
 \cs_new:Npn \__fantasycal_base_check_and_setup_leap_year:nN #1 #2
   {
     \int_set:Nn \l_tmpa_int {#1}
-    \bool_if:NTF \l__activate_leap_year_bool
+    \bool_if:NTF \l__fantasycal_activate_leap_year_bool
       {
         \__fantasycal_base_experimental_get_year_from_ordinal:Nn 
           \l__fantasycal_base_year_int \l_tmpa_int
@@ -580,7 +575,6 @@
         \seq_get_right:NN \l__fantasycal_base_number_days_of_months_seq \l_tmpa_tl
         \int_set:Nn \l__fantasycal_base_day_int { \l_tmpa_tl }
       }{
-        %% ToDO: Store last result and make shortcut?
         % else: get month and day the hard way
         \__fantasycal_base_ordinal_to_date_get_month:N \l__fantasycal_base_day_int
       }
@@ -811,7 +805,6 @@
 %
 %
 %
-%%%%%%%%% Experimental
 % Leap year.
 
 \bool_new:N \l__fantasycal_base_leap_year_bool
@@ -830,14 +823,14 @@
 
 
 
-\bool_new:N \l__activate_leap_year_bool
-\bool_set_false:N \l__activate_leap_year_bool 
+\bool_new:N \l__fantasycal_activate_leap_year_bool
+\bool_set_false:N \l__fantasycal_activate_leap_year_bool 
 
 \NewDocumentCommand \DefineLeapYear { +m m }
   {
     \fp_zero:N \l__fantasycal_base_leap_year_fraction_fp
      \__fantasycal_base_experimental_if_leap_condition:nT {#1} {#2}
-     \bool_set_true:N \l__activate_leap_year_bool
+     \bool_set_true:N \l__fantasycal_activate_leap_year_bool
   }
 
 \cs_new:Npn \__fantasycal_base_experimental_if_leap_condition:nT #1#2

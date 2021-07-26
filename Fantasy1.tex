@@ -25,13 +25,23 @@
 \NewFantasyMoon \Eria { 42 } { 21 }
 \NewFantasyMoon \Surios { 17 } { 9 }
 
+\DefineLeapYear
+  {
+    year divisible by 19;
+    but not divisible by 152;
+  }
+  { Ribrun=+3 }
+
+
+
 \FantasyCalendarDateEntry{1-1}{New Year}
 \FantasyCalendarOneTimeEntry{417-1-20}{Start of campaign}
 \FantasyCalendarOneTimeEntry{417-1-20}{Hero died to Goblin}
 \FantasyCalendarOneTimeEntry{417-1-21}{NewHero arrived}
-\FantasyCalendarDateEntry{2-44}{Be thankful of still being alive}
+\FantasyCalendarDateEntry{2-43}{Be thankful of still being alive}
 
 \FantasyCalendarSpecialEntry{all-moons=full}{THE APOCALYPSE!}
+\FantasyCalendarSpecialEntry{all-moons=new}{THE APOCALYPSE TOO!}
 
 
 \begin{document}
@@ -60,6 +70,13 @@ Moons overlapping full-moon
 \newpage
 
 \PrintFantasyCalendarYear{417}
+  {
+%    if (all-moons=full) [red]
+%    if (all-moons=new) [red]
+%    if (end of week) [blue]
+  }
+  
+\PrintFantasyCalendarYear{418}
   {
 %    if (all-moons=full) [red]
 %    if (all-moons=new) [red]
