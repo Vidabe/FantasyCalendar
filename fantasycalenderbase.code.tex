@@ -1,8 +1,10 @@
 
 %\ProvidesFileRCS{fantasycalendar.code.tex}
 
-\RequirePackage{pgf}
-\RequirePackage{l3benchmark}
+\@ifpackageloaded{pgf}{}
+  {\RequirePackage{pgf}}
+\@ifpackageloaded{l3benchmark}{}
+  {\RequirePackage{l3benchmark}}
 
 \makeatletter
 

@@ -121,5 +121,3 @@ Allow iso the names of months/days?
 Add option to add notes.
 
 
-## Not Implemented
-Leap years. They make me unhappy.

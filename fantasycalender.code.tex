@@ -1,7 +1,11 @@
 % Based on "tikzlibrarycalendar.code.tex"  by Till Tantau
 
-\RequirePackage{tikz}
-\RequirePackage{ragged2e}
+\makeatletter
+\@ifpackageloaded{tikz}{}
+  { \RequirePackage{tikz} }
+\@ifpackageloaded{ragged2e}{}
+  {\RequirePackage{ragged2e}}
+\makeatother
 %\input fantasycalenderbase.code.tex
 \input fantasycalendermoon.code.tex
 
@@ -183,8 +187,8 @@
   }
 
 
-\tl_set:Nn \l__fantasycal_draw_day_xshift_tl {3.5ex}
-\tl_set:Nn \l__fantasycal_draw_day_yshift_tl {3ex}
+\tl_set:Nn \l__fantasycal_draw_day_xshift_tl { 3.5ex }
+\tl_set:Nn \l__fantasycal_draw_day_yshift_tl { 3ex }
 
 \tikzset
   { 
