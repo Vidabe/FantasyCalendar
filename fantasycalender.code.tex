@@ -51,6 +51,7 @@
   }
 
 
+
 \tikzset{ dates/.code={ \__fantasycal_dates_parse:ww #1 \q_no_value } }
 \cs_new:Npn \__fantasycal_dates_parse:ww #1 to #2 \q_no_value
   {
@@ -89,61 +90,94 @@
     sep ~ to ~ box/.code= { \dim_set:Nn \l__fantasycal_box_inner_sep_dim {#1} } ,
     box ~ width/.code = 
       { 
-        \str_if_eq:nnTF {#1} { fit }
-          {
-            %% Fitting  width is quite easy. 
-            \dim_set:Nn \l_tmpa_dim
-              { \textwidth / \l__fantasycal_base_nr_days_per_week_int }
-            \tl_set:NV \l__fantasycal_calendar_box_width_tl \l_tmpa_dim
-          }{
-            \tl_set:Nn \l__fantasycal_calendar_box_width_tl {#1} 
-          }
-        \tl_set_eq:NN \l__fantasycal_draw_day_xshift_tl 
-          \l__fantasycal_calendar_box_width_tl
-        \dim_set:Nn \l__fantasycal_box_width_dim 
-          { 
-            \l__fantasycal_calendar_box_width_tl 
-              - 1\pgflinewidth
-              - 2\l__fantasycal_box_inner_x_sep_dim 
-          } 
         \tikzset 
           { 
             days = { inner ~ xsep = \l__fantasycal_box_inner_x_sep_dim }  ,
             box = { minimum ~ width=\l__fantasycal_calendar_box_width_tl } ,  
           }
+        \tl_put_right:Nn \l__fantasycal_box_size_setup_tl
+          {
+            \str_if_eq:nnTF {#1} { fit }
+              {
+                %% Fitting  width is quite easy. -1pt to remove overfull box warnings
+                \dim_set:Nn \l_tmpa_dim
+                  { \textwidth / \l__fantasycal_base_nr_days_per_week_int - 1pt }
+                \tl_set:NV \l__fantasycal_calendar_box_width_tl \l_tmpa_dim
+              }{
+                \tl_set:Nn \l__fantasycal_calendar_box_width_tl {#1} 
+              }
+            \tl_set_eq:NN \l__fantasycal_draw_day_xshift_tl 
+              \l__fantasycal_calendar_box_width_tl
+            \dim_set:Nn \l__fantasycal_box_width_dim 
+              { 
+                \l__fantasycal_calendar_box_width_tl 
+                  - 1\pgflinewidth
+                  - 2\l__fantasycal_box_inner_x_sep_dim 
+              } 
+          }
       } ,
     box ~ height/.code = 
       { 
-        \str_if_eq:nnTF {#1} { fit }
-          {
-            %% height is a bit more complicated, sadly.
-            %% get days of month with highest number of days
-            \fp_set:Nn \l_tmpa_fp
-              { max ( \seq_use:Nn \l__fantasycal_base_number_days_of_months_seq { , } ) }
-            %% Calculate the maximum number of rows a month can have. For this, assume
-            %% that the month starts at the end of the current week.
-            \fp_set:Nn \l_tmpb_fp
-              { 
-                ( \l_tmpa_fp + \l__fantasycal_base_nr_days_per_week_int - 1 ) /
-                \l__fantasycal_base_nr_days_per_week_int 
-              }
-            \dim_set:Nn \l_tmpa_dim {  \textheight / \fp_eval:n { floor(\l_tmpb_fp) } }
-            \tl_set:NV \l__fantasycal_calendar_box_height_tl \l_tmpa_dim
-          }{
-            \tl_set:Nn \l__fantasycal_calendar_box_height_tl {#1} 
-          }
-        \tl_set_eq:NN \l__fantasycal_draw_day_yshift_tl 
-          \l__fantasycal_calendar_box_height_tl
-        \dim_set:Nn \l__fantasycal_box_height_dim 
-          { 
-            \l__fantasycal_calendar_box_height_tl 
-              - 1\pgflinewidth
-              - 3\l__fantasycal_box_inner_y_sep_dim 
-          } 
         \tikzset 
           { 
             days = { inner ~ ysep=\l__fantasycal_box_inner_y_sep_dim } ,
             box = { minimum ~ height=\l__fantasycal_calendar_box_height_tl } ,
+          }
+        \tl_put_right:Nn \l__fantasycal_box_size_setup_tl
+          {
+            \str_if_eq:nnTF {#1} { fit }
+              {
+                \bool_if:NTF \l__fantasycal_activate_leap_year_bool
+                  {
+                    \seq_set_eq:NN \l_tmpa_seq 
+                      \l__fantasycal_base_leap_year_days_per_months_seq 
+                  }{
+                    \seq_set_eq:NN \l_tmpa_seq 
+                      \l__fantasycal_base_number_days_of_months_seq 
+                  }
+                %% height is a bit more complicated, sadly.
+                %% get days of month with highest number of days
+                \int_set:Nn \l_tmpa_int
+                  { \fp_eval:n { max ( \seq_use:Nn \l_tmpa_seq { , } ) } }
+
+                %% Calculate the maximum number of rows a month can have. For this, assume
+                %% that the month starts at the end of the current week.
+                %% \l_tmpa_int is now the number of rows i have.
+                \int_set:Nn \l_tmpa_int
+                  { 
+                    \fp_eval:n
+                      {
+                        ceil
+                          (
+                            (\l_tmpa_int + \l__fantasycal_base_nr_days_per_week_int-1) /
+                            \l__fantasycal_base_nr_days_per_week_int
+                          )
+                      }
+                  }
+                
+                %% Remove header from the vertival space
+                \bool_if:NTF \l__fantasycal_draw_monthname_bool
+                  { \dim_set:Nn \l_tmpa_dim { 3.25\baselineskip } }
+                  {
+                    \bool_if:NTF \l__fantasycal_draw_weekday_bool
+                      { \dim_set:Nn \l_tmpa_dim { 2\baselineskip } }
+                      { \dim_zero:N \l_tmpa_dim }
+                  }
+
+                \dim_set:Nn \l_tmpa_dim { ( \textheight - \l_tmpa_dim ) / \l_tmpa_int }
+                \tl_set:NV \l__fantasycal_calendar_box_height_tl \l_tmpa_dim
+                
+              }{
+                \tl_set:Nn \l__fantasycal_calendar_box_height_tl {#1} 
+              }
+            \tl_set_eq:NN \l__fantasycal_draw_day_yshift_tl 
+              \l__fantasycal_calendar_box_height_tl
+            \dim_set:Nn \l__fantasycal_box_height_dim 
+              { 
+                \l__fantasycal_calendar_box_height_tl 
+                  - 1\pgflinewidth
+                  - 3\l__fantasycal_box_inner_y_sep_dim 
+              } 
           }
       } ,
     box ~ size/.code = 
@@ -163,6 +197,13 @@
             \tikzset { box ~ height = {#1} , box ~ width = {#1} } 
           }
       } ,
+  }
+
+
+\tl_new:N \l__fantasycal_box_size_setup_tl
+\cs_new:Npn \__fantasycal_calculate_box_size:
+  {
+    \l__fantasycal_box_size_setup_tl
   }
 
 
@@ -217,6 +258,13 @@
   }
 
 
+\tl_new:N \l__fantasycal_font_year_tl
+\tl_new:N \l__fantasycal_font_month_tl
+\tl_new:N \l__fantasycal_font_week_day_tl
+\tl_new:N \l__fantasycal_font_day_tl
+\tl_new:N \l__fantasycal_font_notes_tl
+
+\tl_set:Nn \l__fantasycal_font_month_tl { \Large\bfseries }
 
 \tl_set:Nn \l__fantasycal_code_day_tl 
   {
@@ -225,12 +273,13 @@
       { 
         \dim_compare:nNnTF 
           { \l__fantasycal_box_width_dim + \l__fantasycal_box_height_dim  } = { 0pt }
-          { \fantasycalTextDay }
+          { \l__fantasycal_font_day_tl\fantasycalTextDay }
           {
             \parbox [ c ] [ \l__fantasycal_box_height_dim ] 
               [ \l__fantasycal_vertical_day_tl ]
               { \l__fantasycal_box_width_dim }
               { 
+                \l__fantasycal_font_day_tl
                 \l__fantasycal_ragged_day_tl
                 \fantasycalTextDay
               }
@@ -247,12 +296,15 @@
           { \l__fantasycal_text_box_tl } ; 
       }
   }
+
+
+
 \tl_set:Nn \l__fantasycal_code_week_day_tl 
-  { \node [every ~ weekday] { \l__fantasycal_text_week_day_tl } ; }
+  {\node [every ~ weekday] {\l__fantasycal_font_week_day_tl\l__fantasycal_text_week_day_tl };}
 \tl_set:Nn \l__fantasycal_code_month_tl 
-  { \node [every ~ month] { \l__fantasycal_text_month_tl } ; }
+  { \node [every ~ month] { \l__fantasycal_font_month_tl \l__fantasycal_text_month_tl } ; }
 \tl_set:Nn \l__fantasycal_code_year_tl 
-  { \node [every ~ year] { \l__fantasycal_text_year_tl } ; }
+  { \node [every ~ year] { \l__fantasycal_font_year_tl\l__fantasycal_text_year_tl } ; }
 
 \tl_new:N \l__fantasycal_text_day_moon_hook_tl
 \tl_new:N \l__fantasycal_text_day_note_hook_tl
@@ -270,7 +322,6 @@
 \tl_set:Nn \l__fantasycal_text_week_day_tl { \%wt }
 \tl_set:Nn \l__fantasycal_text_month_tl 
   { 
-    \bfseries 
     \l__fantasycal_text_month_year_hook_left_tl 
     \%mt \space [\%m0] 
     \l__fantasycal_text_month_year_hook_right_tl 
@@ -288,11 +339,16 @@
   }
 \tikzset
   { 
-    weekday ~ text/.code= { \tl_set:Nn \l__fantasycal_text_week_day_tl {#1} }
+    day ~ font/.code= { \tl_set:Nn \l__fantasycal_font_day_tl {#1} }
   }
 \tikzset
   { 
-    every ~ day/.style={anchor=base ~ east} 
+    weekday ~ text/.code= { \tl_set:Nn \l__fantasycal_text_week_day_tl {#1} } ,
+    weekday ~ font/.code= { \tl_set:Nn \l__fantasycal_font_week_day_tl {#1} } ,
+  }
+\tikzset
+  { 
+    every ~ day/.style= { anchor=base ~ east } 
   }
 \tikzset
   { 
@@ -316,6 +372,10 @@
   { 
     month ~ text/.code= { \tl_set:Nn \l__fantasycal_text_month_tl {#1} }
   }
+\tikzset
+  { 
+    month ~ font/.code= { \tl_set:Nn \l__fantasycal_font_month_tl {#1} }
+  }
 \tikzset{every ~ month/.style={}}
 
 
@@ -326,6 +386,10 @@
 \tikzset
   { 
     year ~ text/.code= { \tl_set:Nn \l__fantasycal_text_year_tl {#1} }
+  }
+\tikzset
+  { 
+    year ~ font/.code= { \tl_set:Nn \l__fantasycal_font_year_tl {#1} }
   }
 \tikzset{every ~ year/.style={}}
 
@@ -517,7 +581,6 @@
           \fp_eval:n 
           { 
             max ( \seq_use:Nn \l__fantasycal_base_number_days_of_months_seq { , } ) 
-            + \l__fantasycal_base_nr_days_per_week_int 
           }
       }
   }
@@ -891,6 +954,7 @@
 
 \cs_new:Npn \__fantasycal_print_stop:
   {
+    \__fantasycal_calculate_box_size:
     \pgftransformshift { \tikz@node@at }
     \exp_args:NV \__fantasycal_base_fantasycalendar:nnnn 
       \tikz@fig@name 
@@ -1009,22 +1073,37 @@
     \__fantasycal_add_one_year_day:nn {#1} {#2}
   }
 
+\cs_new:Npn \__fantasycal_add_yearly_day_parse:w #1-#2\relax
+  {
+    \tl_set:Nx \l_tmpa_tl { \int_eval:n {#1} - \int_eval:n {#2} }
+  }
+\cs_new:Npn \__fantasycal_add_one_year_day_parse:w #1-#2-#3\relax
+  {
+    \tl_set:Nx \l_tmpa_tl { \int_eval:n {#1} - \int_eval:n {#2} - \int_eval:n {#3} }
+  }
+
 \cs_new:Npn \__fantasycal_add_yearly_day:nn #1#2
   {
-    \tl_if_exist:cTF { l__fantasycal_yearly_day_ #1 _tl }
-      { \tl_put_right:cn { l__fantasycal_yearly_day_ #1 _tl } { \\ #2 } }
+    \tl_set:Nx \l_tmpa_tl {#1}
+    \exp_after:wN 
+    \__fantasycal_add_yearly_day_parse:w \l_tmpa_tl \relax
+    \tl_if_exist:cTF { l__fantasycal_yearly_day_ \l_tmpa_tl _tl }
+      { \tl_put_right:cn { l__fantasycal_yearly_day_ \l_tmpa_tl _tl } { \\ #2 } }
       { 
-        \tl_new:c { l__fantasycal_yearly_day_ #1 _tl }
-        \tl_set:cn { l__fantasycal_yearly_day_ #1 _tl } {#2}
+        \tl_new:c { l__fantasycal_yearly_day_ \l_tmpa_tl _tl }
+        \tl_set:cn { l__fantasycal_yearly_day_ \l_tmpa_tl _tl } {#2}
       }
   }
 \cs_new:Npn \__fantasycal_add_one_year_day:nn #1#2
   {
-    \tl_if_exist:cTF { l__fantasycal_one_year_day_ #1 _tl }
-      { \tl_put_right:cn { l__fantasycal_one_year_day_ #1 _tl } { \\ #2 } }
+    \tl_set:Nx \l_tmpa_tl {#1}
+    \exp_after:wN
+    \__fantasycal_add_one_year_day_parse:w \l_tmpa_tl \relax
+    \tl_if_exist:cTF { l__fantasycal_one_year_day_ \l_tmpa_tl _tl }
+      { \tl_put_right:cn { l__fantasycal_one_year_day_ \l_tmpa_tl _tl } { \\ #2 } }
       { 
-        \tl_new:c { l__fantasycal_one_year_day_ #1 _tl }
-        \tl_set:cn { l__fantasycal_one_year_day_ #1 _tl } {#2}
+        \tl_new:c { l__fantasycal_one_year_day_ \l_tmpa_tl _tl }
+        \tl_set:cn { l__fantasycal_one_year_day_ \l_tmpa_tl _tl } {#2}
       }
   }
 
@@ -1053,9 +1132,10 @@
        { \tl_clear:N \l__fantasycal_text_day_note_hook_tl }
     , add ~ day ~ notes / .default = true
   }
+\tl_set:Nn \l__fantasycal_font_notes_tl { \small }
 \cs_new:Npn \fantasycalPrinDayNotes
   {
-    \small
+    \l__fantasycal_font_notes_tl
     \tl_if_exist:cT { l__fantasycal_yearly_day_ \%md _tl }
       {
         \\ \textsf { \tl_use:c { l__fantasycal_yearly_day_ \%md _tl } }
@@ -1077,7 +1157,7 @@
           [
             , month = #2-##1
             , week ~ list
-            , box ~ size = fit-square
+            , box ~ size = fit
             , box ~ draw = black
             , month ~ label ~ above ~ centered
             , weekday ~ label ~ above
