@@ -1,7 +1,8 @@
 # README
 
 ## Examples
-Look at the "Fantasy1" or "Klingon" files for some examples
+It's best to look at the examples in "Fantasy1.tex", "Klingon.tex", "Georgian.tex"
+(and maybe "40k.tex") in order to get a grasp one the code.
 
 ## Requirements
 An up-to-date LaTeX distribution.
