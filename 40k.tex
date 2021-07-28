@@ -1,0 +1,105 @@
+% !TEX encoding = UTF-8 Unicode
+\documentclass[paper=landscape]{scrartcl}
+
+% Not quite elegant, but it works
+%
+% Source:
+% https://warhammer40k.fandom.com/wiki/Imperial_Dating_System
+
+% Note: Leap years probably do not exist in this calendar.
+
+\usepackage{color}
+\typearea{30}
+\usepackage{multicol}
+
+\input fantasycalender.code.tex
+
+\FantasyCalendarAddMonths{5}{
+  January=31, 
+  February=28, 
+  March=31, 
+  April=30, 
+  May=31, 
+  June=30, 
+  July=31 , 
+  August=31, 
+  September=30, 
+  October=31 ,
+  November=30 ,
+  December=31 ,
+}
+
+\FantasyCalendarAddDays{Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday}
+
+
+\DefineLeapYear
+  {
+    year divisible by 4;
+    but not divisible by 200;
+    but  divisible by 400;
+  }
+  { February=+3 }
+
+
+
+\begin{document}
+
+\ExplSyntaxOn
+
+\cs_new:Npn \PrintTripleDigit #1
+  {
+      \ifnum#1<10\relax
+        00\relax
+      \else
+        \ifnum#1<100\relax
+          0
+        \fi
+      \fi
+      \int_eval:n {#1}
+  }
+
+  \cs_new:Npn \GetCorrectYear #1
+    {
+      \int_set:Nn \l_tmpa_int { \int_div_truncate:nn {#1} { 1000 } }
+      \int_set:Nn \l_tmpb_int { #1 - \l_tmpa_int*1000 }
+      \PrintTripleDigit \l_tmpb_int
+      .
+      M \int_eval:n { \l_tmpa_int + 1 }
+    }
+  \cs_new:Npn \GetCorrectFraction #1 #2
+    {
+      \int_set:Nn \l_tmpa_int 
+        { 
+          \fp_eval:n { floor ( ( (#1) * 24 + #2) *0.11407955 )  }
+        }
+      \PrintTripleDigit \l_tmpa_int
+    }
+  
+
+\tikzset
+  {
+    day ~ text=
+      {
+        \%d0 \\
+        0
+        .
+        \GetCorrectFraction { \%s0 - 1 } { 0 }
+        .
+        \GetCorrectYear{ \%y0 }
+      }
+  }
+\ExplSyntaxOff
+
+\centering
+\PrintFantasyCalendarYear[box height=2.9cm, box width=3.6cm]{\the\year}
+  {
+%    
+  }
+
+\PrintFantasyCalendarYear[box height=2.9cm, box width=3.6cm]{40000}
+  {
+%    
+  }
+
+  
+\end{document}

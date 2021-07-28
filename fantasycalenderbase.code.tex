@@ -775,7 +775,7 @@
   {
     \__fantasycal_base_print_month_name:n { \l_fantasycal_base_current_month_tl }
   }
-\cs_new:cpn { __fantasycal@shorthand@mt}
+\cs_new:cpn { __fantasycal@shorthand@mt }
   {
     \__fantasycal_base_print_month_name:n { \l_fantasycal_base_current_month_tl }
   }
@@ -798,6 +798,14 @@
 \cs_new:cpn { __fantasycal@shorthand@o0 }
   {
     \int_use:N \l_fantasycal_base_current_ordinal_int
+  }
+\cs_new:cpn { __fantasycal@shorthand@s0 }
+  {
+    \int_eval:n 
+      {(
+        \l_fantasycal_base_current_ordinal_int
+        - \__fantasycal_base_print_days_til_start_of_year:n { \l_fantasycal_base_current_year_tl }
+      )}
   }
 
   
