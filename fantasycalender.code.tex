@@ -29,6 +29,7 @@
 
 \tl_new:N \l__fantasycal_text_box_tl
 \tl_new:N \fantasycalTextDay
+\tl_new:N \l__fantasycal_text_day_tl
 \tl_new:N \l__fantasycal_text_week_day_tl
 \tl_new:N \l__fantasycal_text_month_tl
 \tl_new:N \l__fantasycal_text_year_tl
@@ -261,10 +262,11 @@
 \tl_set:Nn \l__fantasycal_text_box_tl { \phantom{1} } %% text in node shifts thing up
 \tl_set:Nn \fantasycalTextDay 
   { 
-    \%d- 
+    \l__fantasycal_text_day_tl
     \l__fantasycal_text_day_moon_hook_tl 
     \l__fantasycal_text_day_note_hook_tl
   }
+\tl_set:Nn \l__fantasycal_text_day_tl { \%d-  }
 \tl_set:Nn \l__fantasycal_text_week_day_tl { \%wt }
 \tl_set:Nn \l__fantasycal_text_month_tl 
   { 
@@ -282,7 +284,7 @@
   }
 \tikzset
   { 
-    day ~ text/.code= { \tl_set:Nn \fantasycalTextDay {#1} }
+    day ~ text/.code= { \tl_set:Nn \l__fantasycal_text_day_tl {#1} }
   }
 \tikzset
   { 
