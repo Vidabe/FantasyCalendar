@@ -43,36 +43,26 @@
 
 \ExplSyntaxOn
 
-\cs_new:Npn \PrintTripleDigit #1
-  {
-    \ifnum#1<100\relax
-      0
-      \ifnum#1<10\relax
-        0
-      \fi
-    \fi
-    \int_eval:n {#1}
-  }
+\fp_const:Nn \c__imperial_calendar_makr_nr_fp { 1000/(366*24) }
 
 \cs_new:Npn \GetCorrectYear #1
   {
     \int_set:Nn \l_tmpa_int { \int_div_truncate:nn {#1} { 1000 } }
     \int_set:Nn \l_tmpb_int { #1 - \l_tmpa_int*1000 }
-    \PrintTripleDigit \l_tmpb_int
+    \bfcalnumbertominimumdigits \l_tmpb_int { 3 }
     .
     M \int_eval:n { \l_tmpa_int + 1 }
   }
     
-\fp_const:Nn \c__imperial_calendar_makr_nr_fp { 1000/(366*24) }
 \cs_new:Npn \GetCorrectFraction #1 #2
   {
     \int_set:Nn \l_tmpa_int 
       { 
         \fp_eval:n { floor ( ( (#1) * 24 + #2)*\c__imperial_calendar_makr_nr_fp )  }
       }
-    \PrintTripleDigit \l_tmpa_int
+    \bfcalnumbertominimumdigits \l_tmpa_int { 3 }
   }
-  
+
 
 \tikzset
   {

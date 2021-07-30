@@ -21,20 +21,91 @@
 
 \FantasyCalendarAddDays{Agguan, Sielan, Flethan, Wanuran, Usyn, Jundal, Izach, Verhan, Haturan}
 
-\NewFantasyMoon \Surios {17} { 16 }
-\NewFantasyMoon \Eria {42} { 23 }
+%\NewFantasyMoon \Surios {17} { 16 }
+%\NewFantasyMoon \Eria {42} { 23 }
 
 \FantasyCalendarDateEntry{1-1}{New Year}
 \FantasyCalendarDateEntry{2-40}{Be thankful of still being alive}
 
 
+\DefineLeapYear
+  {
+    year divisible by 19;
+    but not divisible by 152;
+  }
+  { Ribrun=+3 }
+
+
 \begin{document}
 \ExplSyntaxOn
-as
-% 8.1e-6 seconds (23.8 ops)
-% 7.41e-6 seconds (21.9 ops)
 
-\__fantasycalendar_ordinal_to_date:nNNN { 39 } \l_tmpa_tl\l_tmpb_tl\l_tmpv_tl
-\l_tmpa_tl\l_tmpb_tl\l_tmpv_tl 
+\tl_set:Nn \l_tmpa_tl { 12ghjr298 }
+
+% 2.41e-5 seconds (63.3 ops)
+% 8.62e-6 seconds (23.8 ops)
+
+
+\cs_new:Npn \PrintTripleDigit #1
+  {
+    \ifnum#1<100\relax
+      0
+      \ifnum#1<10\relax
+        0
+      \fi
+    \fi
+    \int_eval:n {#1}
+  }
+
+\l__fantasycal_base_print_number_to_minimum_digits:nn { 1 } { 3 }
+b
+\l__fantasycal_base_print_number_to_minimum_digits:nn { 12 } { 3 }
+c
+\l__fantasycal_base_print_number_to_minimum_digits:nn { 123 } { 3 }
+
+%\benchmark:n
+%  {
+%    \tl_set:Nx \l_tmpa_int 
+%      { \PrintTripleDigit { 12 } }
+%  }
+\benchmark:n
+  {
+    \tl_set:Nx \l_tmpa_int 
+      { \l__fantasycal_base_print_number_to_minimum_digits:nn { 12 } { 5 } }
+  }
+
+\\
+\l__fantasycal_base_print_number_to_minimum_digits_space:nn { 0 } { 1 } \\
+
+\l__fantasycal_base_print_number_to_minimum_digits_space:nn { 0 } { 2 } \\
+\l__fantasycal_base_print_number_to_minimum_digits_space:nn { 0 } { 2 } \\
+\l__fantasycal_base_print_number_to_minimum_digits_space:nn { 0 } { 2 } \\
+\l__fantasycal_base_print_number_to_minimum_digits_space:nn { 0 } { 2 } \\
+\l__fantasycal_base_print_number_to_minimum_digits_space:nn { 0 } { 2 } \\
+
+
+\l__fantasycal_base_print_number_to_minimum_digits:nn { 1 } { 5 } \\
+\l__fantasycal_base_print_number_to_minimum_digits:nn { 12 } { 5 } \\
+\l__fantasycal_base_print_number_to_minimum_digits:nn { 123 } { 5 } \\
+\l__fantasycal_base_print_number_to_minimum_digits:nn { 1234 } { 5 } \\
+\l__fantasycal_base_print_number_to_minimum_digits:nn { 12345 } { 5 } \\
+
+
+%1.24e-6 seconds (3.37 ops)
+%9.4e-6 seconds (25.4 ops)
+
+%        \tikz\PrintFantasycalendarBase
+%          [
+%            , month = 1-2
+%            , week ~ list
+%            , box ~ size = fit
+%            , box ~ draw = black
+%            , month ~ label ~ above ~ centered
+%            , weekday ~ label ~ above
+%            , add ~ moons 
+%            , add ~ day ~ notes
+%            , add ~ year ~ to ~ month
+%          ]
+%          
+%          ;
 
 \end{document}
