@@ -1024,6 +1024,30 @@
           { \group_end: }
       }
   }
+\pgfset
+  {
+    given-moons-are/.code ~ 2 ~ args=
+      {
+        \group_begin:
+        \clist_map_inline:nn {#1}
+          {
+            \bool_set_false:N \l__fantasycal_base_date_match_bool
+            \str_case:nnF {#2}
+              {
+                { full } { \pgfqkeys { /pgf } { ##1 = full-moon } }
+                { new } { \pgfqkeys { /pgf } { ##1 = new-moon } }
+                { half-1 } { \pgfqkeys { /pgf } { ##1 = half-moon-1 } }
+                { half-2 } { \pgfqkeys { /pgf } { ##1 = half-moon-2 } }
+              }
+              { \tl_show:n { ERROR-#1-#2-##1 } }
+            %% If even one is false, break the loop
+            \bool_if:NF \l__fantasycal_base_date_match_bool { \seq_map_break: }
+          }
+        \bool_if:NTF \l__fantasycal_base_date_match_bool
+          { \group_end: \bool_set_true:N \l__fantasycal_base_date_match_bool }
+          { \group_end: }
+      }
+  }
 
 
 
