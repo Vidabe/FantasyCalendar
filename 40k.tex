@@ -7,9 +7,8 @@
 % https://warhammer40k.fandom.com/wiki/Imperial_Dating_System
 
 
+\usepackage[margin=1cm]{geometry}
 \usepackage{color}
-\typearea{30}
-\usepackage{multicol}
 
 \input fantasycalender.code.tex
 
@@ -83,12 +82,12 @@
 
 
 \centering
-\PrintFantasyCalendarYear[box height=2.9cm, box width=3.6cm]{\the\year}
+\PrintFantasyCalendarYear[]{\the\year}
   {
 %    
   }
 
-\PrintFantasyCalendarYear[box height=2.9cm, box width=3.6cm]{40000}
+\PrintFantasyCalendarYear[]{40000}
   {
 %    
   }

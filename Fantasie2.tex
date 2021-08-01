@@ -72,17 +72,17 @@
 %\end{document}
 
 
-\tikz \PrintFantasycalendarBase[month=0-1, week list, month  label  above centered]; 
+\tikz \PrintFantasycalendarBase[month=0-1, week list, month  label  above centered, month font={}]; 
 
-\tikz \PrintFantasycalendarBase[month=0-3, week list, month  label  above centered]; 
+\tikz \PrintFantasycalendarBase[month=0-3, week list, month  label  above centered, month font={}]; 
 
 \newpage
 
-\tikzset{box size=fit-square}
+\tikzset{box size=fit}
 \tikz \PrintFantasycalendarBase[month=0-1, week list, month  label  above centered , weekday  label above, box draw=black, add day notes, add moons]; 
 
 
-\tikz \PrintFantasycalendarBase[month=0-2, week list, month  label  above left , weekday  label above, box draw=black, box size=fit-square]; 
+\tikz \PrintFantasycalendarBase[month=0-2, week list, month  label  above left , weekday  label above, box draw=black, box size=fit]; 
 % days={ rectangle , draw }
 
 \newpage
