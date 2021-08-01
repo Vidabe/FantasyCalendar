@@ -690,22 +690,39 @@
 \cs_new:Npn \l__fantasycal_base_print_number_to_minimum_digits_base:nnn #1#2#3
   {
     \l__fantasycal_base_print_number_to_minimum_digits_base_aux:ffn
-      { \int_eval:n {#1} } { \int_eval:n {#2-1} } {#3}
+      { \int_eval:n {#1} } { \int_eval:n { #2-1 } } {#3}
   }
-
 \cs_new:Npn  \l__fantasycal_base_print_number_to_minimum_digits_base_aux:nnn #1#2#3
   {
-    \int_compare:nNnTF {#1} < { 1 \prg_replicate:nn {#2} { 0 } }
+    %% number of digits needs to be at least 1
+    \int_compare:nNnTF {#2} > { \c_zero_int }
       {
-        #3
-        \int_compare:nNnTF {#2} < { 2 }
-          {#1}
+        %% Check if #1 is smaller than ..., 1000, 100, 10.
+        \int_compare:nNnTF {#1} < { 1 \prg_replicate:nn {#2} { 0 } }
           {
+            %% True: Add #3 and repeat with #2-1
+            #3
             \l__fantasycal_base_print_number_to_minimum_digits_base_aux:nfn 
               {#1} { \int_eval:n { #2-1 } } {#3}
           }
+          {#1}
       }
       {#1}
+%  
+%  
+%  
+%  
+%    \int_compare:nNnTF {#1} < { 1 \prg_replicate:nn {#2} { 0 } }
+%      {
+%        #3
+%        \int_compare:nNnTF {#2} < { 2 }
+%          {#1}
+%          {
+%            \l__fantasycal_base_print_number_to_minimum_digits_base_aux:nfn 
+%              {#1} { \int_eval:n { #2-1 } } {#3}
+%          }
+%      }
+%      {#1}
   }
 \cs_generate_variant:Nn \l__fantasycal_base_print_number_to_minimum_digits_base_aux:nnn 
   { nf , ff }
@@ -853,10 +870,11 @@
 %
 %
 % Leap year.
+% Leap years are annoyingly difficult to implement
 
 \bool_new:N \l__fantasycal_base_leap_year_bool
+
 \tl_new:N \l__fantasycal_base_leap_storage_aux_tl
-\int_new:N \l__fantasycal_base_longest_thingy_int
 \fp_new:N \l__fantasycal_base_leap_year_fraction_fp
 \fp_new:N \l__fantasycal_base_leap_year_days_per_year_mean_fp
 
@@ -873,21 +891,17 @@
 \bool_new:N \l__fantasycal_activate_leap_year_bool
 \bool_set_false:N \l__fantasycal_activate_leap_year_bool 
 
+
 \NewDocumentCommand \DefineLeapYear { +m m }
   {
+    \bool_set_true:N \l__fantasycal_activate_leap_year_bool
     \fp_zero:N \l__fantasycal_base_leap_year_fraction_fp
-     \__fantasycal_base_if_leap_condition:nT {#1} {#2}
-     \bool_set_true:N \l__fantasycal_activate_leap_year_bool
+    \__fantasycal_base_if_leap_condition:nT {#1} {#2}
   }
 
 \cs_new:Npn \__fantasycal_base_if_leap_condition:nT #1#2
   {
-    \int_zero:N \l__fantasycal_base_leap_nr_days_added_int
-    \seq_clear:N \l__fantasycal_base_leap_year_days_per_months_seq
-    \seq_clear:N \l__fantasycal_base_leap_year_cumulative_days_seq
-    \seq_clear:N \l__fantasycal_base_leap_year_inverse_cumulative_days_seq
-    \cs_set:Npn \__fantasycal_base_check_add_leap_year_days_aux:n ##1 { }
-    \cs_set:Npn \__fantasycal_base_check_if_leap_year_aux:n ##1 { }
+    \__fantasycal_base_leap_year_setup:
     \__fantasycal_base_leap_year_additions:n {#2}
 %
     \__fantasycal_base_lp_start:ww
@@ -900,35 +914,56 @@
         \l__fantasycal_base_leap_year_fraction_fp + 
         \l__fantasycal_base_default_nr_days_per_year_int 
       }
-    \int_set:Nn \l__fantasycal_base_nr_days_in_leap_year_int
+    \int_compare:nNnF
+      \l__fantasycal_base_nr_days_in_leap_year_int
+      =
       {
         \l__fantasycal_base_default_nr_days_per_year_int +
         \l__fantasycal_base_leap_nr_days_added_int
       }
+      {
+        \tl_show:n {ERROR!\ number \ days\ per \ year \ wrong\ in \ leap \ year! }
+      }
   }
+
+\cs_new:Npn \__fantasycal_base_leap_year_setup:
+  {
+    \int_zero:N \l__fantasycal_base_leap_nr_days_added_int
+    \seq_clear:N \l__fantasycal_base_leap_year_days_per_months_seq
+    \seq_clear:N \l__fantasycal_base_leap_year_cumulative_days_seq
+    \seq_clear:N \l__fantasycal_base_leap_year_inverse_cumulative_days_seq
+    \cs_set:Npn \__fantasycal_base_check_add_leap_year_days_aux:n ##1 { }
+    \cs_set:Npn \__fantasycal_base_check_if_leap_year_aux:n ##1 { }
+  }
+
 
 \cs_new:Npn \__fantasycal_base_leap_year_additions:n #1
   {
-    \prop_set_from_keyval:Nn \l__fantasycal_base_leap_year_storage_prop {#1}
     \int_zero:N \l__fantasycal_base_tmpa_int
+    \int_zero:N \l__fantasycal_base_nr_days_in_leap_year_int
+%    
+    \prop_set_from_keyval:Nn \l__fantasycal_base_leap_year_storage_prop {#1}
+%    
     \seq_set_eq:NN \l_tmpa_seq \l__fantasycal_base_default_number_days_of_months_seq
     \seq_map_indexed_inline:Nn \l__fantasycal_base_month_names_seq
        {
          \seq_pop_left:NN \l_tmpa_seq \l_tmpa_tl
-         \int_set:Nn \l_tmpa_int { \l_tmpa_tl }
+         \int_set:Nn \l__fantasycal_base_tmpa_int { \l_tmpa_tl }
          \prop_get:NnNT \l__fantasycal_base_leap_year_storage_prop {##2} \l_tmpb_tl
            { 
-             \int_set:Nn \l_tmpb_int { \l_tmpb_tl } 
-             \int_add:Nn \l__fantasycal_base_leap_nr_days_added_int { \l_tmpb_int }
-             \int_add:Nn \l_tmpa_int { \l_tmpb_int }
+             \int_add:Nn \l__fantasycal_base_leap_nr_days_added_int { \l_tmpb_tl }
+             \int_add:Nn \l__fantasycal_base_tmpa_int { \l_tmpb_tl }
            }
-         \seq_put_right:NV \l__fantasycal_base_leap_year_days_per_months_seq \l_tmpa_int
+         \seq_put_right:NV \l__fantasycal_base_leap_year_days_per_months_seq 
+           \l__fantasycal_base_tmpa_int
          \seq_put_right:NV \l__fantasycal_base_leap_year_cumulative_days_seq 
-           \l__fantasycal_base_tmpa_int
+           \l__fantasycal_base_nr_days_in_leap_year_int
          \seq_put_left:NV \l__fantasycal_base_leap_year_inverse_cumulative_days_seq 
+           \l__fantasycal_base_nr_days_in_leap_year_int
+         \int_add:Nn \l__fantasycal_base_nr_days_in_leap_year_int 
            \l__fantasycal_base_tmpa_int
-         \int_add:Nn \l__fantasycal_base_tmpa_int \l_tmpa_int
        }
+%       
   }
 
 \cs_new:Npn \__fantasycal_base_lp_start:ww #1 year ~ #2 divisible ~ by ~ #3;
@@ -952,47 +987,40 @@
   {
     \str_if_eq:nnTF { not~ } {#1}
       { 
-        \fp_sub:Nn \l__fantasycal_base_leap_year_fraction_fp { 1/#2 }
-        \__fantasycal_base_lp_store_aux:nN {#2} \bool_set_false:N
-        \__fantasycal_base_lp_store_aux_ii:nnV {#2} { - }
-          \l__fantasycal_base_leap_nr_days_added_int
+        \__fantasycal_base_lp_store_values:nnNV
+          {#2} { - } \bool_set_false:N \l__fantasycal_base_leap_nr_days_added_int
       }{ 
-        \fp_add:Nn \l__fantasycal_base_leap_year_fraction_fp { 1/#2 }
-        \__fantasycal_base_lp_store_aux:nN {#2} \bool_set_true:N
-        \__fantasycal_base_lp_store_aux_ii:nnV {#2} { + }
-          \l__fantasycal_base_leap_nr_days_added_int
+        \__fantasycal_base_lp_store_values:nnNV
+          {#2} { + } \bool_set_true:N \l__fantasycal_base_leap_nr_days_added_int
       }
   }
 \cs_generate_variant:Nn \__fantasycal_base_lp_store:nn { nV }
-\cs_new:Npn \__fantasycal_base_lp_store_aux:nN #1#2
+
+\cs_new:Npn \__fantasycal_base_lp_store_values:nnNn #1#2#3#4
   {
+    % #2: + or - sign.
+    \fp_add:Nn \l__fantasycal_base_leap_year_fraction_fp { #2 1/#1 }
     \__fantasycal_base_add_to_checking:n
       {
         \int_compare:nNnT
           { \int_mod:nn {##1} {#1} } = { 0 }
-          { #2 \l__fantasycal_base_leap_year_bool }
+          { #3 \l__fantasycal_base_leap_year_bool }
       }
-  }
-\cs_new:Npn \__fantasycal_base_lp_store_aux_ii:nnn #1#2#3
-  {
     \__fantasycal_base_check_add_leap_year_days_put_right:n
-      { #2 \int_div_truncate:nn {##1} {#1}*#3 }
+      { #2 \int_div_truncate:nn {##1} {#1}*#4 }
   }
-\cs_generate_variant:Nn \__fantasycal_base_lp_store_aux_ii:nnn { nnV }
-
-
+\cs_generate_variant:Nn \__fantasycal_base_lp_store_values:nnNn { nnNV }
 
 
 
 \cs_generate_variant:Nn \cs_set:Npn { Npo }
+
 \cs_new:Npn \__fantasycal_base_check_if_leap_year:n #1
   {
     \bool_set_false:N \l__fantasycal_base_leap_year_bool
     \int_compare:nNnF {#1} = { 0 }
       { \__fantasycal_base_check_if_leap_year_aux:f { \int_eval:n {#1} } }
   }
-\cs_new:Npn \__fantasycal_base_check_if_leap_year_aux:n #1 { }
-\cs_generate_variant:Nn \__fantasycal_base_check_if_leap_year_aux:n { f }
 \cs_new:Npn \__fantasycal_base_add_to_checking:n #1 
   { 
     \cs_set:Npo \__fantasycal_base_check_if_leap_year_aux:n ##1
@@ -1001,14 +1029,14 @@
         #1
       }
   }
+\cs_new:Npn \__fantasycal_base_check_if_leap_year_aux:n #1 { }
+\cs_generate_variant:Nn \__fantasycal_base_check_if_leap_year_aux:n { f }
 %  
 \cs_new:Npn \__fantasycal_base_check_add_leap_year_days:n #1 
   { 
     %% DO NOT CHECK THE BOOL HERE!
     \__fantasycal_base_check_add_leap_year_days_aux:f { \int_abs:n {#1} } 
   }
-\cs_new:Npn \__fantasycal_base_check_add_leap_year_days_aux:n #1 { }
-\cs_generate_variant:Nn \__fantasycal_base_check_add_leap_year_days_aux:n { f }
 \cs_new:Npn \__fantasycal_base_check_add_leap_year_days_put_right:n #1 
   { 
     \cs_set:Npo \__fantasycal_base_check_add_leap_year_days_aux:n ##1
@@ -1017,6 +1045,8 @@
         #1
       }
   }
+\cs_new:Npn \__fantasycal_base_check_add_leap_year_days_aux:n #1 { }
+\cs_generate_variant:Nn \__fantasycal_base_check_add_leap_year_days_aux:n { f }
 
 \int_new:N \l__fantasycal_base_test_year_int
 \int_new:N \l__fantasycal_base_test_ordinal_int

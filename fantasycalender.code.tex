@@ -14,6 +14,7 @@
 \makeatletter
 \ExplSyntaxOn
 
+%: Variable
 \tl_new:N \l__fantasycal_dates_start_tl 
 \tl_new:N \l__fantasycal_dates_end_tl 
 
@@ -55,8 +56,8 @@
 \tikzset{ dates/.code={ \__fantasycal_dates_parse:ww #1 \q_no_value } }
 \cs_new:Npn \__fantasycal_dates_parse:ww #1 to #2 \q_no_value
   {
-    \tl_set:Nn \l__fantasycal_dates_start_tl {#1}
-    \tl_set:Nn \l__fantasycal_dates_end_tl {#2}
+    \tl_set:Nx \l__fantasycal_dates_start_tl {#1}
+    \tl_set:Nx \l__fantasycal_dates_end_tl {#2}
   }
 
 \tikzset
@@ -191,6 +192,7 @@
           {
             %% not quite optimal, but it works
             \tikzset { box ~ height = { fit } , box ~ width = { fit } } 
+            \__fantasycal_calculate_box_size:
             %% Check which is lower (width or height) and set the other one to the same value
             \fp_compare:nNnTF 
               \l__fantasycal_calendar_box_width_tl 
@@ -313,6 +315,7 @@
 \tl_new:N \l__fantasycal_text_day_note_hook_tl
 \tl_new:N \l__fantasycal_text_month_year_hook_left_tl
 \tl_new:N \l__fantasycal_text_month_year_hook_right_tl
+\tl_new:N \l__fantasycal_text_month_number_hook_tl
 
 \tl_set:Nn \l__fantasycal_text_box_tl { \phantom{1} } %% text in node shifts thing up
 \tl_set:Nn \fantasycalTextDay 
@@ -326,7 +329,7 @@
 \tl_set:Nn \l__fantasycal_text_month_tl 
   { 
     \l__fantasycal_text_month_year_hook_left_tl 
-    \%mt \space [\%m0] 
+    \%mt \l__fantasycal_text_month_number_hook_tl 
     \l__fantasycal_text_month_year_hook_right_tl 
   }
 \tl_set:Nn \l__fantasycal_text_year_tl { \%y0 }
@@ -378,6 +381,10 @@
 \tikzset
   { 
     month ~ font/.code= { \tl_set:Nn \l__fantasycal_font_month_tl {#1} }
+  }
+\tikzset
+  { 
+    month ~ add ~ number/.code= { \tl_set:Nn \l__fantasycal_text_month_number_hook_tl {#1} }
   }
 \tikzset{every ~ month/.style={}}
 
@@ -455,22 +462,14 @@
 \bool_new:N \l__fantasycal_draw_weekday_bool
 \tikzset
   { 
-    print-weekdays/.is ~ choice ,
-    print-weekdays/true/.code= 
+    print-weekdays/.code= 
       { \bool_set_true:N \l__fantasycal_draw_weekday_bool }  ,
-    print-weekdays/false/.code= 
-      { \bool_set_false:N \l__fantasycal_draw_weekday_bool }  ,
-    print-weekdays/.default= { true } ,
   }
 \bool_new:N \l__fantasycal_draw_monthname_bool
 \tikzset
   { 
-    print-monthnames/.is ~ choice ,
-    print-monthnames/true/.code= 
+    print-monthnames/.code= 
       { \bool_set_true:N \l__fantasycal_draw_monthname_bool }  ,
-    print-monthnames/false/.code= 
-      { \bool_set_false:N \l__fantasycal_draw_monthname_bool }  ,
-    print-monthnames/.default= { true } ,
   }
 
 
@@ -837,6 +836,199 @@
 
 
 
+
+\tl_new:N \l__fantasycal_print_moons_tl
+\seq_new:N \l__fantasycal_moon_seq
+
+\NewDocumentCommand \NewFantasyMoon { m m m }
+  {
+    \DefineNewMoon #1 {#2} {#3}
+    \seq_push:Nx \l__fantasycal_moon_seq { \cs_to_str:N #1 }
+    \tl_put_right:Nn \l__fantasycal_print_moons_tl
+      { #1 { \l_fantasycal_base_current_ordinal_int } \, }
+  }
+
+\tikzset
+  {
+    , add ~ moons / .is ~ choice
+    , add ~ moons / true / .code =
+       {
+         \tl_set:Nn \l__fantasycal_text_day_moon_hook_tl 
+           { \, \fantasycalPrintMoons }
+       }
+    , add ~ moons / false / .code =
+       { \tl_clear:N \l__fantasycal_text_day_moon_hook_tl }
+    , add ~ moons / .default = true
+  }
+
+\cs_new:Npn \fantasycalPrintMoons
+  { \l__fantasycal_print_moons_tl }
+
+\pgfset
+  {
+    all-moons/.code=
+      {
+        \group_begin:
+        \seq_map_inline:Nn \l__fantasycal_moon_seq
+          {
+            \bool_set_false:N \l__fantasycal_base_date_match_bool
+            \str_case:nnF {#1}
+              {
+                { full } { \pgfqkeys { /pgf } { ##1 = full-moon } }
+                { new } { \pgfqkeys { /pgf } { ##1 = new-moon } }
+                { half-1 } { \pgfqkeys { /pgf } { ##1 = half-moon-1 } }
+                { half-2 } { \pgfqkeys { /pgf } { ##1 = half-moon-2 } }
+              }
+              { \tl_show:n { ERROR-#1-##1 } }
+            %% If even one is false, break the loop
+            \bool_if:NF \l__fantasycal_base_date_match_bool { \seq_map_break: }
+          }
+        \bool_if:NTF \l__fantasycal_base_date_match_bool
+          { \group_end: \bool_set_true:N \l__fantasycal_base_date_match_bool }
+          { \group_end: }
+      }
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\NewDocumentCommand \FantasyCalendarDateEntry { m m }
+  {
+    \__fantasycal_add_yearly_day:nn {#1} {#2}
+  }
+\NewDocumentCommand \FantasyCalendarOneTimeEntry { m m }
+  {
+    \__fantasycal_add_one_year_day:nn {#1} {#2}
+  }
+
+\cs_new:Npn \__fantasycal_add_yearly_day_parse:w #1-#2\relax
+  {
+    \tl_set:Nx \l_tmpa_tl { \int_eval:n {#1} - \int_eval:n {#2} }
+  }
+\cs_new:Npn \__fantasycal_add_one_year_day_parse:w #1-#2-#3\relax
+  {
+    \tl_set:Nx \l_tmpa_tl { \int_eval:n {#1} - \int_eval:n {#2} - \int_eval:n {#3} }
+  }
+
+\cs_new:Npn \__fantasycal_add_yearly_day:nn #1#2
+  {
+    \tl_set:Nx \l_tmpa_tl {#1}
+    \exp_after:wN 
+    \__fantasycal_add_yearly_day_parse:w \l_tmpa_tl \relax
+    \tl_if_exist:cTF { l__fantasycal_yearly_day_ \l_tmpa_tl _tl }
+      { \tl_put_right:cn { l__fantasycal_yearly_day_ \l_tmpa_tl _tl } { \\ #2 } }
+      { 
+        \tl_new:c { l__fantasycal_yearly_day_ \l_tmpa_tl _tl }
+        \tl_set:cn { l__fantasycal_yearly_day_ \l_tmpa_tl _tl } {#2}
+      }
+  }
+\cs_new:Npn \__fantasycal_add_one_year_day:nn #1#2
+  {
+    \tl_set:Nx \l_tmpa_tl {#1}
+    \exp_after:wN
+    \__fantasycal_add_one_year_day_parse:w \l_tmpa_tl \relax
+    \tl_if_exist:cTF { l__fantasycal_one_year_day_ \l_tmpa_tl _tl }
+      { \tl_put_right:cn { l__fantasycal_one_year_day_ \l_tmpa_tl _tl } { \\ #2 } }
+      { 
+        \tl_new:c { l__fantasycal_one_year_day_ \l_tmpa_tl _tl }
+        \tl_set:cn { l__fantasycal_one_year_day_ \l_tmpa_tl _tl } {#2}
+      }
+  }
+
+\NewDocumentCommand \FantasyCalendarSpecialEntry { m m }
+  {
+    \tikzset
+      {
+        execute ~ at ~ begin ~ day ~ scope = 
+          { 
+            \ifdateT {#1} 
+              { \__fantasycal_add_yearly_day:nn { \%md } {#2} } 
+          }
+      }
+  }
+
+
+
+\tikzset
+  {
+    , add ~ day ~ notes / .is ~ choice
+    , add ~ day ~ notes / true / .code =
+       {
+         \tl_set:Nn \l__fantasycal_text_day_note_hook_tl \fantasycalPrinDayNotes
+       }
+    , add ~ day ~ notes / false / .code =
+       { \tl_clear:N \l__fantasycal_text_day_note_hook_tl }
+    , add ~ day ~ notes / .default = true
+  }
+\tl_set:Nn \l__fantasycal_font_notes_tl { \small }
+\cs_new:Npn \fantasycalPrinDayNotes
+  {
+    \l__fantasycal_font_notes_tl
+    \tl_if_exist:cT { l__fantasycal_yearly_day_ \%md _tl }
+      {
+        \\ \textsf { \tl_use:c { l__fantasycal_yearly_day_ \%md _tl } }
+      }
+    \tl_if_exist:cT { l__fantasycal_one_year_day_ \%yd _tl }
+      {
+        \\ \tl_use:c { l__fantasycal_one_year_day_ \%yd _tl }
+      }
+  }
+
+\fp_new:N \l__fantasycal_tmpa_fp
+
+\NewDocumentCommand \PrintFantasyCalendarYear { O{} m m }
+  {
+    \group_begin:
+    \fp_set:Nn \l__fantasycal_tmpa_fp {#2}
+    \int_step_inline:nn { \l__fantasycal_base_nr_months_per_year_int }
+      {
+        \noindent
+        \tikz\PrintFantasycalendarBase
+          [
+            , month = \fp_to_int:N \l__fantasycal_tmpa_fp - ##1
+            , week ~ list
+            , box ~ size = fit
+            , box ~ draw = black
+            , month ~ label ~ above ~ centered
+            , month ~ add ~ number = { \space [\%m0] }
+            , weekday ~ label ~ above
+            , add ~ moons 
+            , add ~ day ~ notes
+            , add ~ year ~ to ~ month
+            , #1
+          ]
+          #3
+          ;
+        \newpage
+      }
+    \group_end:
+  }
+
+
+
+
+
+
+%: Calendar
 %
 % Code of the actual \calendar command (tikz.code.tex contains \let\calendar=\tikz@lib@cal@calendar):
 %
@@ -991,214 +1183,6 @@
 
 
 
-
-\tl_new:N \l__fantasycal_print_moons_tl
-\seq_new:N \l__fantasycal_moon_seq
-
-\NewDocumentCommand \NewFantasyMoon { m m m }
-  {
-    \DefineNewMoon #1 {#2} {#3}
-    \seq_push:Nx \l__fantasycal_moon_seq { \cs_to_str:N #1 }
-    \tl_put_right:Nn \l__fantasycal_print_moons_tl
-      { #1 { \l_fantasycal_base_current_ordinal_int } \, }
-  }
-
-\pgfset
-  {
-    all-moons/.code=
-      {
-        \group_begin:
-        \seq_map_inline:Nn \l__fantasycal_moon_seq
-          {
-            \bool_set_false:N \l__fantasycal_base_date_match_bool
-            \str_case:nnF {#1}
-              {
-                { full } { \pgfqkeys { /pgf } { ##1 = full-moon } }
-                { new } { \pgfqkeys { /pgf } { ##1 = new-moon } }
-                { half-1 } { \pgfqkeys { /pgf } { ##1 = half-moon-1 } }
-                { half-2 } { \pgfqkeys { /pgf } { ##1 = half-moon-2 } }
-              }
-              { \tl_show:n { ERROR-#1-##1 } }
-            %% If even one is false, break the loop
-            \bool_if:NF \l__fantasycal_base_date_match_bool { \seq_map_break: }
-          }
-        \bool_if:NTF \l__fantasycal_base_date_match_bool
-          { \group_end: \bool_set_true:N \l__fantasycal_base_date_match_bool }
-          { \group_end: }
-      }
-  }
-\pgfset
-  {
-    given-moons-are/.code ~ 2 ~ args=
-      {
-        \group_begin:
-        \clist_map_inline:nn {#1}
-          {
-            \bool_set_false:N \l__fantasycal_base_date_match_bool
-            \str_case:nnF {#2}
-              {
-                { full } { \pgfqkeys { /pgf } { ##1 = full-moon } }
-                { new } { \pgfqkeys { /pgf } { ##1 = new-moon } }
-                { half-1 } { \pgfqkeys { /pgf } { ##1 = half-moon-1 } }
-                { half-2 } { \pgfqkeys { /pgf } { ##1 = half-moon-2 } }
-              }
-              { \tl_show:n { ERROR-#1-#2-##1 } }
-            %% If even one is false, break the loop
-            \bool_if:NF \l__fantasycal_base_date_match_bool { \seq_map_break: }
-          }
-        \bool_if:NTF \l__fantasycal_base_date_match_bool
-          { \group_end: \bool_set_true:N \l__fantasycal_base_date_match_bool }
-          { \group_end: }
-      }
-  }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-\tikzset
-  {
-    , add ~ moons / .is ~ choice
-    , add ~ moons / true / .code =
-       {
-         \tl_set:Nn \l__fantasycal_text_day_moon_hook_tl 
-           { \, \fantasycalPrintMoons }
-       }
-    , add ~ moons / false / .code =
-       { \tl_clear:N \l__fantasycal_text_day_moon_hook_tl }
-    , add ~ moons / .default = true
-  }
-
-\cs_new:Npn \fantasycalPrintMoons
-  {
-     \l__fantasycal_print_moons_tl
-  }
-
-
-
-
-
-
-
-
-
-\NewDocumentCommand \FantasyCalendarDateEntry { m m }
-  {
-    \__fantasycal_add_yearly_day:nn {#1} {#2}
-  }
-\NewDocumentCommand \FantasyCalendarOneTimeEntry { m m }
-  {
-    \__fantasycal_add_one_year_day:nn {#1} {#2}
-  }
-
-\cs_new:Npn \__fantasycal_add_yearly_day_parse:w #1-#2\relax
-  {
-    \tl_set:Nx \l_tmpa_tl { \int_eval:n {#1} - \int_eval:n {#2} }
-  }
-\cs_new:Npn \__fantasycal_add_one_year_day_parse:w #1-#2-#3\relax
-  {
-    \tl_set:Nx \l_tmpa_tl { \int_eval:n {#1} - \int_eval:n {#2} - \int_eval:n {#3} }
-  }
-
-\cs_new:Npn \__fantasycal_add_yearly_day:nn #1#2
-  {
-    \tl_set:Nx \l_tmpa_tl {#1}
-    \exp_after:wN 
-    \__fantasycal_add_yearly_day_parse:w \l_tmpa_tl \relax
-    \tl_if_exist:cTF { l__fantasycal_yearly_day_ \l_tmpa_tl _tl }
-      { \tl_put_right:cn { l__fantasycal_yearly_day_ \l_tmpa_tl _tl } { \\ #2 } }
-      { 
-        \tl_new:c { l__fantasycal_yearly_day_ \l_tmpa_tl _tl }
-        \tl_set:cn { l__fantasycal_yearly_day_ \l_tmpa_tl _tl } {#2}
-      }
-  }
-\cs_new:Npn \__fantasycal_add_one_year_day:nn #1#2
-  {
-    \tl_set:Nx \l_tmpa_tl {#1}
-    \exp_after:wN
-    \__fantasycal_add_one_year_day_parse:w \l_tmpa_tl \relax
-    \tl_if_exist:cTF { l__fantasycal_one_year_day_ \l_tmpa_tl _tl }
-      { \tl_put_right:cn { l__fantasycal_one_year_day_ \l_tmpa_tl _tl } { \\ #2 } }
-      { 
-        \tl_new:c { l__fantasycal_one_year_day_ \l_tmpa_tl _tl }
-        \tl_set:cn { l__fantasycal_one_year_day_ \l_tmpa_tl _tl } {#2}
-      }
-  }
-
-\NewDocumentCommand \FantasyCalendarSpecialEntry { m m }
-  {
-    \tikzset
-      {
-        execute ~ at ~ begin ~ day ~ scope = 
-          { 
-            \ifdateT {#1} 
-              { \__fantasycal_add_yearly_day:nn { \%md } {#2} } 
-          }
-      }
-  }
-
-
-
-\tikzset
-  {
-    , add ~ day ~ notes / .is ~ choice
-    , add ~ day ~ notes / true / .code =
-       {
-         \tl_set:Nn \l__fantasycal_text_day_note_hook_tl \fantasycalPrinDayNotes
-       }
-    , add ~ day ~ notes / false / .code =
-       { \tl_clear:N \l__fantasycal_text_day_note_hook_tl }
-    , add ~ day ~ notes / .default = true
-  }
-\tl_set:Nn \l__fantasycal_font_notes_tl { \small }
-\cs_new:Npn \fantasycalPrinDayNotes
-  {
-    \l__fantasycal_font_notes_tl
-    \tl_if_exist:cT { l__fantasycal_yearly_day_ \%md _tl }
-      {
-        \\ \textsf { \tl_use:c { l__fantasycal_yearly_day_ \%md _tl } }
-      }
-    \tl_if_exist:cT { l__fantasycal_one_year_day_ \%yd _tl }
-      {
-        \\ \tl_use:c { l__fantasycal_one_year_day_ \%yd _tl }
-      }
-  }
-
-
-\NewDocumentCommand \PrintFantasyCalendarYear { O{} m m }
-  {
-    \group_begin:
-    \int_step_inline:nn { \l__fantasycal_base_nr_months_per_year_int }
-      {
-        \noindent
-        \tikz\PrintFantasycalendarBase
-          [
-            , month = #2-##1
-            , week ~ list
-            , box ~ size = fit
-            , box ~ draw = black
-            , month ~ label ~ above ~ centered
-            , weekday ~ label ~ above
-            , add ~ moons 
-            , add ~ day ~ notes
-            , add ~ year ~ to ~ month
-            , #1
-          ]
-          #3
-          ;
-        \newpage
-      }
-    \group_end:
-  }
 
 
 
