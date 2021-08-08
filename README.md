@@ -122,3 +122,7 @@ Allow iso the names of months/days?
 Add option to add notes.
 
 
+# License
+
+This material is subject to the LATEX Project Public License 1.3c
+
