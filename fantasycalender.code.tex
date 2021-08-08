@@ -1,5 +1,12 @@
 % Based on "tikzlibrarycalendar.code.tex"  by Till Tantau
 
+
+\ifcsname fantasycalendar.code.tex.loaded\endcsname
+  \endinput
+\fi
+\expandafter\def\csname fantasycalendar.code.tex.loaded\endcsname{}
+
+
 \makeatletter
 \@ifpackageloaded{tikz}{}
   { \RequirePackage{tikz} }

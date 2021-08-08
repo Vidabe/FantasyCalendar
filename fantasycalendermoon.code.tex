@@ -1,4 +1,10 @@
 
+%% Avoid reloading stuff
+\ifcsname fantasycalendarmoon.code.tex.loaded\endcsname
+  \endinput
+\fi
+\expandafter\def\csname fantasycalendarmoon.code.tex.loaded\endcsname{}
+
 
 \RequirePackage{tikz}
 %\input fantasycalenderbase.code.tex

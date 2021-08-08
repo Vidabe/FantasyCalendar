@@ -1,5 +1,12 @@
 
 %\ProvidesFileRCS{fantasycalendar.code.tex}
+
+%% Avoid reloading stuff
+\ifcsname fantasycalendarbase.code.tex.loaded\endcsname
+  \endinput
+\fi
+\expandafter\def\csname fantasycalendarbase.code.tex.loaded\endcsname{}
+
 \makeatletter
 
 \@ifpackageloaded{pgf}{}
