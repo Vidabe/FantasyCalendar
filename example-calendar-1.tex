@@ -1,0 +1,25 @@
+% !TEX encoding = UTF-8 Unicode
+\documentclass[paper=landscape]{scrartcl}
+
+\usepackage[margin=1cm]{geometry}
+
+\input{fantasycalender.code}
+
+\FantasyCalendarAddMonths{3} %% first day of year 0 starts on day 4 (3+1)
+  {
+    Month-A = 30 , %% First month is 'Month-A' and it has 30 days
+    Month-B = 35 , %% Second month is 'Month-B' and it has 35 days
+    Month-C = 31 , 
+    Month-D = 32,
+    Month-E = 37 ,
+    Month-X = 34 ,
+  } 
+%% There are a total of 6 months per year
+
+%% Each week has 5 days
+\FantasyCalendarAddDays{Day-A, Day-B, Day-C, Day-D, Day-N}
+\begin{document}
+
+\PrintFantasyCalendarYear{417}{} %% Print year 417
+
+\end{document}
