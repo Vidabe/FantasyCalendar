@@ -977,7 +977,10 @@
     \__fantasycal_note_put_right:nVn { yearly_day } \l__fantasycal_tmpa_tl {#3}
     \IfNoValueF {#2}
       {
-        \__fantasycal_add_yearly_day_def_special_day:nV {#2} \l__fantasycal_tmpa_tl
+        \clist_map_inline:nn {#2}
+          {
+            \__fantasycal_add_yearly_day_def_special_day:nV {##1} \l__fantasycal_tmpa_tl
+          }
       }
   }
 
@@ -1291,18 +1294,51 @@
 
 
 
-
+\fp_new:N \l__fantasycal_year_start_fp
+\fp_new:N \l__fantasycal_year_step_fp
+\fp_new:N \l__fantasycal_year_end_fp
 
 \NewDocumentCommand \PrintFantasyCalendarYear { O{} m m }
   {
     \group_begin:
-    \fp_set:Nn \l__fantasycal_tmpa_fp {#2}
+    \__fantasycal_print_fantasycalendar_year_setup:n {#2}
+    \fp_step_inline:nnnn 
+      { \l__fantasycal_year_start_fp } 
+      { \l__fantasycal_year_step_fp }
+      { \l__fantasycal_year_end_fp  }
+      {
+        \__fantasycal_print_fantasycalendar_year:nnn {#1} {##1} {#3}
+      }
+    \group_end:
+  }
+
+\cs_new:Npn \__fantasycal_print_fantasycalendar_year_setup:n #1
+  {
+    \str_if_in:nnTF {#1} { to }
+      { \__fantasycal_print_fantasycalendar_year_setup:ww #1 \relax }
+      { 
+        \fp_set:Nn \l__fantasycal_year_start_fp {#1}
+        \fp_set_eq:NN  \l__fantasycal_year_end_fp \l__fantasycal_year_start_fp
+      }
+    \fp_compare:nNnTF
+      { \l__fantasycal_year_start_fp } > { \l__fantasycal_year_end_fp }
+      { \fp_set:Nn \l__fantasycal_year_step_fp { -1 } }
+      { \fp_set:Nn \l__fantasycal_year_step_fp {  1 } }
+  }
+\cs_new:Npn \__fantasycal_print_fantasycalendar_year_setup_aux:ww #1 to #2 \relax
+  {
+    \fp_set:Nn \l__fantasycal_year_start_fp {#1}
+    \fp_set:Nn \l__fantasycal_year_end_fp {#2}
+  }
+
+\cs_new:Npn \__fantasycal_print_fantasycalendar_year:nnn #1#2#3
+  {
     \int_step_inline:nn { \l__fantasycal_base_nr_months_per_year_int }
       {
         \noindent
         \tikz\PrintFantasycalendarBase
           [
-            , month = \fp_to_int:N \l__fantasycal_tmpa_fp - ##1
+            , month = #2 - ##1
             , week ~ list
             , box ~ size = fit
             , box ~ draw = black
@@ -1318,10 +1354,7 @@
           ;
         \newpage
       }
-    \group_end:
   }
-
-
 
 
 
