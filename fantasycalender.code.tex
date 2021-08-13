@@ -1036,7 +1036,7 @@
         execute ~ at ~ begin ~ day ~ scope = 
           { 
             \ifdateT {#1} 
-              { \__fantasycal_add_yearly_day:nn { \%md } {#2} } 
+              { \__fantasycal_note_put_right:nnn { yearly_day } { \%md } {#2} } 
           }
       }
   }
