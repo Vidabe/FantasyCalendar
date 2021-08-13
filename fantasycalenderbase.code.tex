@@ -791,12 +791,21 @@
   }
 \cs_new:Npn \__fantasycal_base_print_day_name:n #1
   {
-    \int_compare:nNnTF {#1} = { 0 }
-      { 
-        \seq_item:Nn \l__fantasycal_base_day_names_seq 
-          { \l__fantasycal_base_nr_days_per_week_int } 
+    \seq_item:Nn \l__fantasycal_base_day_names_seq
+      {
+        \int_compare:nNnTF {#1} = { 0 }
+          { \l__fantasycal_base_nr_days_per_week_int }
+          {#1}
       }
-      { \seq_item:Nn \l__fantasycal_base_day_names_seq {#1} }
+  }
+\cs_new:Npn \__fantasycal_base_print_day_shortname:n #1
+  {
+    \seq_item:Nn \l__fantasycal_base_day_names_short_seq
+      {
+        \int_compare:nNnTF {#1} = { 0 }
+          { \l__fantasycal_base_nr_days_per_week_int }
+          {#1}
+      }
   }
 \cs_new:Npn \__fantasycal_base_print_month_name:n #1
   { \seq_item:Nn \l__fantasycal_base_month_names_seq {#1} }
@@ -1128,7 +1137,7 @@
 \cs_new:cpn { __fantasycal@shorthand@y0 }{ \l_fantasycal_base_current_year_tl }
 \cs_new:cpn { __fantasycal@shorthand@w.}  
   { 
-    \__fantasycal_base_print_day_name:n { \l_fantasycal_base_current_day_tl } 
+    \__fantasycal_base_print_day_shortname:n { \l_fantasycal_base_current_day_tl } 
   }
 \cs_new:cpn { __fantasycal@shorthand@wt } 
   { 
