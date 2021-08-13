@@ -87,7 +87,8 @@
   { 
     %% year-month
     month/.code= { \tikzset{ dates={ #1-1 to #1-last } } } ,
-    months/.code= { \__fantasycal_months_parse:ww #1 \q_no_value }
+    months/.code= { \tikzset{ month={#1} } }
+%    months/.code= { \__fantasycal_months_parse:ww #1 \q_no_value }
   }
 \cs_new:Npn \__fantasycal_months_parse:ww #1 to #2 \q_no_value
   {
