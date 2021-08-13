@@ -940,9 +940,9 @@
 
 
 
-\NewDocumentCommand \FantasyCalendarDateEntry { m m }
+\NewDocumentCommand \FantasyCalendarDateEntry { m o m }
   {
-    \__fantasycal_add_yearly_day:nn {#1} {#2}
+    \__fantasycal_add_yearly_day:nnn {#1} {#2} {#3}
   }
 \NewDocumentCommand \FantasyCalendarOneTimeEntry { m m }
   {
@@ -969,13 +969,43 @@
   }
 \cs_generate_variant:Nn \__fantasycal_note_put_right:nnn { nV }
 
-\cs_new:Npn \__fantasycal_add_yearly_day:nn #1#2
+\cs_new:Npn \__fantasycal_add_yearly_day:nnn #1#2#3
   {
     \tl_set:Nx \l__fantasycal_tmpa_tl {#1}
     \exp_after:wN 
     \__fantasycal_add_yearly_day_parse:w \l__fantasycal_tmpa_tl \relax
-    \__fantasycal_note_put_right:nVn { yearly_day } \l__fantasycal_tmpa_tl {#2}
+    \__fantasycal_note_put_right:nVn { yearly_day } \l__fantasycal_tmpa_tl {#3}
+    \IfNoValueF {#2}
+      {
+        \__fantasycal_add_yearly_day_def_special_day:nV {#2} \l__fantasycal_tmpa_tl
+      }
   }
+
+\cs_new:Npn \__fantasycal_add_yearly_day_def_special_day:nn #1#2
+  {
+    \bool_if_exist:cF { l__fantasycal_note_special_date_#1_bool }
+      {
+        \bool_new:c { l__fantasycal_note_special_date_#1_bool }
+        \pgfset
+          {
+            /pgf/#1/.code = 
+              { 
+                \bool_if:cT { l__fantasycal_note_special_date_ #1 _bool }
+                  { \bool_set_true:N \l__fantasycal_base_date_match_bool} 
+              }
+          }
+      }
+    
+    \tikzset { execute ~ at ~ begin ~ day ~ scope =
+      {
+        \str_if_eq:eeT {#2} { \%md }
+          { \bool_set_true:c { l__fantasycal_note_special_date_ #1 _bool } }
+      }
+    }
+    
+  }
+\cs_generate_variant:Nn \__fantasycal_add_yearly_day_def_special_day:nn { nV }
+
 \cs_new:Npn \__fantasycal_add_one_year_day:nn #1#2
   {
     \tl_set:Nx \l__fantasycal_tmpa_tl {#1}
