@@ -293,7 +293,9 @@
 \tl_new:N \l__fantasycal_font_month_tl
 \tl_new:N \l__fantasycal_font_week_day_tl
 \tl_new:N \l__fantasycal_font_day_tl
-\tl_new:N \l__fantasycal_font_notes_tl
+
+
+
 
 \tl_set:Nn \l__fantasycal_font_month_tl { \Large\bfseries }
 
@@ -935,10 +937,20 @@
 
 
 
+%% Note Entries
 
 
+\tl_new:N \l__fantasycal_font_notes_tl
+\tl_new:N \l__fantasycal_font_notes_yearly_tl
+\tl_set:Nn \l__fantasycal_font_notes_yearly_tl { \sffamily }
+\tl_new:N \l__fantasycal_font_notes_onetime_tl
 
-
+\tikzset
+  { 
+    , note ~ font/ .code = { \tl_set:Nn \l__fantasycal_font_notes_tl {#1} }
+    , note ~ yearly ~ font/ .code = { \tl_set:Nn \l__fantasycal_font_notes_yearly_tl {#1} }
+    , note ~ onetime ~ font/ .code = { \tl_set:Nn \l__fantasycal_font_notes_onetime_tl {#1} }
+  }
 
 \NewDocumentCommand \FantasyCalendarDateEntry { m o m }
   {
@@ -946,14 +958,14 @@
   }
 \NewDocumentCommand \FantasyCalendarOneTimeEntry { m m }
   {
-    \__fantasycal_add_one_year_day:nn {#1} {#2}
+    \__fantasycal_add_onetime_day:nn {#1} {#2}
   }
 
 \cs_new:Npn \__fantasycal_add_yearly_day_parse:w #1-#2\relax
   {
     \tl_set:Nx \l__fantasycal_tmpa_tl { \int_eval:n {#1} - \int_eval:n {#2} }
   }
-\cs_new:Npn \__fantasycal_add_one_year_day_parse:w #1-#2-#3\relax
+\cs_new:Npn \__fantasycal_add_onetime_day_parse:w #1-#2-#3\relax
   {
     \tl_set:Nx \l__fantasycal_tmpa_tl { \int_eval:n {#1} - \int_eval:n {#2} - \int_eval:n {#3} }
   }
@@ -1009,12 +1021,12 @@
   }
 \cs_generate_variant:Nn \__fantasycal_add_yearly_day_def_special_day:nn { nV }
 
-\cs_new:Npn \__fantasycal_add_one_year_day:nn #1#2
+\cs_new:Npn \__fantasycal_add_onetime_day:nn #1#2
   {
     \tl_set:Nx \l__fantasycal_tmpa_tl {#1}
     \exp_after:wN
-    \__fantasycal_add_one_year_day_parse:w \l__fantasycal_tmpa_tl \relax
-    \__fantasycal_note_put_right:nVn { one_year_day } \l__fantasycal_tmpa_tl {#2}
+    \__fantasycal_add_onetime_day_parse:w \l__fantasycal_tmpa_tl \relax
+    \__fantasycal_note_put_right:nVn { onetime_day } \l__fantasycal_tmpa_tl {#2}
   }
 
 \NewDocumentCommand \FantasyCalendarSpecialEntry { m m }
@@ -1048,11 +1060,15 @@
     \l__fantasycal_font_notes_tl
     \tl_if_exist:cT { l__fantasycal_yearly_day_ \%md _tl }
       {
-        \\ \textsf { \tl_use:c { l__fantasycal_yearly_day_ \%md _tl } }
+        \\ { \l__fantasycal_font_notes_yearly_tl \tl_use:c { l__fantasycal_yearly_day_ \%md _tl } }
       }
-    \tl_if_exist:cT { l__fantasycal_one_year_day_ \%yd _tl }
+    \tl_if_exist:cT { l__fantasycal_onetime_day_ \%yd _tl }
       {
-        \\ \tl_use:c { l__fantasycal_one_year_day_ \%yd _tl }
+        \\ 
+         {  
+           \l__fantasycal_font_notes_onetime_tl
+           \tl_use:c { l__fantasycal_onetime_day_ \%yd _tl }
+         }
       }
   }
 
@@ -1315,7 +1331,7 @@
 \cs_new:Npn \__fantasycal_print_fantasycalendar_year_setup:n #1
   {
     \str_if_in:nnTF {#1} { to }
-      { \__fantasycal_print_fantasycalendar_year_setup:ww #1 \relax }
+      { \__fantasycal_print_fantasycalendar_year_setup_aux:ww #1 \relax }
       { 
         \fp_set:Nn \l__fantasycal_year_start_fp {#1}
         \fp_set_eq:NN  \l__fantasycal_year_end_fp \l__fantasycal_year_start_fp
