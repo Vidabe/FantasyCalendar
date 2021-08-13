@@ -267,9 +267,8 @@
       {
         /pgf/#1/.code=
           { 
-            \ifnum\l_fantasycal_base_current_weekday_tl=#2\relax
-              \bool_set_true:N \l__fantasycal_base_date_match_bool 
-            \fi 
+            \int_compare:nNnT \l_fantasycal_base_weekday_int = {#2}
+              { \bool_set_true:N \l__fantasycal_base_date_match_bool  }
           }
       }
   }
@@ -332,8 +331,7 @@
       {
         \l__fantasycal_base_default_nr_days_per_year_int +
         \l__fantasycal_base_leap_nr_days_added_int
-      }
-      {
+      }{
         \tl_show:n {ERROR!\ number \ days\ per \ year \ wrong\ in \ leap \ year! }
       }
   }
@@ -344,10 +342,12 @@
     \seq_clear:N \l__fantasycal_base_leap_year_days_per_months_seq
     \seq_clear:N \l__fantasycal_base_leap_year_cumulative_days_seq
     \seq_clear:N \l__fantasycal_base_leap_year_inverse_cumulative_days_seq
+    \seq_clear:N \l__fantasycal_base_leap_years_day_addons_seq
     \cs_set:Npn \__fantasycal_base_check_add_leap_year_days_aux:n ##1 { }
     \cs_set:Npn \__fantasycal_base_check_if_leap_year_aux:n ##1 { }
   }
 
+\seq_new:N \l__fantasycal_base_leap_years_day_addons_seq
 
 \cs_new:Npn \__fantasycal_base_leap_year_additions:n #1
   {
@@ -365,6 +365,15 @@
            { 
              \int_add:Nn \l__fantasycal_base_leap_nr_days_added_int { \l_tmpb_tl }
              \int_add:Nn \l__fantasycal_base_tmpa_int { \l_tmpb_tl }
+             %% add the leap-days to the storage
+             \int_compare:nNnT { \l_tmpb_tl } > { 0 }
+               {
+                 \int_step_inline:nnn { \l_tmpa_tl + 1 } { \l_tmpa_tl + \l_tmpb_tl }
+                   {
+                     \seq_push:Nn \l__fantasycal_base_leap_years_day_addons_seq
+                       { ##1 - ####1 }
+                   }
+               }
            }
          \seq_put_right:NV \l__fantasycal_base_leap_year_days_per_months_seq 
            \l__fantasycal_base_tmpa_int
@@ -563,14 +572,14 @@
 
 \prg_new_conditional:Npnn \__fantasycal_base_launch_if_date:n #1 { TF }
   {
-    % When this macro is called, the pgfcalendarifdatexxxx macros must
+    % When this macro is called, the  macros must
     % be setup correctly
     %
     % Set match to false
     \bool_set_false:N \l__fantasycal_base_date_match_bool
     \pgfqkeys{/pgf}{#1}%
     \bool_if:NTF \l__fantasycal_base_date_match_bool 
-      {  \prg_return_true: } 
+      { \prg_return_true: } 
       { \prg_return_false: }
   }
 
@@ -584,18 +593,16 @@
     .value ~required,
     .code=
       {
-        \ifnum#1=\l_fantasycal_base_current_day_tl\relax
-          \bool_set_true:N \l__fantasycal_base_date_match_bool
-        \fi
+        \int_compare:nNnT {#1} = { \l_fantasycal_base_current_day_tl }
+          { \bool_set_true:N \l__fantasycal_base_date_match_bool }
       }
   }
 \pgfkeys
   {
     /pgf/start ~ of ~ month/.code=
       {
-        \ifnum1=\l_fantasycal_base_current_day_tl\relax
-          \bool_set_true:N \l__fantasycal_base_date_match_bool
-        \fi
+        \int_compare:nNnT { \c_one_int } = { \l_fantasycal_base_current_day_tl }
+          { \bool_set_true:N \l__fantasycal_base_date_match_bool }
       }
   }
 
@@ -655,18 +662,17 @@
     /pgf/equals/.cd , .value ~ required , .code=
       {
         \__fantasycal_base_special_date_to_ordinal:n {#1}
-        \ifnum\l_fantasycal_base_current_ordinal_int=\l__fantasycal_base_tmpa_int\relax
-          \bool_set_true:N \l__fantasycal_base_date_match_bool
-        \fi
+        \int_compare:nNnT
+          \l_fantasycal_base_current_ordinal_int = \l__fantasycal_base_tmpa_int
+          { \bool_set_true:N \l__fantasycal_base_date_match_bool }
       }
   }
 \pgfkeys
   {
     /pgf/ordinal ~ equals/.cd , .value ~ required , .code=
       {
-        \ifnum\l_fantasycal_base_current_ordinal_int=#1\relax
-          \bool_set_true:N \l__fantasycal_base_date_match_bool
-        \fi
+        \int_compare:nNnT \l_fantasycal_base_current_ordinal_int= {#1}
+          { \bool_set_true:N \l__fantasycal_base_date_match_bool }
       }
   }
 
@@ -675,20 +681,26 @@
     /pgf/at ~ least/.cd, .value ~ required, .code=
       {
         \__fantasycal_base_special_date_to_ordinal:n {#1}
-        \ifnum \l_fantasycal_base_current_ordinal_int<\l__fantasycal_base_tmpa_int\relax
-        \else
-          \bool_set_true:N \l__fantasycal_base_date_match_bool
-        \fi
+        \int_compare:nNnF
+          \l_fantasycal_base_current_ordinal_int < \l__fantasycal_base_tmpa_int
+          { \bool_set_true:N \l__fantasycal_base_date_match_bool }
+%        \ifnum \l_fantasycal_base_current_ordinal_int<\l__fantasycal_base_tmpa_int\relax
+%        \else
+%          \bool_set_true:N \l__fantasycal_base_date_match_bool
+%        \fi
       }
   }
 \pgfkeys
   {
     /pgf/ordinal ~ at ~ least/.cd, .value ~ required, .code=
       {
-        \ifnum \l_fantasycal_base_current_ordinal_int<#1\relax
-        \else
-          \bool_set_true:N \l__fantasycal_base_date_match_bool
-        \fi
+        \int_compare:nNnF
+          \l_fantasycal_base_current_ordinal_int < {#1}
+          { \bool_set_true:N \l__fantasycal_base_date_match_bool }
+%        \ifnum \l_fantasycal_base_current_ordinal_int<#1\relax
+%        \else
+%          \bool_set_true:N \l__fantasycal_base_date_match_bool
+%        \fi
       }
   }
 %
@@ -742,6 +754,46 @@
         \fi
       }
   }
+\pgfkeys
+  {
+    /pgf/leap ~ year/.cd, .default=\l_fantasycal_base_current_year_tl , .code =
+      {
+        \bool_if:NT \l__fantasycal_activate_leap_year_bool
+          {
+            \int_compare:nNnTF {#1} = { \l_fantasycal_base_current_year_tl }
+              {
+                \bool_if:NT \l__fantasycal_base_leap_year_bool
+                  { \bool_set_true:N \l__fantasycal_base_date_match_bool }
+              }{
+                \group_begin:
+                \__fantasycal_base_check_if_leap_year:n {#1}
+                \bool_if:NTF \l__fantasycal_base_leap_year_bool
+                  { \group_end: \bool_set_true:N \l__fantasycal_base_date_match_bool }
+                  { \group_end: }
+              }
+          }
+      }
+  }
+\pgfkeys
+  {
+    /pgf/leap ~ year ~ day/.cd, .code =
+      {
+        \bool_lazy_and:nnT 
+          \l__fantasycal_activate_leap_year_bool \l__fantasycal_base_leap_year_bool
+          {
+            %% Cheat a little. Do not use ordinal days, but because we have a list
+            %% of leap year days, just check if the current month and day is in the list.
+            \tl_set:Nx \l_tmpa_tl 
+              { \l_fantasycal_base_current_month_tl - \l_fantasycal_base_current_day_tl }
+            \seq_if_in:NVT \l__fantasycal_base_leap_years_day_addons_seq \l_tmpa_tl
+              {
+                \bool_set_true:N \l__fantasycal_base_date_match_bool
+              }
+          }
+      }
+  }
+
+
 
 \cs_new:Npn \__fantasycal_base_special_date_to_ordinal:n #1
   {
@@ -753,7 +805,7 @@
   {
     \tl_set:Nx \l_tmpa_tl {#3}
     \tl_if_empty:NTF \l_tmpa_tl
-      { \tl_set:Nn \l_tmpa_tl { \l_fantasycal_base_current_year_tl - #1-#2 } }
+      { \tl_set:Nx \l_tmpa_tl { \l_fantasycal_base_current_year_tl - #1-#2 } }
       { \tl_set:Nn \l_tmpa_tl {#4} }
     \__fantasycal_base_iso_to_ordinal:nN {\l_tmpa_tl} \l__fantasycal_base_tmpa_int
   }
