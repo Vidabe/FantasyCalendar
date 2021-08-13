@@ -449,6 +449,10 @@
   { 
     box ~ draw/.code={ \tikzset { box = { draw=#1 } } }  
   }
+\tikzset
+  { 
+    box ~ fill/.code={ \tikzset { box = { fill=#1 } } }  
+  }
   
 \tl_new:N \l__fantasycal_ragged_day_tl
 \tl_set:Nn \l__fantasycal_ragged_day_tl \RaggedRight
