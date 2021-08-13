@@ -22,7 +22,7 @@
 
 \tl_new:N \__fantasycal_moon_text_full_tl
 \tl_new:N \__fantasycal_moon_text_new_tl
-\tl_set:Nn \__fantasycal_moon_text_full_tl { \tiny \textsf { V } }
+\tl_set:Nn \__fantasycal_moon_text_full_tl { \tiny \textsf { \textcolor{black}{ V } } }
 \tl_set:Nn \__fantasycal_moon_text_new_tl { \tiny \textsf { \textcolor{white}{ N } }  }
 
 \tl_new:N \l__fantasycal_moon_left_tl
@@ -421,7 +421,7 @@
               }
               { \tl_show:n { ERROR-#1-#2-##1 } }
             %% If even one is false, break the loop
-            \bool_if:NF \l__fantasycal_base_date_match_bool { \seq_map_break: }
+            \bool_if:NF \l__fantasycal_base_date_match_bool { \clist_map_break: }
           }
         \bool_if:NTF \l__fantasycal_base_date_match_bool
           { \group_end: \bool_set_true:N \l__fantasycal_base_date_match_bool }
