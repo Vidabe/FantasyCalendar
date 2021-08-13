@@ -3,6 +3,7 @@
 *.log
 *.pdf
 *.synctex.gz
+build/*
 
 Fantasie2.tex
 main_testing2.tex
