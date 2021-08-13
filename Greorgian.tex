@@ -37,9 +37,9 @@
 \FantasyCalendarDateEntry{1-1}{New Year}
 \FantasyCalendarDateEntry{12-31}{Silvester}
 
-\FantasyCalendarDateEntry{6-23}{A Birthday}
-\FantasyCalendarDateEntry{2-12}{Another Birthday}
-\FantasyCalendarDateEntry{8-34}{The Birthday}
+\FantasyCalendarDateEntry{6-23}[Birthday]{A Birthday}
+\FantasyCalendarDateEntry{2-12}[Birthday]{Another Birthday}
+\FantasyCalendarDateEntry{8-5}[Birthday]{The Birthday}
 
 
 \begin{document}
@@ -48,7 +48,7 @@
 \centering
 \PrintFantasyCalendarYear{\the\year}
   {
-%    
+    if (Birthday) [red]   
   }
 
   
