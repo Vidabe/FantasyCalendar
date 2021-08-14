@@ -88,12 +88,11 @@
     %% year-month
     month/.code= { \tikzset{ dates={ #1-1 to #1-last } } } ,
     months/.code= { \tikzset{ month={#1} } }
-%    months/.code= { \__fantasycal_months_parse:ww #1 \q_no_value }
   }
-\cs_new:Npn \__fantasycal_months_parse:ww #1 to #2 \q_no_value
-  {
-    \tikzset{ dates={ #1-1 to #2-last } }
-  }
+%\cs_new:Npn \__fantasycal_months_parse:ww #1 to #2 \q_no_value
+%  {
+%    \tikzset{ dates={ #1-1 to #2-last } }
+%  }
 \tikzset
   { 
     %% year
@@ -163,16 +162,21 @@
                     \seq_set_eq:NN \l__fantasycal_tmpa_seq 
                       \l__fantasycal_base_number_days_of_months_seq 
                   }
+                
                 %% height is a bit more complicated, sadly.
                 %% get days of month with highest number of days
                 \int_set:Nn \l__fantasycal_tmpa_int
                   { \fp_eval:n { max ( \seq_use:Nn \l__fantasycal_tmpa_seq { , } ) } }
 
-                %% Calculate the maximum number of rows a month can have. For this, assume
-                %% that the month starts at the end of the current week.
+                %% Now we calc the number of rows we have. 
+                \bool_if:NF \l__fantasycal_base_mod_all_zero_bool
+                  {
+                    %% Calculate the maximum number of rows a month can have. For this, assume
+                    %% that the month starts at the end of the current week.
+                    \int_add:Nn \l__fantasycal_tmpa_int 
+                      { \l__fantasycal_base_nr_days_per_week_int-1 }
+                  }
                 %% \l__fantasycal_tmpa_int is now the number of rows i have.
-                \int_add:Nn \l__fantasycal_tmpa_int 
-                  { \l__fantasycal_base_nr_days_per_week_int-1 }
                 \int_set:Nn \l__fantasycal_tmpa_int
                   { 
                     \fp_eval:n
@@ -194,7 +198,8 @@
                       { \dim_zero:N \l__fantasycal_tmpa_dim }
                   }
                 %% Calculate space available
-                \dim_set:Nn \l__fantasycal_tmpa_dim { ( \textheight - \l__fantasycal_tmpa_dim ) / \l__fantasycal_tmpa_int }
+                \dim_set:Nn \l__fantasycal_tmpa_dim 
+                  { ( \textheight - \l__fantasycal_tmpa_dim ) / \l__fantasycal_tmpa_int }
                 \tl_set:NV \l__fantasycal_calendar_box_height_tl \l__fantasycal_tmpa_dim
               }{
                 \tl_set:Nn \l__fantasycal_calendar_box_height_tl {#1} 

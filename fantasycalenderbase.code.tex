@@ -11,21 +11,21 @@
 
 \@ifpackageloaded{pgf}{}
   {\RequirePackage{pgf}}
-\@ifpackageloaded{l3benchmark}{}
-  {\RequirePackage{l3benchmark}}
 
 
 \ExplSyntaxOn
 
-
+\bool_new:N \l__fantasycal_base_mod_all_zero_bool
 
 \int_new:N \l__fantasycal_base_default_nr_days_per_year_int
 \int_new:N \l__fantasycal_base_nr_days_per_year_int
 \int_new:N \l__fantasycal_base_nr_months_per_year_int
 \int_new:N \l__fantasycal_base_nr_days_per_week_int
+\int_new:N \l__fantasycal_base_nr_days_of_month_int
 
 \int_new:N \l__fantasycal_base_tmpa_int
 \int_new:N \l__fantasycal_base_tmpb_int
+\int_new:N \l__fantasycal_base_tmpc_int
 
 \int_new:N \g__fantasycal_base_tmpa_int
 \int_new:N \g__fantasycal_base_tmpb_int
@@ -33,6 +33,8 @@
 
 \tl_new:N \l__fantasycal_base_tmpa_tl
 \tl_new:N \l__fantasycal_base_tmpb_tl
+\tl_new:N \l__fantasycal_base_tmpc_tl
+\tl_new:N \l__fantasycal_base_int_tl
 
 \int_new:N \l__fantasycal_base_year_int
 \int_new:N \l__fantasycal_base_month_int
@@ -42,6 +44,7 @@
 \int_new:N \l__fantasycal_base_month_at_half_year_int
 \int_new:N \l__fantasycal_base_nr_days_of_half_year_int
 
+\seq_new:N \l__fantasycal_base_tmpa_seq
 
 \seq_new:N \l__fantasycal_base_day_names_seq
 \seq_new:N \l__fantasycal_base_day_names_short_seq
@@ -90,10 +93,10 @@
   {
     \group_begin:
 %    % Setup local \ifdate
-      \cs_set_eq:NN \ifdate \__fantasycal_base_if_date:nTF
       \cs_set_eq:NN \ifdateTF \__fantasycal_base_if_date:nTF
       \cs_set_eq:NN \ifdateT \__fantasycal_base_if_date:nT
       \cs_set_eq:NN \ifdateF \__fantasycal_base_if_date:nF
+      \cs_set_eq:NN \ifdate \__fantasycal_base_if_date:nTF
 %    % Let's start with computing start and end dates...
       \tl_set:Nn \l__fantasycal_base_calendar_prefix_tl {#1}
       \tl_set:Nx \l__fantasycal_base_begin_iso_tl {#2}
@@ -148,6 +151,7 @@
       \l__fantasycal_base_nr_months_per_year_int
       \l__fantasycal_base_cumulative_number_days_seq
   }
+\@onlypreamble\FantasyCalendarAddMonths
 
 \cs_new:Npn \__fantasycal_base_set_first_day_shift:n #1
   {
@@ -177,13 +181,13 @@
     %% Get names of months
     \seq_put_right:Nn \l__fantasycal_base_month_names_seq {#1}
     %% Set values
-    \int_set:Nn \l_tmpa_int {#2}
-    \seq_put_right:NV \l__fantasycal_base_number_days_of_months_seq \l_tmpa_int
+    \int_set:Nn \l__fantasycal_base_tmpa_int {#2}
+    \seq_put_right:NV \l__fantasycal_base_number_days_of_months_seq \l__fantasycal_base_tmpa_int
     \seq_put_right:NV \l__fantasycal_base_cumulative_number_days_seq 
       \l__fantasycal_base_default_nr_days_per_year_int
     \seq_put_left:NV \l__fantasycal_base_cumulative_number_days_invers_seq
       \l__fantasycal_base_default_nr_days_per_year_int
-    \int_add:Nn \l__fantasycal_base_default_nr_days_per_year_int { \l_tmpa_int }
+    \int_add:Nn \l__fantasycal_base_default_nr_days_per_year_int { \l__fantasycal_base_tmpa_int }
   }
 
 
@@ -230,10 +234,10 @@
       {#1}
     \__fantasycal_base_add_list_of_days:n {#1}
   }
+\@onlypreamble\FantasyCalendarAddDays
 
 \cs_new:Npn \__fantasycal_base_add_list_of_days:n #1
   {
-%    \seq_set_from_clist:Nn \l__fantasycal_base_day_names_seq {#1}
     \int_set:Nn \l__fantasycal_base_nr_days_per_week_int 
       { \seq_count:N \l__fantasycal_base_day_names_seq }
     \__fantasycal_base_create_pgf_keys:NN 
@@ -254,8 +258,8 @@
   {
     \seq_map_indexed_inline:Nn #1
       {
-        \int_set:Nn \l_tmpa_int { \int_mod:nn {##1} {#2} }
-        \__fantasycal_base_new_pdf_weekday:nV {##2} \l_tmpa_int
+        \int_set:Nn \l__fantasycal_base_tmpa_int { \int_mod:nn {##1} {#2} }
+        \__fantasycal_base_new_pdf_weekday:nV {##2} \l__fantasycal_base_tmpa_int
       }
     \__fantasycal_base_new_pdf_weekday:nn { end ~ of ~ week } { 0 }
     \__fantasycal_base_new_pdf_weekday:nn { begin ~ of ~ week } { 1 }
@@ -309,6 +313,7 @@
     \fp_zero:N \l__fantasycal_base_leap_year_fraction_fp
     \__fantasycal_base_if_leap_condition:nT {#1} {#2}
   }
+\@onlypreamble\DefineLeapYear
 
 \cs_new:Npn \__fantasycal_base_if_leap_condition:nT #1#2
   {
@@ -355,58 +360,83 @@
     \int_zero:N \l__fantasycal_base_nr_days_in_leap_year_int
 %    
     \prop_set_from_keyval:Nn \l__fantasycal_base_leap_year_storage_prop {#1}
+    \prop_set_eq:NN \l_tmpa_prop \l__fantasycal_base_leap_year_storage_prop
 %    
-    \seq_set_eq:NN \l_tmpa_seq \l__fantasycal_base_default_number_days_of_months_seq
+    \seq_set_eq:NN \l__fantasycal_base_tmpa_seq \l__fantasycal_base_default_number_days_of_months_seq
     \seq_map_indexed_inline:Nn \l__fantasycal_base_month_names_seq
        {
-         \seq_pop_left:NN \l_tmpa_seq \l_tmpa_tl
-         \int_set:Nn \l__fantasycal_base_tmpa_int { \l_tmpa_tl }
-         \prop_get:NnNT \l__fantasycal_base_leap_year_storage_prop {##2} \l_tmpb_tl
+         \seq_pop_left:NN \l__fantasycal_base_tmpa_seq \l__fantasycal_base_tmpa_tl
+         \int_set:Nn \l__fantasycal_base_nr_days_of_month_int { \l__fantasycal_base_tmpa_tl }
+         \prop_pop:NnNT \l_tmpa_prop {##2} \l__fantasycal_base_tmpb_tl
            { 
-             \int_add:Nn \l__fantasycal_base_leap_nr_days_added_int { \l_tmpb_tl }
-             \int_add:Nn \l__fantasycal_base_tmpa_int { \l_tmpb_tl }
+             \int_add:Nn \l__fantasycal_base_leap_nr_days_added_int { \l__fantasycal_base_tmpb_tl }
+             \int_add:Nn \l__fantasycal_base_nr_days_of_month_int { \l__fantasycal_base_tmpb_tl }
              %% add the leap-days to the storage
-             \int_compare:nNnT { \l_tmpb_tl } > { 0 }
+             \int_compare:nNnT { \l__fantasycal_base_tmpb_tl } > { \c_zero_int }
                {
-                 \int_step_inline:nnn { \l_tmpa_tl + 1 } { \l_tmpa_tl + \l_tmpb_tl }
+                 \int_step_inline:nnn 
+                   { \l__fantasycal_base_tmpa_tl + \c_one_int } 
+                   { \l__fantasycal_base_tmpa_tl + \l__fantasycal_base_tmpb_tl }
                    {
-                     \seq_push:Nn \l__fantasycal_base_leap_years_day_addons_seq
-                       { ##1 - ####1 }
+                     \seq_push:Nn \l__fantasycal_base_leap_years_day_addons_seq { ##1 - ####1 }
                    }
                }
            }
          \seq_put_right:NV \l__fantasycal_base_leap_year_days_per_months_seq 
-           \l__fantasycal_base_tmpa_int
+           \l__fantasycal_base_nr_days_of_month_int
          \seq_put_right:NV \l__fantasycal_base_leap_year_cumulative_days_seq 
            \l__fantasycal_base_nr_days_in_leap_year_int
          \seq_put_left:NV \l__fantasycal_base_leap_year_inverse_cumulative_days_seq 
            \l__fantasycal_base_nr_days_in_leap_year_int
          \int_add:Nn \l__fantasycal_base_nr_days_in_leap_year_int 
-           \l__fantasycal_base_tmpa_int
+           \l__fantasycal_base_nr_days_of_month_int
        }
+%       
+    \prop_if_empty:NF \l_tmpa_prop
+      {
+        \exp_args:Nx \tl_show:n 
+          { 
+            ERROR! ~ Some ~ month ~ names ~ were ~ not ~ found! 
+            \prop_map_function:NN \l_tmpa_prop \use_i:nn
+          }
+      }
 %       
   }
 
-\cs_new:Npn \__fantasycal_base_lp_start:ww #1 year ~ #2 divisible ~ by ~ #3;
+\cs_new:Npn \__fantasycal_base_lp_start:ww #1 year ~ divisible ~ by ~ #2;
   {
-    \int_set:Nn \l_tmpa_int {#3}
-    \__fantasycal_base_lp_store:nV {#2} \l_tmpa_int
+    \int_set:Nn \l__fantasycal_base_tmpa_int {#2}
+    \__fantasycal_base_lp_store:nV { } \l__fantasycal_base_tmpa_int
     \peek_meaning_ignore_spaces:NTF b
       { \__fantasycal_base_lp_contin:ww }
       { \use_none_delimit_by_q_recursion_stop:w }
   }
 \cs_new:Npn \__fantasycal_base_lp_contin:ww #1 but ~ #2 divisible ~ by ~ #3;
   {
-    \int_set:Nn \l_tmpa_int {#3}
-    \__fantasycal_base_lp_store:nV {#2} \l_tmpa_int
+    \int_set:Nn \l__fantasycal_base_tmpa_int {#3}
+    \__fantasycal_base_lp_store:nV {#2} \l__fantasycal_base_tmpa_int
     \peek_meaning_ignore_spaces:NTF b
       { \__fantasycal_base_lp_contin:ww }
       { \use_none_delimit_by_q_recursion_stop:w }
   }
 
+
+\prg_new_conditional:Npnn \__fantasycal_base_lp_check_str_equ_not:n #1 { TF }
+  {
+    \tl_if_blank:nTF {#1}
+      { \prg_return_false: }
+      {
+        \str_if_eq:nnTF {#1} { not ~ }
+          { \prg_return_true: }
+          { 
+            \tl_show:n { ERROR!~ Non ~ valid~ input ~ '#1' ~ in ~ leap ~ year ~ definition. } 
+            \prg_return_false:
+          }
+      }
+  }
 \cs_new:Npn \__fantasycal_base_lp_store:nn #1#2
   {
-    \str_if_eq:nnTF { not~ } {#1}
+    \__fantasycal_base_lp_check_str_equ_not:nTF {#1}
       { 
         \__fantasycal_base_lp_store_values:nnNV
           {#2} { - } \bool_set_false:N \l__fantasycal_base_leap_nr_days_added_int
@@ -424,7 +454,7 @@
     \__fantasycal_base_add_to_checking:n
       {
         \int_compare:nNnT
-          { \int_mod:nn {##1} {#1} } = { 0 }
+          { \int_mod:nn {##1} {#1} } = { \c_zero_int }
           { #3 \l__fantasycal_base_leap_year_bool }
       }
     \__fantasycal_base_check_add_leap_year_days_put_right:n
@@ -469,6 +499,8 @@
 \cs_new:Npn \__fantasycal_base_check_add_leap_year_days_aux:n #1 { }
 \cs_generate_variant:Nn \__fantasycal_base_check_add_leap_year_days_aux:n { f }
 
+
+
 \int_new:N \l__fantasycal_base_test_year_int
 \int_new:N \l__fantasycal_base_test_ordinal_int
 \bool_new:N \l__fantasycal_base_test_year_loop_bool
@@ -496,7 +528,7 @@
           }
         \int_set:Nn \l__fantasycal_base_test_ordinal_int
           { #2 - \l__fantasycal_base_test_ordinal_int }
-        \int_compare:nNnTF { \l__fantasycal_base_test_ordinal_int } < { 0 }
+        \int_compare:nNnTF { \l__fantasycal_base_test_ordinal_int } < { \c_zero_int }
           { \int_decr:N \l__fantasycal_base_test_year_int }
           {
             %% test_ordinal is positive!
@@ -797,17 +829,17 @@
 
 \cs_new:Npn \__fantasycal_base_special_date_to_ordinal:n #1
   {
-    \tl_set:Nx \l_tmpa_tl {#1}
+    \tl_set:Nx \l__fantasycal_base_tmpa_tl {#1}
     \exp_after:wN \__fantasycal_base_special_split_test:wwwN
-      \l_tmpa_tl - \relax {#1}
+      \l__fantasycal_base_tmpa_tl - \relax {#1}
   }
 \cs_new:Npn \__fantasycal_base_special_split_test:wwwN #1-#2-#3\relax#4
   {
-    \tl_set:Nx \l_tmpa_tl {#3}
-    \tl_if_empty:NTF \l_tmpa_tl
-      { \tl_set:Nx \l_tmpa_tl { \l_fantasycal_base_current_year_tl - #1-#2 } }
-      { \tl_set:Nn \l_tmpa_tl {#4} }
-    \__fantasycal_base_iso_to_ordinal:nN {\l_tmpa_tl} \l__fantasycal_base_tmpa_int
+    \tl_set:Nx \l__fantasycal_base_tmpa_tl {#3}
+    \tl_if_empty:NTF \l__fantasycal_base_tmpa_tl
+      { \tl_set:Nx \l__fantasycal_base_tmpa_tl { \l_fantasycal_base_current_year_tl - #1-#2 } }
+      { \tl_set:Nn \l__fantasycal_base_tmpa_tl {#4} }
+    \__fantasycal_base_iso_to_ordinal:nN { \l__fantasycal_base_tmpa_tl } \l__fantasycal_base_tmpa_int
   }
 
 
@@ -904,7 +936,7 @@
     \str_if_eq:VnTF \l__fantasycal_base_tmpb_tl { last }
       { 
         \int_set:Nn \l__fantasycal_base_day_int
-           { \__fantasycal_base_print_days_of_month:n { \l__fantasycal_base_month_int }}  
+           { \__fantasycal_base_print_days_of_month:n { \l__fantasycal_base_month_int } }  
       }
       { \int_set:Nn \l__fantasycal_base_day_int {#3} }
 
@@ -932,16 +964,16 @@
 
 \cs_new:Npn \__fantasycal_base_check_and_setup_leap_year:nN #1 #2
   {
-    \int_set:Nn \l_tmpa_int {#1}
+    \int_set:Nn \l__fantasycal_base_tmpa_int {#1}
     \bool_if:NTF \l__fantasycal_activate_leap_year_bool
       {
         \__fantasycal_base_get_year_from_ordinal:Nn 
-          \l__fantasycal_base_year_int \l_tmpa_int
+          \l__fantasycal_base_year_int \l__fantasycal_base_tmpa_int
         \__fantasycal_base_check_if_leap_year:n { \l__fantasycal_base_year_int }
         \__fantasycal_base_setup_current_year: 
       }{
         \int_set:Nn \l__fantasycal_base_year_int 
-          { \int_div_truncate:nn \l_tmpa_int \l__fantasycal_base_default_nr_days_per_year_int }
+          { \int_div_truncate:nn \l__fantasycal_base_tmpa_int \l__fantasycal_base_default_nr_days_per_year_int }
       }
     \tl_set:NV #2 \l__fantasycal_base_year_int 
   }
@@ -950,24 +982,22 @@
   {
     %% shorter version, as year is already given and leap year is setup.
     \group_begin:
-    \int_set:Nn \l_tmpa_int {#1}
     %% year
     \int_set:Nn \l__fantasycal_base_year_int {#2}
     %% days
-    \int_set_eq:NN \l__fantasycal_base_day_int \l_tmpa_int
-    \int_set:Nn \l_tmpb_int
-      { \__fantasycal_base_print_days_til_start_of_year:n \l__fantasycal_base_year_int }
+    \int_set:Nn \l__fantasycal_base_day_int {#1}
     % get number of days we are into in current year
-    \int_sub:Nn \l__fantasycal_base_day_int { \l_tmpb_int }
+    \int_sub:Nn \l__fantasycal_base_day_int 
+      { \__fantasycal_base_print_days_til_start_of_year:n \l__fantasycal_base_year_int }
 
     % if zero: we were at end of last year. Set stuff accordingly
-    \int_compare:nNnTF { \l__fantasycal_base_day_int } = { 0 }
+    \int_compare:nNnTF { \l__fantasycal_base_day_int } = { \c_zero_int }
       {
         \int_decr:N \l__fantasycal_base_year_int
         \int_set_eq:NN \l__fantasycal_base_month_int 
           \l__fantasycal_base_nr_months_per_year_int
-        \seq_get_right:NN \l__fantasycal_base_number_days_of_months_seq \l_tmpa_tl
-        \int_set:Nn \l__fantasycal_base_day_int { \l_tmpa_tl }
+        \seq_get_right:NN \l__fantasycal_base_number_days_of_months_seq \l__fantasycal_base_tmpa_tl
+        \int_set:Nn \l__fantasycal_base_day_int { \l__fantasycal_base_tmpa_tl }
       }{
         % else: get month and day the hard way
         \__fantasycal_base_ordinal_to_date_get_month:N \l__fantasycal_base_day_int
@@ -990,7 +1020,7 @@
   {
     \group_begin:
       \__fantasycal_base_check_and_setup_leap_year:nN {#1} #2
-      \__fantasycal_base_ordinal_to_date_shorter:nNNN #1#2#3#4
+      \__fantasycal_base_ordinal_to_date_shorter:nNNN {#1} #2#3#4
       \int_gset:Nn \g__fantasycal_base_tmpa_int #2
       \int_gset:Nn \g__fantasycal_base_tmpb_int #3
       \int_gset:Nn \g__fantasycal_base_tmpc_int #4
@@ -1011,14 +1041,14 @@
 \cs_new:Npn \__fantasycal_base_ordinal_to_date_get_month_aux_i:
   {
     \int_zero:N \l__fantasycal_base_month_int
-    \int_zero:N \l_tmpa_int
+    \int_zero:N \l__fantasycal_base_tmpa_int
     \seq_map_inline:Nn \l__fantasycal_base_cumulative_number_days_seq
       {
         \if_int_compare:w ##1 < \l__fantasycal_base_day_int\relax %>
             \int_incr:N \l__fantasycal_base_month_int 
-            \int_set:Nn \l_tmpa_int {##1}
+            \int_set:Nn \l__fantasycal_base_tmpa_int {##1}
         \else:
-            \int_sub:Nn \l__fantasycal_base_day_int { \l_tmpa_int }
+            \int_sub:Nn \l__fantasycal_base_day_int { \l__fantasycal_base_tmpa_int }
             \exp_after:wN \seq_map_break:
         \fi:
       }
@@ -1042,11 +1072,11 @@
 \cs_new:Npn \__fantasycal_base_ordinal_to_weekday:nN #1#2
   {
     \group_begin:
-    \int_set:Nn \l_tmpa_int {#1}
+    \int_set:Nn \l__fantasycal_base_tmpa_int {#1}
     %% Add zero day shift
-    \int_add:Nn \l_tmpa_int { \l__fantasycal_base_zero_day_shift_int }
+    \int_add:Nn \l__fantasycal_base_tmpa_int { \l__fantasycal_base_zero_day_shift_int }
     \int_gset:Nn \g__fantasycal_base_tmpa_int 
-      { \int_mod:nn \l_tmpa_int \l__fantasycal_base_nr_days_per_week_int }
+      { \int_mod:nn \l__fantasycal_base_tmpa_int \l__fantasycal_base_nr_days_per_week_int }
     \group_end:
     \int_set_eq:NN #2 \g__fantasycal_base_tmpa_int
 }
@@ -1149,18 +1179,18 @@
 \cs_new:cpn { __fantasycal@shorthand@d-} 
   {
     { 
-      \int_set:Nn \l_tmpa_int \l_fantasycal_base_current_day_tl
-      \int_use:N \l_tmpa_int 
+      \int_set:Nn \l__fantasycal_base_tmpc_int \l_fantasycal_base_current_day_tl
+      \int_use:N \l__fantasycal_base_tmpc_int 
     }
   }
 \cs_new:cpn { __fantasycal@shorthand@d= } 
   {
     {
-      \int_set:Nn \l_tmpa_int \l_fantasycal_base_current_day_tl
-      \ifnum\l_tmpa_int<10\relax
+      \int_set:Nn \l__fantasycal_base_tmpc_int \l_fantasycal_base_current_day_tl
+      \ifnum\l__fantasycal_base_tmpc_int<10\relax
         \setbox0=\hbox{1}\kern\wd0\relax
       \fi
-      \int_use:N \l_tmpa_int
+      \int_use:N \l__fantasycal_base_tmpc_int
     }
   }
 
@@ -1168,18 +1198,18 @@
 \cs_new:cpn { __fantasycal@shorthand@m- } 
   {
     {
-      \int_set:Nn \l_tmpa_int \l_fantasycal_base_current_month_tl
-      \int_use:N \l_tmpa_int
+      \int_set:Nn \l__fantasycal_base_tmpc_int \l_fantasycal_base_current_month_tl
+      \int_use:N \l__fantasycal_base_tmpc_int
     }
   }
 \cs_new:cpn { __fantasycal@shorthand@m= } 
   {
     {
-      \int_set:Nn \l_tmpa_int \l_fantasycal_base_current_month_tl
-      \ifnum\l_tmpa_int<10\relax
+      \int_set:Nn \l__fantasycal_base_tmpc_int \l_fantasycal_base_current_month_tl
+      \ifnum\l__fantasycal_base_tmpc_int<10\relax
         \setbox0=\hbox{1}\kern\wd0\relax
       \fi
-      \int_use:N \l_tmpa_int
+      \int_use:N \l__fantasycal_base_tmpc_int
     }
   }
 
@@ -1236,10 +1266,47 @@
   
 
 
+\cs_new:Npn \__fantasycal_base_modulo_zero_check:
+  {
+    \bool_set_true:N \l__fantasycal_base_mod_all_zero_bool
+    \__fantasycal_base_modulo_zero_check_aux:N 
+      \l__fantasycal_base_default_number_days_of_months_seq
+    \bool_lazy_and:nnT
+      { \l__fantasycal_base_mod_all_zero_bool }
+      { \seq_if_empty_p:N \l__fantasycal_base_leap_year_days_per_months_seq }
+      {
+        \__fantasycal_base_modulo_zero_check_aux:N 
+          \l__fantasycal_base_leap_year_days_per_months_seq
+      }
+  }
+\cs_new:Npn \__fantasycal_base_modulo_zero_check_aux:N #1
+  {
+    \int_set_eq:NN \l__fantasycal_base_tmpc_int \l__fantasycal_base_zero_day_shift_int
+    \seq_map_inline:Nn #1
+      {
+        \int_compare:nNnF 
+          { 
+            \int_mod:nn {\l__fantasycal_base_tmpc_int + ##1} { \l__fantasycal_base_nr_days_per_week_int } 
+          } = { \c_zero_int }
+          {
+            \seq_map_break:n { \bool_set_false:N \l__fantasycal_base_mod_all_zero_bool }
+          }
+      }
+  }
 
 
-
-
+\AtBeginDocument
+  {
+    \seq_if_empty:NT \l__fantasycal_base_month_names_seq
+      {
+        \tl_show:n { ERROR! ~ No ~ months ~ of ~ a ~ year ~ defined! }
+      }
+    \seq_if_empty:NT \l__fantasycal_base_day_names_seq
+      {
+        \tl_show:n { ERROR! ~ No ~ days ~ of ~ week ~ defined! }
+      }
+    \__fantasycal_base_modulo_zero_check:
+  }
 
 
 

@@ -105,48 +105,6 @@
     
     
     
-    
-%    \int_compare:nNnT
-%      { \__fantasycal_moon_moon_phase_int } = { \c_zero_int }
-%      {
-%        %% At full moon (all white)
-%        \int_set_eq:NN \__fantasycal_moon_moon_case_int \c_zero_int
-%        \use_none_delimit_by_q_recursion_stop:w
-%      }
-%    \int_compare:nNnT
-%      { \__fantasycal_moon_moon_phase_int } =
-%      { \__fantasycal_moon_lunar_cycle_int / 2 }
-%      {
-%        %% New moon (all black)
-%        \int_set:Nn \__fantasycal_moon_moon_case_int { 1 }
-%        \use_none_delimit_by_q_recursion_stop:w
-%      }
-%    \int_compare:nNnT
-%      { \__fantasycal_moon_moon_phase_int } =
-%      { \__fantasycal_moon_lunar_cycle_int  / 4 }
-%      {
-%        \int_set:Nn \__fantasycal_moon_moon_case_int { 2 }
-%        \tl_set:Nn \l__fantasycal_moon_left_tl { 0 }
-%        \tl_set:Nn \l__fantasycal_moon_right_tl { 1 }
-%        \use_none_delimit_by_q_recursion_stop:w
-%      }
-%    \int_compare:nNnT
-%      { \__fantasycal_moon_moon_phase_int } =
-%      { \__fantasycal_moon_lunar_cycle_int * 3 / 4 }
-%      {
-%        \int_set:Nn \__fantasycal_moon_moon_case_int { 2 }
-%        \tl_set:Nn \l__fantasycal_moon_left_tl { -1 }
-%        \tl_set:Nn \l__fantasycal_moon_right_tl { 0 }
-%        \use_none_delimit_by_q_recursion_stop:w
-%      }
-
-%
-%    \int_compare:nNnTF
-%      { \__fantasycal_moon_moon_phase_int } >
-%      { \__fantasycal_moon_lunar_cycle_int / 2 }
-%      { \bool_set_true:N \l__fantasycal_moon_decreasing_bool }
-%      { \bool_set_false:N \l__fantasycal_moon_decreasing_bool }
-
 
     \int_set:Nn \__fantasycal_moon_moon_case_int { 2 }
     \int_set:Nn \l_tmpa_int { 360*\__fantasycal_moon_moon_phase_int }
