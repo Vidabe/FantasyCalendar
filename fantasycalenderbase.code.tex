@@ -33,8 +33,6 @@
 
 \tl_new:N \l__fantasycal_base_tmpa_tl
 \tl_new:N \l__fantasycal_base_tmpb_tl
-\tl_new:N \l__fantasycal_base_tmpc_tl
-\tl_new:N \l__fantasycal_base_int_tl
 
 \int_new:N \l__fantasycal_base_year_int
 \int_new:N \l__fantasycal_base_month_int
@@ -505,12 +503,12 @@
 \int_new:N \l__fantasycal_base_test_ordinal_int
 \bool_new:N \l__fantasycal_base_test_year_loop_bool
 
-\cs_new:Npn \__fantasycal_base_get_year_from_ordinal:Nn #1#2
+\cs_new:Npn \__fantasycal_base_get_year_from_ordinal:nN #1#2
   {
     \group_begin:
     %% Start getting an approximate year
     \int_set:Nn \l__fantasycal_base_test_year_int 
-      { \int_div_truncate:nn {#2} { \l__fantasycal_base_default_nr_days_per_year_int } }
+      { \int_div_truncate:nn {#1} { \l__fantasycal_base_default_nr_days_per_year_int } }
 
     %% Now start the loop until we get the year right. 
     \bool_set_false:N \l__fantasycal_base_test_year_loop_bool
@@ -527,7 +525,7 @@
             \__fantasycal_base_print_days_til_start_of_year:n \l__fantasycal_base_test_year_int
           }
         \int_set:Nn \l__fantasycal_base_test_ordinal_int
-          { #2 - \l__fantasycal_base_test_ordinal_int }
+          { #1 - \l__fantasycal_base_test_ordinal_int }
         \int_compare:nNnTF { \l__fantasycal_base_test_ordinal_int } < { \c_zero_int }
           { \int_decr:N \l__fantasycal_base_test_year_int }
           {
@@ -548,7 +546,7 @@
       }
     \exp_args:NNNV
     \group_end:
-    \int_set:Nn #1 \l__fantasycal_base_test_year_int
+    \int_set:Nn #2 \l__fantasycal_base_test_year_int
   }
 
 \cs_new:Npn \__fantasycal_base_get_nr_of_days_this_year:N #1
@@ -649,8 +647,8 @@
             \int_add:Nn \l__fantasycal_base_tmpa_int { #1-1 }
             \bool_if:NTF \l__fantasycal_activate_leap_year_bool
               {
-                \__fantasycal_base_get_year_from_ordinal:Nn
-                  \l__fantasycal_base_year_int \l__fantasycal_base_tmpa_int
+                \__fantasycal_base_get_year_from_ordinal:nN
+                  \l__fantasycal_base_tmpa_int \l__fantasycal_base_year_int
                 \__fantasycal_base_check_if_leap_year:n { \l__fantasycal_base_year_int }
                 \__fantasycal_base_setup_current_year:
                 \int_set:Nn \l__fantasycal_base_tmpa_int
@@ -672,6 +670,8 @@
                       \l__fantasycal_base_default_nr_days_per_year_int 
                   }
               }
+            %% \l__fantasycal_base_date_match_bool is already false,
+            %% no need to explicitly set it.
             \seq_map_inline:Nn \l__fantasycal_base_cumulative_number_days_seq
               {
                 \int_compare:nNnT 
@@ -683,7 +683,7 @@
               } 
             \bool_if:NTF \l__fantasycal_base_date_match_bool
               { \group_end: \bool_set_true:N \l__fantasycal_base_date_match_bool }
-              { \group_end: \bool_set_false:N \l__fantasycal_base_date_match_bool }
+              { \group_end: }
           }
       }
   }
@@ -967,8 +967,8 @@
     \int_set:Nn \l__fantasycal_base_tmpa_int {#1}
     \bool_if:NTF \l__fantasycal_activate_leap_year_bool
       {
-        \__fantasycal_base_get_year_from_ordinal:Nn 
-          \l__fantasycal_base_year_int \l__fantasycal_base_tmpa_int
+        \__fantasycal_base_get_year_from_ordinal:nN 
+          \l__fantasycal_base_tmpa_int \l__fantasycal_base_year_int
         \__fantasycal_base_check_if_leap_year:n { \l__fantasycal_base_year_int }
         \__fantasycal_base_setup_current_year: 
       }{
