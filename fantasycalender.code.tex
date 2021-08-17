@@ -1357,7 +1357,8 @@
     \int_step_inline:nn { \l__fantasycal_base_nr_months_per_year_int }
       {
         \noindent
-        \tikz\PrintFantasycalendarBase
+        \begin{tikzpicture}
+        \PrintFantasycalendarBase
           [
             , month = #2 - ##1
             , week ~ list
@@ -1373,6 +1374,7 @@
           ]
           #3
           ;
+        \end{tikzpicture}
         \newpage
       }
   }
