@@ -109,12 +109,38 @@
 \dim_new:N \l__fantasycal_box_height_dim
 \dim_new:N \l__fantasycal_box_inner_x_sep_dim
 \dim_new:N \l__fantasycal_box_inner_y_sep_dim
+\dim_new:N \l__fantasycal_box_outer_x_sep_dim
+\dim_new:N \l__fantasycal_box_outer_y_sep_dim
+
 \dim_set:Nn \l__fantasycal_box_inner_x_sep_dim { 2pt }
 \dim_set:Nn \l__fantasycal_box_inner_y_sep_dim { 2pt }
 
 \tikzset
   { 
-    sep ~ to ~ box/.code= { \dim_set:Nn \l__fantasycal_box_inner_sep_dim {#1} } ,
+    box ~ inner ~ xsep/.code= 
+      { 
+        \dim_set:Nn \l__fantasycal_box_inner_x_sep_dim {#1} 
+      } ,
+    box ~ inner ~ ysep/.code= 
+      { 
+        \dim_set:Nn \l__fantasycal_box_inner_y_sep_dim {#1} 
+      } ,
+    box ~ inner ~ sep/.code= 
+      { 
+        \tikzset{box ~ inner ~ xsep= {#1} , box ~ inner ~ ysep = {#1} }
+      } ,
+    box ~ outer ~ xsep/.code= 
+      { 
+        \dim_set:Nn \l__fantasycal_box_outer_x_sep_dim {#1} 
+      } ,
+    box ~ outer ~ ysep/.code= 
+      { 
+        \dim_set:Nn \l__fantasycal_box_outer_y_sep_dim {#1} 
+      } ,
+    box ~ outer ~ sep/.code= 
+      { 
+        \tikzset{box ~ outer ~ xsep= {#1} , box ~ outer ~ ysep = {#1} }
+      } ,
     box ~ width/.code = 
       { 
         \bool_set_true:N \l__fantasycal_box_size_given_bool
@@ -130,17 +156,18 @@
                 %% Fitting  width is quite easy. -1pt to remove overfull box warnings
                 \dim_set:Nn \l__fantasycal_tmpa_dim
                   { \textwidth / \l__fantasycal_base_nr_days_per_week_int - 1pt }
-                \tl_set:NV \l__fantasycal_calendar_box_width_tl \l__fantasycal_tmpa_dim
               }{
-                \tl_set:Nn \l__fantasycal_calendar_box_width_tl {#1} 
+                \dim_set:Nn \l__fantasycal_tmpa_dim {#1}
               }
-            \tl_set_eq:NN \l__fantasycal_draw_day_xshift_tl 
-              \l__fantasycal_calendar_box_width_tl
+            \tl_set:NV \l__fantasycal_draw_day_xshift_tl \l__fantasycal_tmpa_dim
+            \dim_sub:Nn \l__fantasycal_tmpa_dim \l__fantasycal_box_outer_x_sep_dim
+            \tl_set:NV \l__fantasycal_calendar_box_width_tl \l__fantasycal_tmpa_dim
             \dim_set:Nn \l__fantasycal_box_width_dim 
               { 
                 \l__fantasycal_calendar_box_width_tl 
-                  - 1\pgflinewidth
+%                  - 1\pgflinewidth
                   - 2\l__fantasycal_box_inner_x_sep_dim 
+                  - 1\l__fantasycal_box_outer_x_sep_dim
               } 
           }
       } ,
@@ -202,17 +229,18 @@
                 %% Calculate space available
                 \dim_set:Nn \l__fantasycal_tmpa_dim 
                   { ( \textheight - \l__fantasycal_tmpa_dim ) / \l__fantasycal_tmpa_int }
-                \tl_set:NV \l__fantasycal_calendar_box_height_tl \l__fantasycal_tmpa_dim
               }{
-                \tl_set:Nn \l__fantasycal_calendar_box_height_tl {#1} 
+                \dim_set:Nn \l__fantasycal_tmpa_dim {#1}
               }
-            \tl_set_eq:NN \l__fantasycal_draw_day_yshift_tl 
-              \l__fantasycal_calendar_box_height_tl
+            \tl_set:NV \l__fantasycal_draw_day_yshift_tl \l__fantasycal_tmpa_dim
+            \dim_sub:Nn \l__fantasycal_tmpa_dim \l__fantasycal_box_outer_y_sep_dim
+            \tl_set:NV  \l__fantasycal_calendar_box_height_tl \l__fantasycal_tmpa_dim
             \dim_set:Nn \l__fantasycal_box_height_dim 
               { 
                 \l__fantasycal_calendar_box_height_tl 
-                  - 1\pgflinewidth
+%                  - 1\pgflinewidth
                   - 2\l__fantasycal_box_inner_y_sep_dim 
+                  - 1\l__fantasycal_box_outer_y_sep_dim
               } 
           }
       } ,
@@ -359,7 +387,7 @@
 \tl_new:N \l__fantasycal_text_month_year_hook_right_tl
 \tl_new:N \l__fantasycal_text_month_number_hook_tl
 
-\tl_set:Nn \l__fantasycal_text_box_tl { \phantom{1} } %% text in node shifts thing up
+\tl_set:Nn \l__fantasycal_text_box_tl { \strut } %% text in node shifts thing up
 \tl_set:Nn \fantasycalTextDay 
   { 
     \l__fantasycal_text_day_tl
@@ -901,15 +929,16 @@
     , add ~ moons / true / .code =
        {
          \tl_set:Nn \l__fantasycal_text_day_moon_hook_tl 
-           { \, \fantasycalPrintMoons }
+           {
+             \tl_if_empty:NF \l__fantasycal_print_moons_tl
+               { \, \l__fantasycal_print_moons_tl  }
+           }
        }
     , add ~ moons / false / .code =
        { \tl_clear:N \l__fantasycal_text_day_moon_hook_tl }
     , add ~ moons / .default = true
   }
 
-\cs_new:Npn \fantasycalPrintMoons
-  { \l__fantasycal_print_moons_tl }
 
 \pgfset
   {
@@ -989,7 +1018,7 @@
 \cs_new:Npn \__fantasycal_note_put_right:nnn #1#2#3
   {
     \tl_if_exist:cTF { l__fantasycal_ #1 _ #2 _tl }
-      { \tl_put_right:cn { l__fantasycal_ #1 _ #2 _tl } { \\ #3 } }
+      { \tl_put_right:cn { l__fantasycal_ #1 _ #2 _tl } { \par #3 } }
       { 
         \tl_new:c { l__fantasycal_ #1 _ #2 _tl }
         \tl_set:cn { l__fantasycal_ #1 _ #2 _tl } {#3}
@@ -1076,11 +1105,11 @@
     \l__fantasycal_font_notes_tl
     \tl_if_exist:cT { l__fantasycal_yearly_day_ \%md _tl }
       {
-        \\ { \l__fantasycal_font_notes_yearly_tl \tl_use:c { l__fantasycal_yearly_day_ \%md _tl } }
+        \par { \l__fantasycal_font_notes_yearly_tl \tl_use:c { l__fantasycal_yearly_day_ \%md _tl } }
       }
     \tl_if_exist:cT { l__fantasycal_onetime_day_ \%yd _tl }
       {
-        \\ 
+        \par 
          {  
            \l__fantasycal_font_notes_onetime_tl
            \tl_use:c { l__fantasycal_onetime_day_ \%yd _tl }
@@ -1193,7 +1222,7 @@
     \tl_set:cn { l__fantasycal_task_ #1 _text_tl }
       {
         \ifdateT { ordinal ~ equals = {#2} }
-          { \textcolor {#4} {#3} \\ }
+          { \textcolor {#4} {#3} \par }
       }
   }
 \cs_generate_variant:Nn \__fantasycal_task_save_text:nnnn { VnnV }
@@ -1317,23 +1346,27 @@
 
 
 
-
+\keys_define:nn { fantasycal/print-calendar }
+  {
+    set-test-month .tl_set:N = \l__fantasycal_base_nr_months_per_year_int
+  }
 
 
 \fp_new:N \l__fantasycal_year_start_fp
 \fp_new:N \l__fantasycal_year_step_fp
 \fp_new:N \l__fantasycal_year_end_fp
 
-\NewDocumentCommand \PrintFantasyCalendarYear { O{} m m }
+\NewDocumentCommand \PrintFantasyCalendarYear { O{} m O{} m }
   {
     \group_begin:
+    \keys_set:nn { fantasycal/print-calendar } {#3}
     \__fantasycal_print_fantasycalendar_year_setup:n {#2}
     \fp_step_inline:nnnn 
       { \l__fantasycal_year_start_fp } 
       { \l__fantasycal_year_step_fp }
       { \l__fantasycal_year_end_fp  }
       {
-        \__fantasycal_print_fantasycalendar_year:nnn {#1} {##1} {#3}
+        \__fantasycal_print_fantasycalendar_year:nnn {#1} {##1} {#4}
       }
     \group_end:
   }
@@ -1520,9 +1553,9 @@
           \l__fantasycal_at_begin_day_tl
           \__fantasycal_print_if_s:
           \l__fantasycal_code_box_tl
+          \l__fantasycal_after_box_hook_tl
           \l__fantasycal_code_task_tl
           \l__fantasycal_code_day_tl
-          \l__fantasycal_after_box_hook_tl
           \l__fantasycal_at_end_day_tl
         \endscope%
         \l__fantasycal_after_day_tl
