@@ -67,6 +67,8 @@
 
 \bool_new:N \l__fantasycal_tmpa_bool
 
+\tl_new:N \l__fantasycal_after_box_hook_tl
+
 \cs_new:Npn \__fantasycal_sanitize_weekday_for_tikz:N #1
   {
     \int_set:Nn #1 { \l_fantasycal_base_current_weekday_tl }
@@ -263,6 +265,13 @@
     execute ~ after ~ day ~ scope/.code=
       { \tl_put_right:Nn \l__fantasycal_after_day_tl {#1} }
   }
+
+\tikzset
+  { 
+    execute  ~ after ~ box ~ scope/.code=
+      { \tl_put_right:Nn \l__fantasycal_after_box_hook_tl {#1} }
+  }
+
 
 
 \tl_set:Nn \l__fantasycal_draw_day_xshift_tl { 3.5ex }
@@ -1517,6 +1526,7 @@
           \l__fantasycal_code_box_tl
           \l__fantasycal_code_task_tl
           \l__fantasycal_code_day_tl
+          \l__fantasycal_after_box_hook_tl
           \l__fantasycal_at_end_day_tl
         \endscope%
         \l__fantasycal_after_day_tl
