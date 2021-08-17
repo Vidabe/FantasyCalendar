@@ -212,7 +212,7 @@
               { 
                 \l__fantasycal_calendar_box_height_tl 
                   - 1\pgflinewidth
-                  - 3\l__fantasycal_box_inner_y_sep_dim 
+                  - 2\l__fantasycal_box_inner_y_sep_dim 
               } 
           }
       } ,
@@ -316,14 +316,14 @@
 \tl_set:Nn \l__fantasycal_code_day_tl 
   {
     \node
-      ( \__fantasycal_base_suggested_name: ) [ every ~ day ]
+      ( \__fantasycal_base_suggested_name: ) (today) [ every ~ day  ]
       { 
         \bool_if:NTF \l__fantasycal_box_size_given_bool 
           {
             \parbox [ c ] [ \l__fantasycal_box_height_dim ] 
               [ \l__fantasycal_vertical_day_tl ]
               { \l__fantasycal_box_width_dim }
-              { 
+              {
                 \l__fantasycal_font_day_tl
                 \l__fantasycal_ragged_day_tl
                 \fantasycalTextDay
@@ -337,7 +337,9 @@
   { 
     \bool_if:NT \l__fantasycal_box_size_given_bool
       {
-        \node ( \__fantasycal_base_suggested_name: - box ) [ every ~ box ] 
+        \node 
+          ( \__fantasycal_base_suggested_name: - box ) 
+          (today-box) [ every ~ box ] 
           { \l__fantasycal_text_box_tl } ; 
       }
   }
@@ -363,7 +365,7 @@
     \l__fantasycal_text_day_tl
     \l__fantasycal_text_day_moon_hook_tl 
     \l__fantasycal_text_day_note_hook_tl
-    \l__fantasycal_text_task_tl
+%    \l__fantasycal_text_task_tl
   }
 \tl_set:Nn \l__fantasycal_text_day_tl { \%d-  }
 \tl_set:Nn \l__fantasycal_text_week_day_tl { \%wt }
@@ -1136,12 +1138,6 @@
 \tl_new:N \l__fantasycal_text_task_tl
 \tl_set:Nn \l__fantasycal_text_task_tl { \vfill }
 
-%\tikzset
-%  {
-%    execute ~ before ~ day ~ scope = 
-%      { 
-%      }
-%  }
 
 \NewDocumentCommand \FantasyCalendarAddTask { m m m m }
   {
