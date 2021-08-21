@@ -1,0 +1,145 @@
+% !TEX encoding = UTF-8 Unicode
+\documentclass[paper=landscape]{scrartcl}
+
+\usepackage[margin=1cm]{geometry}
+\usepackage{l3benchmark}
+\usepackage{calc}
+
+\input{fantasycalender.code}
+\usetikzlibrary{calc}
+\FantasyCalendarAddMonths{6}{
+  January=31, 
+  February=28, 
+  March=31, 
+  April=30, 
+  May=31, 
+  June=30, 
+  July=31 , 
+  August=31, 
+  September=30, 
+  October=31 ,
+  November=30 ,
+  December=31 ,
+}
+
+\FantasyCalendarAddDays{Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday}
+
+
+\DefineLeapYear
+  {
+    year divisible by 4;
+    but not divisible by 100;
+    but divisible by 400;
+  }
+  { February=+1 }
+
+
+%% https://tex.stackexchange.com/questions/170462/calendar-in-latex
+%% Based on https://texample.net/tikz/examples/birthday-calendar/
+%% by Hakon Malmedal
+
+\pgfkeys{/tikz/flag-flying day/.code =
+  {%
+    \tikzset%
+      {%
+        execute after box scope=%
+          {\draw[](today-box.south west) node [anchor=south west] {\usebox{\flagNO}};}
+      }%
+  }%
+}
+
+
+\definecolor{roed}{rgb}{0.937254901961,0.16862745098,0.176470588235}
+\definecolor{blaa}{rgb}{0,0.156862745098,0.407843137255}
+
+\newsavebox{\flagNO}
+\savebox{\flagNO}{%
+\begin{tikzpicture}%
+  \fill[roed] rectangle (6pt,6pt);
+  \fill[roed,yshift=10pt] rectangle (6pt,6pt);
+  \fill[roed,xshift=10pt] rectangle (12pt,6pt);
+  \fill[roed,xshift=10pt,yshift=10pt] rectangle (12pt,6pt);
+  \fill[blaa,yshift=7pt] rectangle (22pt,2pt);
+  \fill[blaa,xshift=7pt] rectangle (2pt,16pt);
+\end{tikzpicture}%
+}
+
+\ExplSyntaxOn
+\def\hkjwefhkwehkj{\l__fantasycal_box_height_dim}
+\def\wefjghhjwgjfwe{\l__fantasycal_box_width_dim}
+\newcommand\testboxA{\color{blue}\rule{\wefjghhjwgjfwe}{\hkjwefhkwehkj}}
+
+\tl_put_right:Nn \l__fantasycal_code_day_tl
+  {
+    \draw (today-box.south ~ east) node [anchor=south ~ east] {\Huge\%d-};
+  }
+
+\ExplSyntaxOff
+
+\FantasyCalendarDateEntry{01-01}[Flag-Day]{Første nyttårsdag}
+\FantasyCalendarDateEntry{01-21}[Flag-Day]{Prinsesse Ingrid Alexandra}
+\FantasyCalendarDateEntry{02-06}[Flag-Day]{Samefolkets dag}
+\FantasyCalendarDateEntry{02-21}[Flag-Day]{Kong Harald~V}
+\FantasyCalendarDateEntry{05-01}[Flag-Day]{Offentlig høytidsdag}
+\FantasyCalendarDateEntry{05-08}[Flag-Day]{Frigjøringsdagen}
+\FantasyCalendarDateEntry{05-17}[Flag-Day]{Grunnlovsdag}
+\FantasyCalendarDateEntry{06-07}[Flag-Day]{Unionsoppløsningen}
+\FantasyCalendarDateEntry{06-23}{Sankthansaften}
+\FantasyCalendarDateEntry{07-04}[Flag-Day]{Dronning Sonja}
+\FantasyCalendarDateEntry{07-20}[Flag-Day]{Kronprins Haakon}
+\FantasyCalendarDateEntry{07-29}[Flag-Day]{Olsok}
+\FantasyCalendarDateEntry{08-19}[Flag-Day]{Kronprinsesse Mette-Marit}
+\FantasyCalendarDateEntry{10-24}{FN-dagen}
+\FantasyCalendarDateEntry{12-25}[Flag-Day]{Første juledag}
+\FantasyCalendarDateEntry{12-26}{Andre juledag}
+
+\FantasyCalendarDateEntry{05-07}{Brahms [1833]}
+
+\FantasyCalendarSpecialEntry{Easter}{Første påskedag}
+\FantasyCalendarSpecialEntry{Easter=-49}{Fastelavnssøndag}
+\FantasyCalendarSpecialEntry{Easter=-7}{Palmesøndag}
+\FantasyCalendarSpecialEntry{Easter=-3}{Skjærtorsdag}
+\FantasyCalendarSpecialEntry{Easter=-2}{Langfredag}
+\FantasyCalendarSpecialEntry{Easter=+1}{Andre påskedag}
+\FantasyCalendarSpecialEntry{Easter=+39}{Kristi himmelfartsdag}
+\FantasyCalendarSpecialEntry{Easter=+49}{Første pinsedag}
+\FantasyCalendarSpecialEntry{Easter=+50}{Andre pinsedag}
+
+\FantasyCalendarSpecialEntry{Advent}{Advent}
+%\FantasyCalendarSpecialEntry{Advent=+7}{2.\ Advent}
+%\FantasyCalendarSpecialEntry{Advent=+14}{3.\ Advent}
+%\FantasyCalendarSpecialEntry{Advent=+21}{4.\ Advent}
+
+
+
+\begin{document}
+
+
+\PrintFantasyCalendarYear
+  [
+    , day text = {}
+    , note font = {\color{black}}
+    , box outer sep = 5pt
+    , box = { rounded corners }
+  ]
+  {\the\year}
+  {
+  if (Sunday,
+      Easter=-3, % Maundy Thursday
+      Easter=-2, % Good Friday
+      Easter,    % Easter Sunday
+      Easter=1,  % Easter Monday
+      Easter=39, % Feast of the Ascension
+      Easter=49, % Pentecost
+      Easter=50, % Whit Monday
+      equals=01-01,
+      equals=05-01,
+      equals=05-17,
+      equals=12-25,
+      equals=12-26) [red]
+  if (Flag-Day,
+      Easter,
+      Easter=49
+      ) [flag-flying day]
+  }
+\end{document}
