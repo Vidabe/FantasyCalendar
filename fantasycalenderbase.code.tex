@@ -80,6 +80,7 @@
     \tl_put_right:Nn \l__fantasycal_base_hook_tl {#1}
   }
 
+
 %% Main command to print calendar. Stolen from tikz' calendar
 
 \NewDocumentCommand \basefantasycalendar { m m m +m }
@@ -138,6 +139,18 @@
   }
 
 
+%% Create template
+
+\NewDocumentCommand \UseFantasyCalendarTemplate { m }
+  {
+    \file_if_exist:nTF {#1.fantasycalendar.tex}
+      { \input {#1.fantasycalendar.tex} }
+      {
+        \file_if_exist:nTF { templates/#1.fantasycalendar.tex }
+          { \input {templates/#1.fantasycalendar.tex} }
+          { \tl_show:n { ERROR! ~ Template ~ '#1.fantasycalendar.tex' ~ not ~ found! } }
+      }
+  }
 
 %% Defenition of months
 
@@ -1148,7 +1161,7 @@
         }
       \int_set:Nn \l__fantasycal_base_eastern_i_int 
         { \int_mod:nn \l__fantasycal_base_eastern_i_int { 30 } }
-      \int_set:Nn \l_tmpa_int 
+      \int_set:Nn \l__fantasycal_base_tmpa_int 
         {
           1 - 
           \int_div_truncate:nn { \l__fantasycal_base_eastern_i_int } { 28 }
@@ -1158,7 +1171,7 @@
         { 
           \l__fantasycal_base_eastern_i_int - 
           \int_div_truncate:nn { \l__fantasycal_base_eastern_i_int } { 28 }  
-            * \l_tmpa_int
+            * \l__fantasycal_base_tmpa_int
             * \int_div_truncate:nn { 21 - \l__fantasycal_base_eastern_N_int }{ 11 }
         }
       \int_set:Nn \l__fantasycal_base_eastern_J_int 
@@ -1173,12 +1186,30 @@
       \int_set:Nn \l__fantasycal_base_eastern_L_int 
         { \l__fantasycal_base_eastern_i_int - \l__fantasycal_base_eastern_J_int }
       \int_set:Nn \l__fantasycal_base_eastern_M_int 
-        { 3 + \int_div_truncate:nn { \l__fantasycal_base_eastern_L_int+ 40 } { 44 } }
+        { 3 + \int_div_truncate:nn { \l__fantasycal_base_eastern_L_int + 40 } { 44 } }
       \int_set:Nn \l__fantasycal_base_eastern_D_int 
         { 
           \l__fantasycal_base_eastern_L_int + 28 - 
           31* \int_div_truncate:nn { \l__fantasycal_base_eastern_M_int } { 4 } 
         }
+    
+    \int_compare:nNnT { \l__fantasycal_base_eastern_M_int } >
+      { \l__fantasycal_base_nr_months_per_year_int }
+      {
+        \int_set:Nn \l__fantasycal_base_eastern_M_int
+          { \int_min:nn { \l__fantasycal_base_nr_months_per_year_int / 4 } { 1 } }
+      }
+    \int_set:Nn \l__fantasycal_base_tmpa_int
+      { 
+        \seq_item:Nn \l__fantasycal_base_number_days_of_months_seq 
+          { \l__fantasycal_base_eastern_M_int }
+      }
+    \int_compare:nNnT 
+      { \l__fantasycal_base_eastern_D_int } > { \l__fantasycal_base_tmpa_int }
+      {
+        \int_set:Nn \l__fantasycal_base_eastern_D_int
+          { \int_min:nn { \l__fantasycal_base_tmpa_int / 3 } { 1 } }
+      }
     \__fantasycal_base_iso_to_ordinal:nN 
       { 
         \int_use:N \l__fantasycal_base_eastern_Y_int -
@@ -1190,14 +1221,29 @@
     \int_set:Nn #2 \l__fantasycal_base_tmpa_int
   }
 
-\pgfkeys{/pgf/Easter/.cd,.default=0,.code={%
-  \__fantasycal_base_year_to_eastern_ordinal:nN { \l_fantasycal_base_current_year_tl }
-    \l__fantasycal_base_tmpa_int
-  \int_compare:nNnT { \l_fantasycal_base_current_ordinal_int } =
-    { \l__fantasycal_base_tmpa_int+#1 }
-    { \bool_set_true:N \l__fantasycal_base_date_match_bool }
+\cs_new:Npn \__fantasycal_base_eastern_date_calculated:nN #1#2
+  {
+    \int_if_exist:cTF { g__fantasycal_base_easter_year_ #1 _int }
+      {
+        \int_set_eq:Nc #2 { g__fantasycal_base_easter_year_ #1 _int }
+      }{
+        \__fantasycal_base_year_to_eastern_ordinal:nN {#1} #2
+        \int_new:c { g__fantasycal_base_easter_year_ #1 _int }
+        \int_gset_eq:cN { g__fantasycal_base_easter_year_ #1 _int } #2
+      }
   }
-}
+
+\pgfkeys
+  {
+    /pgf/Easter/.cd,.default=0,.code=
+      {
+        \__fantasycal_base_eastern_date_calculated:nN
+          { \l_fantasycal_base_current_year_tl } \l__fantasycal_base_tmpa_int
+        \int_compare:nNnT { \l_fantasycal_base_current_ordinal_int } =
+          { \l__fantasycal_base_tmpa_int + #1 }
+          { \bool_set_true:N \l__fantasycal_base_date_match_bool }
+      }
+  }
 
 
 %% Advent
@@ -1205,8 +1251,8 @@
 \cs_new:Npn \__fantasycal_base_get_first_advent_ordinal:nN #1#2
   {
     \group_begin:
-    %% 1st Sunday before 25. December
-    \__fantasycal_base_iso_to_ordinal:nN { #1-12-24 } #2
+    %% 1st Sunday before 25. December (aka. start at december 12th 24st.)
+    \__fantasycal_base_iso_to_ordinal:nN { #1-last-last+-7 } #2
     \__fantasycal_base_ordinal_to_weekday:nN {#2} \l__fantasycal_base_tmpb_int
     %% Have now the date of the fourth advent sunday
     \int_sub:Nn #2 \l__fantasycal_base_tmpb_int
@@ -1229,50 +1275,10 @@
 
 
 
-
-%\cs_new:Npn \__fantasycal_get_stuff:n #1 { \int_use:c { l__fantasycal_base_eastern_#1_int} }
-%\cs_new:Npn \__fantasycal_set_stuff:nn #1#2 
-%  { 
-%\int_if_exist:cF {l__fantasycal_base_eastern_#1_int} {     \int_zero_new:c { l__fantasycal_base_eastern_#1_int } }
-%    \int_set:cn { l__fantasycal_base_eastern_#1_int} {#2}
-%  }
-%\cs_new:Npn \__fantasycal_base_eastern_get:n #1
-%  {
-%    \group_begin:
-%      \cs_set_eq:NN \% \__fantasycal_get_stuff:n
-%      \cs_set_eq:NN \_ \int_div_truncate:nn
-%      \cs_set_eq:NN \m \int_mod:nn
-%      \__fantasycal_set_stuff:nn { X } {#1}
-%      \__fantasycal_set_stuff:nn { K } { \_ { \%X } { 100 } }
-%      \__fantasycal_set_stuff:nn { M } { 15 + \_{3*\%K+3}{4} - \_{8*\%K + 13}{25} }
-%      \__fantasycal_set_stuff:nn { S } { 2 - \_{3*\%K+3}4 }
-%      \__fantasycal_set_stuff:nn { A } { \m{\%X}{19} }
-%      \__fantasycal_set_stuff:nn { D } { \m{19*\%A + \%M}{30} }
-%      \__fantasycal_set_stuff:nn { R } { \_{\%D + \_{\%A}{11}}{29} }
-%      \__fantasycal_set_stuff:nn { OG } { 21 + \%D - \%R }
-%      \__fantasycal_set_stuff:nn { SZ } { 7 - \m{ \%X + \_{\%X}{4} + \%S }{7} } 
-%      \__fantasycal_set_stuff:nn { OE } { 7 - \m{ \%{OG} - \%{SZ} }7 }
-%      \__fantasycal_set_stuff:nn { OS } { \%{OG} + \%{OE} }
-%    \group_end:
-%  }
-
-
 %
 % Print mininum digits
 %
 
-%\cs_new:Npn \__fantasycal_base_get_end_day_of_last_month:Nnn #1#2#3
-%  {
-%    \int_set:Nn #1
-%      {
-%        \l__fantasycal_base_zero_day_shift_int 
-%         + \__fantasycal_base_print_cumulative_days:n {#3}
-%         + \l__fantasycal_base_default_nr_days_per_year_int * (#2)
-%      }
-%    \int_set:Nn #1
-%      { \int_mod:nn {#1} { \l__fantasycal_base_nr_days_per_week_int } }
-%  }
-%
 
 
 \cs_new:Npn \l__fantasycal_base_print_number_to_minimum_digits:nn #1#2
