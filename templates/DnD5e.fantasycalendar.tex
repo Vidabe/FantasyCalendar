@@ -1,0 +1,46 @@
+%% Dungeon Masters Guide, p.33
+%% Offset chosen by me
+\FantasyCalendarAddMonths{4}{
+  Hammer=31, 
+  Alturiak=30, 
+  Ches=30, 
+  Tarsakh=31, 
+  Mirtul=30, 
+  Kythorn=30, 
+  Flamerule=31 , 
+  Eleasis=30, 
+  Eleint=31, 
+  Marpenoth=30 ,
+  Uktar=31 ,
+  Nightal=30 ,
+}
+
+\FantasyCalendarAddDays
+  {
+    first-day,
+    second-day,
+    third-day,
+    fourth-day,
+    fifth-day,
+    sixth-day,
+    seventh-day,
+    eight-day,
+    ninth-day,
+    tenth-day
+  }
+
+
+\DefineLeapYear
+  {
+    year divisible by 4;
+  }
+  { Hammer=+1 }
+
+
+
+\FantasyCalendarDateEntry{1-31}{Midwinter}
+\FantasyCalendarDateEntry{1-32}{Shieldmeet}
+\FantasyCalendarDateEntry{4-31}{Greengrass}
+\FantasyCalendarDateEntry{7-31}{Midsummer}
+\FantasyCalendarDateEntry{9-31}{Highharvestide}
+\FantasyCalendarDateEntry{11-31}{The Feast of the Moon}
