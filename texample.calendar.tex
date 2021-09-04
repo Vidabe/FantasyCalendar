@@ -38,12 +38,20 @@
 %% Based on https://texample.net/tikz/examples/birthday-calendar/
 %% by Hakon Malmedal
 
+\tikzset
+  {%
+    execute after box scope=%
+      {%
+        \draw (today-box.south east) node [anchor=south east] {\Huge\%d-};%
+      }%
+  }%
+
 \pgfkeys{/tikz/flag-flying day/.code =
   {%
     \tikzset%
       {%
         execute after box scope=%
-          {\draw[](today-box.south west) node [anchor=south west] {\usebox{\flagNO}};}
+          {\draw(today-box.south west) node [anchor=south west] {\usebox{\flagNO}};}
       }%
   }%
 }
@@ -64,17 +72,7 @@
 \end{tikzpicture}%
 }
 
-\ExplSyntaxOn
-\def\hkjwefhkwehkj{\l__fantasycal_box_height_dim}
-\def\wefjghhjwgjfwe{\l__fantasycal_box_width_dim}
-\newcommand\testboxA{\color{blue}\rule{\wefjghhjwgjfwe}{\hkjwefhkwehkj}}
 
-\tl_put_right:Nn \l__fantasycal_code_day_tl
-  {
-    \draw (today-box.south ~ east) node [anchor=south ~ east] {\Huge\%d-};
-  }
-
-\ExplSyntaxOff
 
 \FantasyCalendarDateEntry{01-01}[Flag-Day]{Første nyttårsdag}
 \FantasyCalendarDateEntry{01-21}[Flag-Day]{Prinsesse Ingrid Alexandra}
@@ -120,6 +118,7 @@
     , note font = {\color{black}}
     , box outer sep = 5pt
     , box = { rounded corners }
+    , phantom days
   ]
   {\the\year}
   {
