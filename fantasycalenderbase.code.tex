@@ -114,7 +114,7 @@
       \int_while_do:nNnn { \l_fantasycal_base_current_ordinal_int } <
         { \l__fantasycal_base_end_ordinal_plus_tl }
         {
-          % Setup information aout current year (leap year)
+          % Setup information about current year (leap year)
           % and change some variables accordingly!
           \__fantasycal_base_check_and_setup_leap_year:nN 
             { \l_fantasycal_base_current_ordinal_int }
@@ -275,6 +275,7 @@
     \__fantasycal_base_new_pdf_weekday:nn { end ~ of ~ week } { 0 }
     \__fantasycal_base_new_pdf_weekday:nn { begin ~ of ~ week } { 1 }
   }
+
 
 \cs_new:Npn \__fantasycal_base_new_pdf_weekday:nn #1#2
   {

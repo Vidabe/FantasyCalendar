@@ -480,6 +480,10 @@
   }
 \tikzset
   { 
+    every ~ phantom ~ box/.style={every ~ box, loosely ~ dashed} 
+  }
+\tikzset
+  { 
     days/.code= { \tikzset{every ~ day/.append ~ style={#1} } }
   }
 \tikzset
@@ -599,6 +603,82 @@
 
 
 
+\tikzset
+  {
+    phantom ~ days/.code=
+      {
+        \tikzset
+          { 
+            execute ~ before ~ day ~ scope = 
+              {
+                \ifdateT { equals = \l__fantasycal_dates_start_tl }
+                  {{
+                    \pgfmathsetlength \l__fantasycal_tmpa_dim { \l__fantasycal_draw_day_xshift_tl }
+                    \__fantasycal_sanitize_weekday_for_tikz:N \l__fantasycal_tmpa_int
+                    \int_step_inline:nnn { \c_one_int } { \l__fantasycal_tmpa_int-\c_one_int }
+                      {
+                        \pgftransformxshift { \l__fantasycal_tmpa_dim }
+                        \node [ every ~ phantom ~ box ] { \l__fantasycal_text_box_tl } ; 
+                      }
+                  }}
+              } 
+            ,
+           execute ~ before ~ day ~ scope =
+             {
+               \ifdateT { equals = \l__fantasycal_dates_end_tl }
+                 {{
+                   \pgfmathsetlength \l__fantasycal_tmpa_dim { \l__fantasycal_draw_day_xshift_tl }
+                   \__fantasycal_sanitize_weekday_for_tikz:N \l__fantasycal_tmpa_int
+                   \pgftransformxshift { \l__fantasycal_tmpa_int\l__fantasycal_tmpa_dim }
+                   \int_step_inline:nnn 
+                     { \l__fantasycal_tmpa_int+\c_one_int }
+                     { \l__fantasycal_base_nr_days_per_week_int }
+                     {
+                        \pgftransformxshift { \l__fantasycal_tmpa_dim }
+                        \node [ every ~ phantom ~ box ] { \l__fantasycal_text_box_tl } ; 
+                     }
+                 }}
+             }
+          }
+      }
+  }
+%\tl_put_right:Nn \l__fantasycal_before_day_tl
+%  {
+%    \ifdateT { equals = \l__fantasycal_dates_start_tl }
+%      {
+%        {
+%          \pgfmathsetlength \l__fantasycal_tmpb_dim { \l__fantasycal_draw_day_xshift_tl}
+%          \__fantasycal_sanitize_weekday_for_tikz:N \l__fantasycal_tmpa_int
+%          \dim_set:Nn \l__fantasycal_tmpa_dim  { \l__fantasycal_tmpb_dim }
+%          \int_step_inline:nnn { 1 } { \l__fantasycal_tmpa_int-1 }
+%            {
+%              \pgftransformxshift { \l__fantasycal_tmpa_dim }
+%              \node 
+%                [ every ~ box , dashed ] 
+%                { \l__fantasycal_text_box_tl } ; 
+%            }
+%        }
+%      }
+%  }
+%\tl_put_right:Nn \l__fantasycal_after_day_tl
+%  {
+%    \ifdateT { equals = \l__fantasycal_dates_end_tl }
+%      {
+%        {
+%          \pgfmathsetlength \l__fantasycal_tmpb_dim { \l__fantasycal_draw_day_xshift_tl}
+%          \__fantasycal_sanitize_weekday_for_tikz:N \l__fantasycal_tmpa_int
+%          \dim_set:Nn \l__fantasycal_tmpa_dim  { \l__fantasycal_tmpb_dim }
+%          \pgftransformxshift { \l__fantasycal_tmpa_int\l__fantasycal_tmpa_dim }
+%          \int_step_inline:nnn { \l__fantasycal_tmpa_int+1 } { \l__fantasycal_base_nr_days_per_week_int }
+%            {
+%              \pgftransformxshift { \l__fantasycal_tmpa_dim }
+%              \node 
+%                [ every ~ box , dashed ] 
+%                { \l__fantasycal_text_box_tl } ; 
+%            }
+%        }
+%      }
+%  }
 
 
 
@@ -1644,6 +1724,8 @@
       }
     \endgroup
   }
+
+
 
 
 \tikzset{ 
