@@ -332,7 +332,7 @@
     \__fantasycal_base_leap_year_setup:
     \__fantasycal_base_leap_year_additions:n {#2}
 %
-    \__fantasycal_base_lp_start:ww
+    \__fantasycal_base_leap_year_start:ww
       #1 \q_recursion_tail \q_recursion_stop
 %      
     \fp_set:Nn \l__fantasycal_base_leap_year_fraction_fp 
@@ -415,25 +415,25 @@
 %       
   }
 
-\cs_new:Npn \__fantasycal_base_lp_start:ww #1 year ~ divisible ~ by ~ #2;
+\cs_new:Npn \__fantasycal_base_leap_year_start:ww #1 year ~ divisible ~ by ~ #2;
   {
     \int_set:Nn \l__fantasycal_base_tmpa_int {#2}
-    \__fantasycal_base_lp_store:nV { } \l__fantasycal_base_tmpa_int
+    \__fantasycal_base_leap_year_store:nV { } \l__fantasycal_base_tmpa_int
     \peek_meaning_ignore_spaces:NTF b
-      { \__fantasycal_base_lp_contin:ww }
+      { \__fantasycal_base_leap_year_contin:ww }
       { \use_none_delimit_by_q_recursion_stop:w }
   }
-\cs_new:Npn \__fantasycal_base_lp_contin:ww #1 but ~ #2 divisible ~ by ~ #3;
+\cs_new:Npn \__fantasycal_base_leap_year_contin:ww #1 but ~ #2 divisible ~ by ~ #3;
   {
     \int_set:Nn \l__fantasycal_base_tmpa_int {#3}
-    \__fantasycal_base_lp_store:nV {#2} \l__fantasycal_base_tmpa_int
+    \__fantasycal_base_leap_year_store:nV {#2} \l__fantasycal_base_tmpa_int
     \peek_meaning_ignore_spaces:NTF b
-      { \__fantasycal_base_lp_contin:ww }
+      { \__fantasycal_base_leap_year_contin:ww }
       { \use_none_delimit_by_q_recursion_stop:w }
   }
 
 
-\prg_new_conditional:Npnn \__fantasycal_base_lp_check_str_equ_not:n #1 { TF }
+\prg_new_conditional:Npnn \__fantasycal_base_leap_year_check_str_equ_not:n #1 { TF }
   {
     \tl_if_blank:nTF {#1}
       { \prg_return_false: }
@@ -446,20 +446,20 @@
           }
       }
   }
-\cs_new:Npn \__fantasycal_base_lp_store:nn #1#2
+\cs_new:Npn \__fantasycal_base_leap_year_store:nn #1#2
   {
-    \__fantasycal_base_lp_check_str_equ_not:nTF {#1}
+    \__fantasycal_base_leap_year_check_str_equ_not:nTF {#1}
       { 
-        \__fantasycal_base_lp_store_values:nnNV
+        \__fantasycal_base_leap_year_store_values:nnNV
           {#2} { - } \bool_set_false:N \l__fantasycal_base_leap_nr_days_added_int
       }{ 
-        \__fantasycal_base_lp_store_values:nnNV
+        \__fantasycal_base_leap_year_store_values:nnNV
           {#2} { + } \bool_set_true:N \l__fantasycal_base_leap_nr_days_added_int
       }
   }
-\cs_generate_variant:Nn \__fantasycal_base_lp_store:nn { nV }
+\cs_generate_variant:Nn \__fantasycal_base_leap_year_store:nn { nV }
 
-\cs_new:Npn \__fantasycal_base_lp_store_values:nnNn #1#2#3#4
+\cs_new:Npn \__fantasycal_base_leap_year_store_values:nnNn #1#2#3#4
   {
     % #2: + or - sign.
     \fp_add:Nn \l__fantasycal_base_leap_year_fraction_fp { #2 1/#1 }
@@ -472,7 +472,7 @@
     \__fantasycal_base_check_add_leap_year_days_put_right:n
       { #2 \int_div_truncate:nn {##1} {#1}*#4 }
   }
-\cs_generate_variant:Nn \__fantasycal_base_lp_store_values:nnNn { nnNV }
+\cs_generate_variant:Nn \__fantasycal_base_leap_year_store_values:nnNn { nnNV }
 
 
 
@@ -1095,6 +1095,11 @@
     \int_set_eq:NN #2 \g__fantasycal_base_tmpa_int
 }
 
+\cs_new:Npn \__fantasycal_base_ordinal_to_week:nN #1#2
+  {
+    %% TODo
+  }
+
 
 
 
@@ -1131,18 +1136,6 @@
 %M = 3 + (L + 40)/44, 
 %D = L + 28 - 31*(M/4).
 %
-%      \__fantasycal_set_stuff:nn { Y } {#1}
-%      \__fantasycal_set_stuff:nn { C } { \_{\%Y}{100} }
-%      \__fantasycal_set_stuff:nn { N } { \m{\%Y}{19} }
-%      \__fantasycal_set_stuff:nn { K } { \_{\%C-17}{25}  }
-%      \__fantasycal_set_stuff:nn { I } { \%C - \_{\%C}{4} - \_{\%C - \%K}{3} + 19*\%N + 15  }
-%      \__fantasycal_set_stuff:nn { I } {  \m{\%I}{30}  }
-%      \__fantasycal_set_stuff:nn { I } {  \%I - \_{\%I}{28}*( 1 - \_{\%I}{28}*(\_{29}{\%I+1}))*(\_{21 - \%N}{11})   }
-%      \__fantasycal_set_stuff:nn { J } {  \%Y + \_{\%Y}{4} + \%I + 2 - \%C + \_{\%C}{4}  }
-%      \__fantasycal_set_stuff:nn { J } {  \m{\%J}{7}}
-%      \__fantasycal_set_stuff:nn { L } {  \%I - \%J }
-%      \__fantasycal_set_stuff:nn { M } { 3 + \_{\%{L} + 40}{44} }
-%      \__fantasycal_set_stuff:nn { D } { \%{L} + 28 - 31 *\_{\%M}{4} }
     \group_begin:
       \int_set:Nn \l__fantasycal_base_eastern_Y_int {#1}
       \int_set:Nn \l__fantasycal_base_eastern_C_int 
@@ -1358,45 +1351,45 @@
 
 \cs_new:cpn { __fantasycal@shorthand@d-} 
   {
-    { 
-      \int_set:Nn \l__fantasycal_base_tmpc_int \l_fantasycal_base_current_day_tl
-      \int_use:N \l__fantasycal_base_tmpc_int 
-    }
+    \int_eval:n { \l_fantasycal_base_current_day_tl }
   }
 \cs_new:cpn { __fantasycal@shorthand@d= } 
   {
-    {
-      \int_set:Nn \l__fantasycal_base_tmpc_int \l_fantasycal_base_current_day_tl
-      \ifnum\l__fantasycal_base_tmpc_int<10\relax
-        \setbox0=\hbox{1}\kern\wd0\relax
-      \fi
-      \int_use:N \l__fantasycal_base_tmpc_int
-    }
+    \l__fantasycal_base_print_number_to_minimum_digits_space:nn 
+      { \l_fantasycal_base_current_day_tl }
+      { \c__fantasycal_base_max_nr_numerals_days_int }
   }
 
-\cs_new:cpn { __fantasycal@shorthand@d0} { \l_fantasycal_base_current_day_tl }
+\cs_new:cpn { __fantasycal@shorthand@d0} 
+  { 
+    \l__fantasycal_base_print_number_to_minimum_digits:nn 
+      { \l_fantasycal_base_current_day_tl }
+      { \c__fantasycal_base_max_nr_numerals_days_int }
+  }
 \cs_new:cpn { __fantasycal@shorthand@m- } 
   {
-    {
-      \int_set:Nn \l__fantasycal_base_tmpc_int \l_fantasycal_base_current_month_tl
-      \int_use:N \l__fantasycal_base_tmpc_int
-    }
+    \int_eval:n { \l_fantasycal_base_current_month_tl }
   }
 \cs_new:cpn { __fantasycal@shorthand@m= } 
   {
-    {
-      \int_set:Nn \l__fantasycal_base_tmpc_int \l_fantasycal_base_current_month_tl
-      \ifnum\l__fantasycal_base_tmpc_int<10\relax
-        \setbox0=\hbox{1}\kern\wd0\relax
-      \fi
-      \int_use:N \l__fantasycal_base_tmpc_int
-    }
+    \l__fantasycal_base_print_number_to_minimum_digits_space:nn 
+      { \l_fantasycal_base_current_month_tl }
+      { \c__fantasycal_base_max_nr_numerals_months_int }
   }
 
-\cs_new:cpn { __fantasycal@shorthand@m0 } {\l_fantasycal_base_current_month_tl }
-\cs_new:cpn { __fantasycal@shorthand@y-} { \l_fantasycal_base_current_year_tl }
+\cs_new:cpn { __fantasycal@shorthand@m0 } 
+  {
+    \l__fantasycal_base_print_number_to_minimum_digits:nn 
+      { \l_fantasycal_base_current_month_tl }
+      { \c__fantasycal_base_max_nr_numerals_months_int }
+  }
+\cs_new:cpn { __fantasycal@shorthand@y-} 
+  { 
+    \int_eval:n { \l_fantasycal_base_current_year_tl }
+  }
 \cs_new:cpn { __fantasycal@shorthand@y=}{ \l_fantasycal_base_current_year_tl }
 \cs_new:cpn { __fantasycal@shorthand@y0 }{ \l_fantasycal_base_current_year_tl }
+
 \cs_new:cpn { __fantasycal@shorthand@w.}  
   { 
     \__fantasycal_base_print_day_shortname:n { \l_fantasycal_base_current_day_tl } 
@@ -1418,22 +1411,33 @@
 % My own:  \%md, \%yd "<month>-<day>", "<year>-<month>-<day>"
 %
 
-\cs_new:cpn { __fantasycal@shorthand@md}
+\cs_new:cpn { __fantasycal@shorthand@md }
   {
     \l_fantasycal_base_current_month_tl - \l_fantasycal_base_current_day_tl
   }
-\cs_new:cpn { __fantasycal@shorthand@yd}
+\cs_new:cpn { __fantasycal@shorthand@yd }
   {
     \l_fantasycal_base_current_year_tl -
     \l_fantasycal_base_current_month_tl - \l_fantasycal_base_current_day_tl
   }
 
-%% ordinal
-\cs_new:cpn { __fantasycal@shorthand@o0 }
+\cs_new:cpn { __fantasycal@shorthand@iy }
   {
-    \int_use:N \l_fantasycal_base_current_ordinal_int
+    \l_fantasycal_base_current_year_tl -
+    \l_fantasycal_base_current_month_tl - \l_fantasycal_base_current_day_tl
   }
-\cs_new:cpn { __fantasycal@shorthand@s0 }
+\cs_new:cpn { __fantasycal@shorthand@im }
+  {
+    \l_fantasycal_base_current_month_tl - \l_fantasycal_base_current_day_tl
+  }
+
+%% ordinal
+\cs_new:cpn { __fantasycal@shorthand@o- } 
+  { \int_use:N \l_fantasycal_base_current_ordinal_int }
+\cs_new:cpn { __fantasycal@shorthand@o= } { \use:c { __fantasycal@shorthand@o- } }
+\cs_new:cpn { __fantasycal@shorthand@o0 } { \use:c { __fantasycal@shorthand@o- } }
+
+\cs_new:cpn { __fantasycal@shorthand@s- }
   {
     \int_eval:n 
       {(
@@ -1441,6 +1445,8 @@
         - \__fantasycal_base_print_days_til_start_of_year:n { \l_fantasycal_base_current_year_tl }
       )}
   }
+\cs_new:cpn { __fantasycal@shorthand@s= } { \use:c { __fantasycal@shorthand@s- } }
+\cs_new:cpn { __fantasycal@shorthand@s0 } { \use:c { __fantasycal@shorthand@s- } }
 
 
   
@@ -1485,7 +1491,25 @@
       {
         \tl_show:n { ERROR! ~ No ~ days ~ of ~ week ~ defined! }
       }
+      
     \__fantasycal_base_modulo_zero_check:
+    
+    \bool_if:NTF \l__fantasycal_base_leap_year_bool
+      {
+        \seq_set_eq:NN \l__fantasycal_base_tmpa_seq 
+          \l__fantasycal_base_nr_days_in_leap_year_int
+      }{
+        \seq_set_eq:NN \l__fantasycal_base_tmpa_seq 
+          \l__fantasycal_base_default_number_days_of_months_seq
+      }
+    \tl_set:Nx \l__fantasycal_base_tmpa_tl
+      { \fp_eval:n { max ( \seq_use:Nn \l__fantasycal_base_tmpa_seq { , }  ) } }
+    \int_const:Nn \c__fantasycal_base_max_nr_numerals_days_int 
+      { \tl_count:N \l__fantasycal_base_tmpa_tl }
+    \tl_set:Nx \l__fantasycal_base_tmpa_tl
+      { \int_use:N \l__fantasycal_base_nr_months_per_year_int }
+    \int_const:Nn \c__fantasycal_base_max_nr_numerals_months_int 
+      { \tl_count:N \l__fantasycal_base_tmpa_tl }
   }
 
 

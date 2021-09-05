@@ -331,6 +331,11 @@
           { \__fantasycal_moon_ifdate_moon_phase_match:Nnn #1 = { 1/4 } } ,
         /pgf/#2/half-moon-2/ .code= 
           { \__fantasycal_moon_ifdate_moon_phase_match:Nnn #1 = { 3/4 } } ,
+        /pgf/#2/half-moon/ .code= 
+          { 
+            \__fantasycal_moon_ifdate_moon_phase_match:Nnn #1 = { 1/4 }
+            \__fantasycal_moon_ifdate_moon_phase_match:Nnn #1 = { 3/4 } 
+          } ,
         /pgf/#2/waxing/ .code= 
           { 
 %            \__fantasycal_moon_if_moon_phase_behavior:Nnn #1 < { 1/2 } 
