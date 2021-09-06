@@ -303,7 +303,6 @@
       { 
         \tl_use:c { l__fantasycal_calendar_box_ #2 _tl }
           - \dim_use:c { l__fantasycal_box_inner_ #1 _sep_dim }*2
-          - \dim_use:c { l__fantasycal_box_outer_ #1 _sep_dim }
       } 
   }
 
@@ -402,6 +401,8 @@
       { 
         \bool_if:NTF \l__fantasycal_box_size_given_bool 
           {
+%            \setlength\fboxsep{0cm}
+%            \fbox{
             \parbox [ c ] [ \l__fantasycal_box_height_dim ] 
               [ \l__fantasycal_vertical_day_tl ]
               { \l__fantasycal_box_width_dim }
@@ -410,6 +411,7 @@
                 \l__fantasycal_ragged_day_tl
                 \fantasycalTextDay
               }
+%              }
           }{ 
             \l__fantasycal_font_day_tl \fantasycalTextDay 
           }
