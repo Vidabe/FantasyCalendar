@@ -200,10 +200,17 @@
           {
             \tl_put_right:Nn \l__fantasycal_box_size_setup_tl
               {
+                \tikzset 
+                  { 
+                    days = { inner ~ xsep = \l__fantasycal_box_inner_x_sep_dim }  ,
+                    days = { inner ~ ysep=\l__fantasycal_box_inner_y_sep_dim } ,
+                    box = { minimum ~ width=\l__fantasycal_calendar_box_width_tl } ,  
+                    box = { minimum ~ height=\l__fantasycal_calendar_box_height_tl } ,
+                  }
+                \__fantasycal_box_size_calculate_width:N \l__fantasycal_tmpa_dim
+                \__fantasycal_box_setup:nnN { x } { width } \l__fantasycal_tmpa_dim
                 \__fantasycal_box_size_calculate_height:N \l__fantasycal_tmpa_dim
                 \__fantasycal_box_setup:nnN { y } { height } \l__fantasycal_tmpa_dim
-                \__fantasycal_box_size_calculate_width:N \l__fantasycal_tmpb_dim
-                \__fantasycal_box_setup:nnN { x } { width } \l__fantasycal_tmpb_dim
                 \dim_compare:nNnTF 
                   \l__fantasycal_calendar_box_width_tl 
                   < % >
@@ -267,9 +274,9 @@
           { \dim_set:Nn \l__fantasycal_tmpa_dim { 2\baselineskip } }
           { \dim_zero:N \l__fantasycal_tmpa_dim }
       }
-    %% Calculate space available
+    %% Calculate space available; -1pt to make sure it stays on the page
     \dim_set:Nn #1 
-      { ( \textheight - \l__fantasycal_tmpa_dim ) / \l__fantasycal_tmpa_int }
+      { ( \textheight - \l__fantasycal_tmpa_dim ) / \l__fantasycal_tmpa_int -1pt }
 
   }
 %% old setup:
@@ -296,7 +303,7 @@
       { 
         \tl_use:c { l__fantasycal_calendar_box_ #2 _tl }
           - \dim_use:c { l__fantasycal_box_inner_ #1 _sep_dim }*2
-          - \dim_use:c { l__fantasycal_box_outer_ #1 _sep_dim }*1
+          - \dim_use:c { l__fantasycal_box_outer_ #1 _sep_dim }
       } 
   }
 
