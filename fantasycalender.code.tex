@@ -209,18 +209,20 @@
                   }
                 \__fantasycal_box_size_calculate_width:N \l__fantasycal_tmpa_dim
                 \__fantasycal_box_setup:nnN { x } { width } \l__fantasycal_tmpa_dim
-                \__fantasycal_box_size_calculate_height:N \l__fantasycal_tmpa_dim
-                \__fantasycal_box_setup:nnN { y } { height } \l__fantasycal_tmpa_dim
+                \__fantasycal_box_size_calculate_height:N \l__fantasycal_tmpb_dim
+                \__fantasycal_box_setup:nnN { y } { height } \l__fantasycal_tmpb_dim
                 \dim_compare:nNnTF 
                   \l__fantasycal_calendar_box_width_tl 
                   < % >
                   \l__fantasycal_calendar_box_height_tl
                   { 
-                    \dim_set:Nn \l__fantasycal_tmpa_dim { \l__fantasycal_calendar_box_width_tl }
+                    %% The values of \l__fantasycal_tmpa_dim were changed,
+                    %% recalcualte them
+                    \__fantasycal_box_size_calculate_width:N \l__fantasycal_tmpa_dim
                     \__fantasycal_box_setup:nnN { y } { height } \l__fantasycal_tmpa_dim
                   }{ 
-                    \dim_set:Nn \l__fantasycal_tmpa_dim { \l__fantasycal_calendar_box_height_tl }
-                    \__fantasycal_box_setup:nnN { x } { width } \l__fantasycal_tmpa_dim
+                    \__fantasycal_box_size_calculate_height:N \l__fantasycal_tmpb_dim
+                    \__fantasycal_box_setup:nnN { x } { width } \l__fantasycal_tmpb_dim
                   }
               }
           }{
@@ -297,8 +299,8 @@
 \cs_new:Npn \__fantasycal_box_setup:nnN #1#2#3
   {
     \tl_set:cV { l__fantasycal_draw_day_ #1 shift_tl } #3
-    \dim_sub:Nn #3 { \dim_use:c { l__fantasycal_box_outer_ #1 _sep_dim } }
-    \tl_set:cV { l__fantasycal_calendar_box_ #2 _tl } #3
+    \tl_set:cx { l__fantasycal_calendar_box_ #2 _tl } 
+      { \dim_eval:n { #3 - \dim_use:c { l__fantasycal_box_outer_ #1 _sep_dim } } }
     \dim_set:cn { l__fantasycal_box_ #2 _dim }
       { 
         \tl_use:c { l__fantasycal_calendar_box_ #2 _tl }
@@ -620,6 +622,8 @@
           { 
             execute ~ before ~ day ~ scope = 
               {
+                \bool_if:NT \l__fantasycal_box_size_given_bool
+                  {
                 \ifdateT { equals = \l__fantasycal_dates_start_tl }
                   {{
                     \pgfmathsetlength \l__fantasycal_tmpa_dim { \l__fantasycal_draw_day_xshift_tl }
@@ -631,9 +635,12 @@
                       }
                   }}
               } 
+              }
             ,
            execute ~ before ~ day ~ scope =
              {
+                \bool_if:NT \l__fantasycal_box_size_given_bool
+                  {
                \ifdateT { equals = \l__fantasycal_dates_end_tl }
                  {{
                    \pgfmathsetlength \l__fantasycal_tmpa_dim { \l__fantasycal_draw_day_xshift_tl }
@@ -647,6 +654,7 @@
                         \node [ every ~ phantom ~ box ] { \l__fantasycal_text_box_tl } ; 
                      }
                  }}
+             }
              }
           }
       }
