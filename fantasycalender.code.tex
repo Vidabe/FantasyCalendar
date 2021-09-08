@@ -70,6 +70,10 @@
 \tl_new:N \l__fantasycal_after_box_hook_tl
 \tl_new:N \l__fantasycal_after_parsing_hook_tl
 
+\dim_new:N \l__fantasycal_month_text_width_dim
+\dim_new:N \l__fantasycal_month_text_height_dim
+\dim_new:N \l__fantasycal_week_text_height_dim
+
 \cs_new:Npn \__fantasycal_sanitize_weekday_for_tikz:N #1
   {
     \int_set:Nn #1 { \l_fantasycal_base_current_weekday_tl }
@@ -217,7 +221,7 @@
                   \l__fantasycal_calendar_box_height_tl
                   { 
                     %% The values of \l__fantasycal_tmpa_dim were changed,
-                    %% recalcualte them
+                    %% recalculate them
                     \__fantasycal_box_size_calculate_width:N \l__fantasycal_tmpa_dim
                     \__fantasycal_box_setup:nnN { y } { height } \l__fantasycal_tmpa_dim
                   }{ 
@@ -233,7 +237,7 @@
 
 \cs_new:Npn \__fantasycal_box_size_calculate_width:N #1
   {
-    %% Fitting  width is quite easy. -1pt to remove overfull box warnings
+    %% Fitting  width is quite easy. -0.1pt to remove overfull box warnings
     \dim_set:Nn #1
       { \textwidth / \l__fantasycal_base_nr_days_per_week_int - 1pt }
   }
@@ -267,14 +271,18 @@
             ceil ( \l__fantasycal_tmpa_int / \l__fantasycal_base_nr_days_per_week_int )
           }
       }
-                
+    
     %% Remove header from the vertival space
-    \bool_if:NTF \l__fantasycal_draw_monthname_bool
-      { \dim_set:Nn \l__fantasycal_tmpa_dim { 3.25\baselineskip } }
+    \dim_zero:N \l__fantasycal_tmpa_dim
+    \bool_if:NT \l__fantasycal_draw_monthname_bool
       {
-        \bool_if:NTF \l__fantasycal_draw_weekday_bool
-          { \dim_set:Nn \l__fantasycal_tmpa_dim { 2\baselineskip } }
-          { \dim_zero:N \l__fantasycal_tmpa_dim }
+        %% +7pt to fit on page
+        \dim_add:Nn \l__fantasycal_tmpa_dim { 6pt + \__fantasycal_month_vspace: }
+      }
+    \bool_if:NT \l__fantasycal_draw_weekday_bool
+      {
+        %% +3pt to fit on page
+        \dim_add:Nn \l__fantasycal_tmpa_dim { 3pt + \__fantasycal_weekday_vspace: }
       }
     %% Calculate space available; -1pt to make sure it stays on the page
     \dim_set:Nn #1 
@@ -313,14 +321,53 @@
 
 
 
+\dim_new:N \l__fantasycal_week_text_height_seperation_dim
+\dim_set:Nn \l__fantasycal_week_text_height_seperation_dim { 2pt }
+\dim_new:N \l__fantasycal_month_text_height_seperation_dim
+\dim_set:Nn \l__fantasycal_month_text_height_seperation_dim { 5pt }
 
-
-
+\tl_new:N \l__fantasycal_labeling_hook_tl
 \tl_new:N \l__fantasycal_box_size_setup_tl
-\cs_new:Npn \__fantasycal_calculate_box_size:
+\cs_new:Npn \__fantasycal_do_once_at_begin:
   {
+    \hbox_set:Nn \l_tmpa_box
+      {
+        \pgfinterruptpicture 
+          \l__fantasycal_font_month_tl 
+          \l__fantasycal_text_month_tl
+        \endpgfinterruptpicture
+      }
+    \dim_set:Nn \l__fantasycal_month_text_width_dim 
+      { \box_wd:N \l_tmpa_box }
+    \dim_set:Nn \l__fantasycal_month_text_height_dim 
+      { \box_ht_plus_dp:N \l_tmpa_box }  
+    \hbox_set:Nn \l_tmpa_box
+      {
+        \pgfinterruptpicture 
+        \l__fantasycal_font_week_day_tl
+        \seq_use:Nn \l__fantasycal_base_day_names_seq { }
+        \endpgfinterruptpicture
+      }
+    \dim_set:Nn \l__fantasycal_week_text_height_dim
+      { \box_ht_plus_dp:N \l_tmpa_box }
     \l__fantasycal_box_size_setup_tl
-    \cs_set_eq:NN \__fantasycal_calculate_box_size: \prg_do_nothing:
+    \cs_set_eq:NN \__fantasycal_do_once_at_begin: \prg_do_nothing:
+  }
+
+\cs_new:Npn \__fantasycal_weekday_vspace:
+  {
+    \l__fantasycal_week_text_height_dim +
+    \l__fantasycal_week_text_height_seperation_dim
+  }
+\cs_new:Npn \__fantasycal_month_vspace:
+  {
+    \l__fantasycal_month_text_height_dim +
+    \l__fantasycal_month_text_height_seperation_dim
+  }
+\cs_new:Npn \__fantasycal_weekday_plus_month_vspace:
+  {
+    \__fantasycal_weekday_vspace: +
+    \__fantasycal_month_vspace:
   }
 
 
@@ -600,16 +647,19 @@
   }
 
 \bool_new:N \l__fantasycal_draw_weekday_bool
+\bool_new:N \l__fantasycal_draw_monthname_bool
+\tl_new:N \l__fantasycal_draw_weekday_tl
+\tl_new:N \l__fantasycal_monthname_tl
 \tikzset
   { 
-    print-weekdays/.code= 
-      { \bool_set_true:N \l__fantasycal_draw_weekday_bool }  ,
+    print-weekdays/.code= { \bool_set_true:N \l__fantasycal_draw_weekday_bool }  ,
+    __label_week_print /.code = { \tl_set:Nn \l__fantasycal_draw_weekday_tl {#1} }
   }
-\bool_new:N \l__fantasycal_draw_monthname_bool
 \tikzset
   { 
     print-monthnames/.code= 
       { \bool_set_true:N \l__fantasycal_draw_monthname_bool }  ,
+    __label_month_print/.code= { \tl_set:Nn \l__fantasycal_monthname_tl {#1} }  ,
   }
 
 
@@ -707,7 +757,7 @@
 
 
 
-
+\tl_new:N \l__fantasycal_list_type_tl
 
 %% Week list
 
@@ -717,7 +767,7 @@
   {
     week ~ list/.style = 
       {
-        execute  ~ now = { \bool_set_true:N \l__fantasycal_week_list_bool } ,
+        execute  ~ now = { \bool_set_true:N \l__fantasycal_week_list_bool \tl_set:Nn \l__fantasycal_list_type_tl { week-list } } ,
         execute ~ before ~ day ~ scope =
           {
             \ifdateT{day ~ of ~ month = 1}
@@ -765,6 +815,7 @@
   {
     month ~ list/.style=
       {
+        execute ~ now = { \tl_set:Nn \l__fantasycal_list_type_tl { month-list } }
         execute ~ before ~ day ~ scope=
           {
             \ifdateT {day ~ of ~ month=1}
@@ -824,13 +875,14 @@
     weekday ~ label ~ above/.style=
       {
         print-weekdays = true ,
+        __label_week_print = { above } ,
         execute ~ before ~ day ~ scope=
           {
             \ifdateT{day ~ of ~ month=1}
               {
                 {
                   \pgfmathsetlength{\pgf@y}{\l__fantasycal_draw_day_yshift_tl}
-                  \pgftransformyshift{0.5\pgf@y + 1\baselineskip}
+                  \pgftransformyshift{0.5\pgf@y + \__fantasycal_weekday_vspace:}
                   \pgfmathsetlength{\pgf@xa}{\l__fantasycal_draw_day_xshift_tl}
                   \pgftransformxshift{0.5\pgf@xa}
                   \int_step_inline:nn { \l__fantasycal_base_nr_days_per_week_int }
@@ -860,6 +912,7 @@
   {
     month ~ label ~ left/.style=
       {
+        __label_month_print = { left } ,
         execute ~ before ~ day ~ scope=
           {
             \ifdateT {day ~ of ~ month = 1} { \l__fantasycal_code_month_tl }
@@ -873,6 +926,7 @@
   {
     month ~ label ~ left ~ vertical/.style=
       {
+        __label_month_print = { left-vertical } ,
         execute ~ before ~ day ~ scope=
           {
             \ifdateT {day ~ of ~ month=1} { \l__fantasycal_code_month_tl } 
@@ -887,6 +941,7 @@
     month ~ label ~ right/.style=
       {
         print-monthnames ,
+        __label_month_print = { right } ,
         execute ~ before ~ day ~ scope=
           {
             \ifdateT{day ~ of ~ month=1}
@@ -908,6 +963,7 @@
   {
     month ~ label ~ right ~ vertical/.style=
       {
+        __label_month_print = { right-vertical } ,
         execute ~ before ~ day ~ scope=
           {
             \ifdateT{day ~ of ~ month=1}
@@ -934,6 +990,7 @@
     month ~ label ~ above ~ centered/.style=
       {
         print-monthnames ,
+        __label_month_print = { above-centered } ,
         execute ~ before ~ day ~ scope=
           {
             \ifdateT {day ~ of ~ month=1}
@@ -946,8 +1003,8 @@
                   % y-stuff
                   \pgfmathsetlength{\pgf@y}{\l__fantasycal_draw_day_yshift_tl}
                   \bool_if:NTF \l__fantasycal_draw_weekday_bool
-                    { \pgftransformyshift { 0.5\pgf@y + 2.25\baselineskip } }
-                    { \pgftransformyshift { 0.5\pgf@y + 1\baselineskip } }
+                    { \pgftransformyshift { 0.5\pgf@y + \__fantasycal_weekday_plus_month_vspace: } }
+                    { \pgftransformyshift { 0.5\pgf@y + \__fantasycal_month_vspace: } }
                   \l__fantasycal_code_month_tl
                 }
               } 
@@ -962,6 +1019,7 @@
     month ~ label ~ above ~ left/.style=
       {
         print-monthnames ,
+        __label_month_print = { above-left } ,
         execute ~ before ~ day ~ scope=
           {
             \ifdateT {day ~ of ~ month=1}
@@ -969,8 +1027,8 @@
                 {
                   \pgfmathsetlength{\pgf@y}{\l__fantasycal_draw_day_yshift_tl}
                   \bool_if:NTF \l__fantasycal_draw_weekday_bool
-                    { \pgftransformyshift { 0.5\pgf@y + 2.25\baselineskip } }
-                    { \pgftransformyshift { 0.5\pgf@y + 1\baselineskip } }
+                    { \pgftransformyshift { 0.5\pgf@y + \__fantasycal_weekday_plus_month_vspace: } }
+                    { \pgftransformyshift { 0.5\pgf@y + \__fantasycal_month_vspace: } }
                   \l__fantasycal_code_month_tl%
                 }
               } 
@@ -987,6 +1045,7 @@
     month ~ label ~ above ~ right/.style=
       {
         print-monthnames ,
+        __label_month_print = { above-right } ,
         execute ~ before ~ day ~ scope=
           {
             \ifdateT {day ~ of ~ month=1}
@@ -997,8 +1056,8 @@
                   \pgftransformxshift{\pgf@xb}
                   \pgfmathsetlength{\pgf@y}{\l__fantasycal_draw_day_yshift_tl}
                   \bool_if:NTF \l__fantasycal_draw_weekday_bool
-                    { \pgftransformyshift { 0.5\pgf@y + 2.25\baselineskip } }
-                    { \pgftransformyshift { 0.5\pgf@y + 1\baselineskip } }
+                    { \pgftransformyshift { 0.5\pgf@y + \__fantasycal_weekday_plus_month_vspace: } }
+                    { \pgftransformyshift { 0.5\pgf@y + \__fantasycal_month_vspace: } }
                   \l__fantasycal_code_month_tl%
                 }
               } 
@@ -1012,6 +1071,7 @@
   {
     month ~ label ~ below ~ centered/.style=
       {
+        __label_month_print = { below-centered } ,
         execute ~ before ~ day ~ scope=
           {
             \ifdateT {day ~ of ~ month=1}
@@ -1038,6 +1098,7 @@
   {
     month ~ label ~ below ~ left/.style=
       {
+        __label_month_print = { below-left } ,
         execute ~ before ~ day ~ scope=
           {
             \ifdateT {day ~ of ~ month=1}
@@ -1612,6 +1673,7 @@
 \cs_new:Npn \__fantasycal_print_fantasycal: 
   {
     \begingroup
+      \tl_clear:N \l__fantasycal_draw_weekday_tl
       \bool_set_false:N \l__fantasycal_draw_weekday_bool
       \cs_set_eq:NN \__fantasycal_print_if_s: \c_empty_tl
       \tikz@resetexpandcount
@@ -1726,7 +1788,7 @@
       { \l__fantasycal_dates_start_tl }
       { \l__fantasycal_dates_end_tl }
       {
-        \__fantasycal_calculate_box_size:
+        \__fantasycal_do_once_at_begin:
         \l__fantasycal_before_day_tl
         \scope%
           \l__fantasycal_at_begin_day_tl
