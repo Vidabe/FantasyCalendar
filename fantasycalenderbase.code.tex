@@ -128,6 +128,9 @@
           \__fantasycal_base_ordinal_to_weekday:nN 
             {\l_fantasycal_base_current_ordinal_int}
             \l_fantasycal_base_weekday_int
+          \__fantasycal_base_ordinal_to_kalenderweek:nN 
+            { \l_fantasycal_base_current_ordinal_int } 
+            \l__fantasycal_base_tmpa_int 
           \tl_set:NV \l_fantasycal_base_current_weekday_tl \l_fantasycal_base_weekday_int
           \l__fantasycal_base_hook_tl
           % Render:
@@ -1095,9 +1098,78 @@
     \int_set_eq:NN #2 \g__fantasycal_base_tmpa_int
 }
 
-\cs_new:Npn \__fantasycal_base_ordinal_to_week:nN #1#2
+\cs_new:Npn \__fantasycal_base_ordinal_to_kalenderweek:nN #1#2
   {
-    %% TODo
+    \group_begin:
+      \bool_set_false:N \l__fantasycal_tmpa_bool
+      \bool_do_until:nn { \l__fantasycal_tmpa_bool }
+        {
+          \int_set:Nn \l__fantasycal_base_tmpa_int 
+            { 
+              \__fantasycal_base_print_days_til_start_of_year:n \l_fantasycal_base_current_year_tl 
+              + \c_one_int
+            }
+          \__fantasycal_base_ordinal_to_weekday:nN { \l__fantasycal_base_tmpa_int }
+            \l__fantasycal_base_tmpb_int
+         \int_compare:nNnT { \l__fantasycal_base_tmpb_int } = { \c_zero_int }
+            {
+              \int_set:Nn \l__fantasycal_base_tmpb_int \l__fantasycal_base_nr_days_per_week_int
+            }
+        \int_add:Nn \l__fantasycal_base_tmpa_int 
+          { 1 - \l__fantasycal_base_tmpb_int + \l__fantasycal_base_nr_days_per_week_int }
+        \int_compare:nNnTF {#1} < { \l__fantasycal_base_tmpa_int }
+          { \tl_set:Nx \l_fantasycal_base_current_year_tl { \int_eval:n { \l_fantasycal_base_current_year_tl-1 } } }
+          { \bool_set_true:N \l__fantasycal_tmpa_bool }
+        }
+   \int_gset:Nn \g__fantasycal_base_tmpa_int
+     { \int_div_truncate:nn { #1-\l__fantasycal_base_tmpa_int } { \l__fantasycal_base_nr_days_per_week_int } +1}
+    \group_end:
+  
+  
+  \int_set:Nn #2 { \g__fantasycal_base_tmpa_int }
+  }
+\cs_set:Npn \__fantasycal_base_ordinal_to_kalenderweek:nN #1#2
+  {
+    % In der EU und den meisten anderen europäischen Ländern sowie überwiegend in Asien und Ozeanien, gemäß Normen der ISO, DIN, ÖNORM und SN: jene Woche, die den ersten Donnerstag des Jahres enthält (ISO 8601, früher DIN 1355-1). Da ISO 8601 den Montag als ersten Tag der Woche definiert, ist dies somit die erste Woche, von der mehr Tage (mindestens vier) auf das neue Jahr fallen als auf das alte Jahr
+    % Equivalnt to: 4th january
+    \group_begin:
+      \bool_set_false:N \l__fantasycal_base_tmpa_bool
+      \bool_do_until:nn \l__fantasycal_base_tmpa_bool
+        {
+          \int_set:Nn \l__fantasycal_base_tmpa_int
+            { 
+              \__fantasycal_base_print_days_til_start_of_year:n 
+                { \l_fantasycal_base_current_year_tl } 
+            }
+          %% Go to 4th January
+          \int_add:Nn \l__fantasycal_base_tmpa_int { 4 }
+          %% Get to start of week that includes 4th january
+          \__fantasycal_base_ordinal_to_weekday:nN \l__fantasycal_base_tmpa_int
+            \l__fantasycal_base_tmpb_int
+          \int_compare:nNnT \l__fantasycal_base_tmpb_int = \c_zero_int
+            { 
+              \int_set_eq:NN \l__fantasycal_base_tmpb_int 
+                \l__fantasycal_base_nr_days_per_week_int 
+            }
+          \int_sub:Nn \l__fantasycal_base_tmpa_int
+            { \l__fantasycal_base_tmpb_int - 1 }
+          \int_compare:nNnTF {#1} < \l__fantasycal_base_tmpa_int
+            {
+              \tl_set:Nx \l_fantasycal_base_current_year_tl
+                { \int_eval:n { \l_fantasycal_base_current_year_tl -1 } }
+            }{
+              \bool_set_true:N \l__fantasycal_base_tmpa_bool
+            }
+        }
+      \int_set:Nn \l__fantasycal_base_tmpa_int
+        {
+          \int_div_truncate:nn {#1-\l__fantasycal_base_tmpa_int}
+            \l__fantasycal_base_nr_days_per_week_int 
+            + 1
+        }
+      \int_gset:Nn \g__fantasycal_base_tmpa_int \l__fantasycal_base_tmpa_int
+    \group_end:
+    \int_set:Nn #2 { \g__fantasycal_base_tmpa_int }
   }
 
 
@@ -1447,6 +1519,14 @@
   }
 \cs_new:cpn { __fantasycal@shorthand@s= } { \use:c { __fantasycal@shorthand@s- } }
 \cs_new:cpn { __fantasycal@shorthand@s0 } { \use:c { __fantasycal@shorthand@s- } }
+
+\cs_new:cpn { __fantasycal@shorthand@k- } 
+  { 
+    \__fantasycal_base_ordinal_to_kalenderweek:nN 
+      { \l_fantasycal_base_current_ordinal_int } 
+      \l__fantasycal_base_tmpa_int 
+      \int_use:N \l__fantasycal_base_tmpa_int 
+  }
 
 
   
