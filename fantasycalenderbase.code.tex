@@ -15,7 +15,7 @@
 
 \ExplSyntaxOn
 
-\bool_new:N \l__fantasycal_base_mod_all_zero_bool
+%\bool_new:N \l__fantasycal_base_mod_all_zero_bool
 
 \int_new:N \l__fantasycal_base_default_nr_days_per_year_int
 \int_new:N \l__fantasycal_base_nr_days_per_year_int
@@ -37,6 +37,8 @@
 \int_new:N \l__fantasycal_base_year_int
 \int_new:N \l__fantasycal_base_month_int
 \int_new:N \l__fantasycal_base_day_int
+\int_new:N \l__fantasycal_base_weekday_int
+\int_new:N \l__fantasycal_base_weeknumber_int
 \int_new:N \l__fantasycal_base_zero_day_shift_int
 
 \int_new:N \l__fantasycal_base_month_at_half_year_int
@@ -61,6 +63,7 @@
 \int_new:N \l_fantasycal_base_current_ordinal_int
 
 \tl_new:N \l_fantasycal_base_current_weekday_tl
+\tl_new:N \l_fantasycal_base_current_weeknumber_tl
 
 
 \tl_new:N \l__fantasycal_base_calendar_prefix_tl
@@ -73,6 +76,17 @@
 \tl_new:N \l_fantasycal_base_current_year_tl
 \tl_new:N \l_fantasycal_base_current_month_tl
 \tl_new:N \l_fantasycal_base_current_day_tl
+
+
+
+\int_new:N \fantasybaseordinalint
+\tl_new:N \fantasybaseyear
+\tl_new:N \fantasybasemonth
+\tl_new:N \fantasybaseday
+\tl_new:N \fantasybaseweekday
+\tl_new:N \fantasybaseweeknumber
+\tl_new:N \fantasybaseleapyear
+
 
 \tl_new:N \l__fantasycal_base_hook_tl
 \NewDocumentCommand \basefantasycalendaraddhook { +m }
@@ -126,12 +140,23 @@
             \l_fantasycal_base_current_month_tl
             \l_fantasycal_base_current_day_tl
           \__fantasycal_base_ordinal_to_weekday:nN 
-            {\l_fantasycal_base_current_ordinal_int}
+            { \l_fantasycal_base_current_ordinal_int }
             \l_fantasycal_base_weekday_int
+          \tl_set:NV \l_fantasycal_base_current_weekday_tl \l_fantasycal_base_weekday_int
           \__fantasycal_base_ordinal_to_kalenderweek:nN 
             { \l_fantasycal_base_current_ordinal_int } 
-            \l__fantasycal_base_tmpa_int 
-          \tl_set:NV \l_fantasycal_base_current_weekday_tl \l_fantasycal_base_weekday_int
+            \l__fantasycal_base_weeknumber_int 
+          \tl_set:NV \l_fantasycal_base_current_weeknumber_tl
+            \l__fantasycal_base_weeknumber_int
+%          
+          \int_set_eq:NN \fantasybaseordinalint \l_fantasycal_base_current_ordinal_int
+          \tl_set_eq:NN \fantasybaseyear \l_fantasycal_base_current_year_tl
+          \tl_set_eq:NN \fantasybasemonth \l_fantasycal_base_current_month_tl
+          \tl_set_eq:NN \fantasybaseday \l_fantasycal_base_current_day_tl
+          \tl_set_eq:NN \fantasybaseweekday \l_fantasycal_base_current_weekday_tl
+          \tl_set_eq:NN \fantasybaseweeknumber \l_fantasycal_base_current_weeknumber_tl
+          \tl_set:NV \fantasybaseleapyear \l__fantasycal_base_leap_year_bool
+%          
           \l__fantasycal_base_hook_tl
           % Render:
           #4
@@ -305,8 +330,8 @@
 \bool_new:N \l__fantasycal_base_leap_year_bool
 
 \tl_new:N \l__fantasycal_base_leap_storage_aux_tl
-\fp_new:N \l__fantasycal_base_leap_year_fraction_fp
-\fp_new:N \l__fantasycal_base_leap_year_days_per_year_mean_fp
+%\fp_new:N \l__fantasycal_base_leap_year_fraction_fp
+%\fp_new:N \l__fantasycal_base_leap_year_days_per_year_mean_fp
 
 \int_new:N \l__fantasycal_base_leap_nr_days_added_int
 \int_new:N \l__fantasycal_base_nr_days_in_leap_year_int
@@ -325,7 +350,7 @@
 \NewDocumentCommand \DefineLeapYear { +m m }
   {
     \bool_set_true:N \l__fantasycal_activate_leap_year_bool
-    \fp_zero:N \l__fantasycal_base_leap_year_fraction_fp
+%    \fp_zero:N \l__fantasycal_base_leap_year_fraction_fp
     \__fantasycal_base_if_leap_condition:nT {#1} {#2}
   }
 \@onlypreamble\DefineLeapYear
@@ -338,13 +363,13 @@
     \__fantasycal_base_leap_year_start:ww
       #1 \q_recursion_tail \q_recursion_stop
 %      
-    \fp_set:Nn \l__fantasycal_base_leap_year_fraction_fp 
-      { \l__fantasycal_base_leap_year_fraction_fp*\l__fantasycal_base_leap_nr_days_added_int }
-    \fp_set:Nn \l__fantasycal_base_leap_year_days_per_year_mean_fp
-      { 
-        \l__fantasycal_base_leap_year_fraction_fp + 
-        \l__fantasycal_base_default_nr_days_per_year_int 
-      }
+%    \fp_set:Nn \l__fantasycal_base_leap_year_fraction_fp 
+%      { \l__fantasycal_base_leap_year_fraction_fp*\l__fantasycal_base_leap_nr_days_added_int }
+%    \fp_set:Nn \l__fantasycal_base_leap_year_days_per_year_mean_fp
+%      { 
+%        \l__fantasycal_base_leap_year_fraction_fp + 
+%        \l__fantasycal_base_default_nr_days_per_year_int 
+%      }
     \int_compare:nNnF
       \l__fantasycal_base_nr_days_in_leap_year_int
       =
@@ -465,7 +490,7 @@
 \cs_new:Npn \__fantasycal_base_leap_year_store_values:nnNn #1#2#3#4
   {
     % #2: + or - sign.
-    \fp_add:Nn \l__fantasycal_base_leap_year_fraction_fp { #2 1/#1 }
+%    \fp_add:Nn \l__fantasycal_base_leap_year_fraction_fp { #2 1/#1 }
     \__fantasycal_base_add_to_checking:n
       {
         \int_compare:nNnT
@@ -484,15 +509,14 @@
 \cs_new:Npn \__fantasycal_base_check_if_leap_year:n #1
   {
     \bool_set_false:N \l__fantasycal_base_leap_year_bool
-    \int_compare:nNnF {#1} = { 0 }
+    \int_compare:nNnF {#1} = { \c_zero_int }
       { \__fantasycal_base_check_if_leap_year_aux:f { \int_eval:n {#1} } }
   }
 \cs_new:Npn \__fantasycal_base_add_to_checking:n #1 
   { 
     \cs_set:Npo \__fantasycal_base_check_if_leap_year_aux:n ##1
       {
-        \__fantasycal_base_check_if_leap_year_aux:n {##1}
-        #1
+        \__fantasycal_base_check_if_leap_year_aux:n {##1} #1
       }
   }
 \cs_new:Npn \__fantasycal_base_check_if_leap_year_aux:n #1 { }
@@ -886,7 +910,7 @@
   { \seq_item:Nn \l__fantasycal_base_number_days_of_months_seq {#1} }
 \cs_new:Npn \__fantasycal_base_print_cumulative_days:n #1
   {
-    \int_compare:nNnTF {#1} = { 0 }
+    \int_compare:nNnTF {#1} = { \c_zero_int }
       { 0 }
       { \seq_item:Nn \l__fantasycal_base_cumulative_number_days_seq {#1} }
   }
@@ -894,7 +918,7 @@
   {
     \seq_item:Nn \l__fantasycal_base_day_names_seq
       {
-        \int_compare:nNnTF {#1} = { 0 }
+        \int_compare:nNnTF {#1} = { \c_zero_int }
           { \l__fantasycal_base_nr_days_per_week_int }
           {#1}
       }
@@ -903,7 +927,7 @@
   {
     \seq_item:Nn \l__fantasycal_base_day_names_short_seq
       {
-        \int_compare:nNnTF {#1} = { 0 }
+        \int_compare:nNnTF {#1} = { \c_zero_int }
           { \l__fantasycal_base_nr_days_per_week_int }
           {#1}
       }
@@ -1141,8 +1165,17 @@
               \__fantasycal_base_print_days_til_start_of_year:n 
                 { \l_fantasycal_base_current_year_tl } 
             }
-          %% Go to 4th January
-          \int_add:Nn \l__fantasycal_base_tmpa_int { 4 }
+          %% In Gregorian the first Week starts with the 4th January.
+          %% Week has 7 days, half of it is 3.5 days. So the week that has
+          %% 4 days (aka. the 4th January) has more days than the other.
+          %% Thanks to integer division: 7/2 = 4; same for other odd numbers.
+          %% For even integers: Say Weeknumbering starts with the x/2+1 th day.
+          \int_add:Nn \l__fantasycal_base_tmpa_int 
+            { 
+              \l__fantasycal_base_nr_days_per_week_int / 2
+              \int_if_odd:nF { \l__fantasycal_base_nr_days_per_week_int }
+                { + \c_one_int }
+            }
           %% Get to start of week that includes 4th january
           \__fantasycal_base_ordinal_to_weekday:nN \l__fantasycal_base_tmpa_int
             \l__fantasycal_base_tmpb_int
@@ -1151,8 +1184,11 @@
               \int_set_eq:NN \l__fantasycal_base_tmpb_int 
                 \l__fantasycal_base_nr_days_per_week_int 
             }
+          %% \l__fantasycal_base_tmpb_int - \c_one_int is caluclated first.
+          %% So no braces required for correct calculation.
           \int_sub:Nn \l__fantasycal_base_tmpa_int
-            { \l__fantasycal_base_tmpb_int - 1 }
+            { \l__fantasycal_base_tmpb_int - \c_one_int }
+          %% Welp, looks like we need to go one year back.
           \int_compare:nNnTF {#1} < \l__fantasycal_base_tmpa_int
             {
               \tl_set:Nx \l_fantasycal_base_current_year_tl
@@ -1164,8 +1200,8 @@
       \int_set:Nn \l__fantasycal_base_tmpa_int
         {
           \int_div_truncate:nn {#1-\l__fantasycal_base_tmpa_int}
-            \l__fantasycal_base_nr_days_per_week_int 
-            + 1
+            { \l__fantasycal_base_nr_days_per_week_int }
+            + \c_one_int
         }
       \int_gset:Nn \g__fantasycal_base_tmpa_int \l__fantasycal_base_tmpa_int
     \group_end:
@@ -1217,7 +1253,7 @@
       \int_set:Nn \l__fantasycal_base_eastern_K_int 
         { \int_div_truncate:nn { \l__fantasycal_base_eastern_C_int - 17 } { 25 } }
       \int_set:Nn \l__fantasycal_base_eastern_i_int 
-        { 
+        {
           \l__fantasycal_base_eastern_C_int - 
           \int_div_truncate:nn { \l__fantasycal_base_eastern_C_int } { 4 } -
           \int_div_truncate:nn 
@@ -1258,7 +1294,7 @@
           \l__fantasycal_base_eastern_L_int + 28 - 
           31* \int_div_truncate:nn { \l__fantasycal_base_eastern_M_int } { 4 } 
         }
-    
+%%    
     \int_compare:nNnT { \l__fantasycal_base_eastern_M_int } >
       { \l__fantasycal_base_nr_months_per_year_int }
       {
@@ -1522,43 +1558,24 @@
 
 \cs_new:cpn { __fantasycal@shorthand@k- } 
   { 
-    \__fantasycal_base_ordinal_to_kalenderweek:nN 
-      { \l_fantasycal_base_current_ordinal_int } 
-      \l__fantasycal_base_tmpa_int 
-      \int_use:N \l__fantasycal_base_tmpa_int 
+    \l_fantasycal_base_current_weeknumber_tl
+  }
+\cs_new:cpn { __fantasycal@shorthand@k0 } 
+  { 
+    \l__fantasycal_base_print_number_to_minimum_digits:nn 
+      { \l_fantasycal_base_current_weeknumber_tl }
+      { 2 }
+  }
+\cs_new:cpn { __fantasycal@shorthand@k= } 
+  { 
+    \l__fantasycal_base_print_number_to_minimum_digits_space:nn 
+      { \l_fantasycal_base_current_weeknumber_tl }
+      { 2 }
   }
 
 
   
 
-
-\cs_new:Npn \__fantasycal_base_modulo_zero_check:
-  {
-    \bool_set_true:N \l__fantasycal_base_mod_all_zero_bool
-    \__fantasycal_base_modulo_zero_check_aux:N 
-      \l__fantasycal_base_default_number_days_of_months_seq
-    \bool_lazy_and:nnT
-      { \l__fantasycal_base_mod_all_zero_bool }
-      { \seq_if_empty_p:N \l__fantasycal_base_leap_year_days_per_months_seq }
-      {
-        \__fantasycal_base_modulo_zero_check_aux:N 
-          \l__fantasycal_base_leap_year_days_per_months_seq
-      }
-  }
-\cs_new:Npn \__fantasycal_base_modulo_zero_check_aux:N #1
-  {
-    \int_set_eq:NN \l__fantasycal_base_tmpc_int \l__fantasycal_base_zero_day_shift_int
-    \seq_map_inline:Nn #1
-      {
-        \int_compare:nNnF 
-          { 
-            \int_mod:nn {\l__fantasycal_base_tmpc_int + ##1} { \l__fantasycal_base_nr_days_per_week_int } 
-          } = { \c_zero_int }
-          {
-            \seq_map_break:n { \bool_set_false:N \l__fantasycal_base_mod_all_zero_bool }
-          }
-      }
-  }
 
 
 \AtBeginDocument
@@ -1572,7 +1589,7 @@
         \tl_show:n { ERROR! ~ No ~ days ~ of ~ week ~ defined! }
       }
       
-    \__fantasycal_base_modulo_zero_check:
+%    \__fantasycal_base_modulo_zero_check:
     
     \bool_if:NTF \l__fantasycal_base_leap_year_bool
       {
