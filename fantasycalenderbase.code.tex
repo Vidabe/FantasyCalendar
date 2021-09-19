@@ -330,8 +330,6 @@
 \bool_new:N \l__fantasycal_base_leap_year_bool
 
 \tl_new:N \l__fantasycal_base_leap_storage_aux_tl
-%\fp_new:N \l__fantasycal_base_leap_year_fraction_fp
-%\fp_new:N \l__fantasycal_base_leap_year_days_per_year_mean_fp
 
 \int_new:N \l__fantasycal_base_leap_nr_days_added_int
 \int_new:N \l__fantasycal_base_nr_days_in_leap_year_int
@@ -350,7 +348,6 @@
 \NewDocumentCommand \DefineLeapYear { +m m }
   {
     \bool_set_true:N \l__fantasycal_activate_leap_year_bool
-%    \fp_zero:N \l__fantasycal_base_leap_year_fraction_fp
     \__fantasycal_base_if_leap_condition:nT {#1} {#2}
   }
 \@onlypreamble\DefineLeapYear
@@ -362,14 +359,6 @@
 %
     \__fantasycal_base_leap_year_start:ww
       #1 \q_recursion_tail \q_recursion_stop
-%      
-%    \fp_set:Nn \l__fantasycal_base_leap_year_fraction_fp 
-%      { \l__fantasycal_base_leap_year_fraction_fp*\l__fantasycal_base_leap_nr_days_added_int }
-%    \fp_set:Nn \l__fantasycal_base_leap_year_days_per_year_mean_fp
-%      { 
-%        \l__fantasycal_base_leap_year_fraction_fp + 
-%        \l__fantasycal_base_default_nr_days_per_year_int 
-%      }
     \int_compare:nNnF
       \l__fantasycal_base_nr_days_in_leap_year_int
       =
@@ -490,7 +479,6 @@
 \cs_new:Npn \__fantasycal_base_leap_year_store_values:nnNn #1#2#3#4
   {
     % #2: + or - sign.
-%    \fp_add:Nn \l__fantasycal_base_leap_year_fraction_fp { #2 1/#1 }
     \__fantasycal_base_add_to_checking:n
       {
         \int_compare:nNnT
@@ -1500,11 +1488,15 @@
 
 \cs_new:cpn { __fantasycal@shorthand@w.}  
   { 
-    \__fantasycal_base_print_day_shortname:n { \l_fantasycal_base_current_day_tl } 
+    \__fantasycal_base_print_day_shortname:n { \l_fantasycal_base_current_weekday_tl } 
   }
 \cs_new:cpn { __fantasycal@shorthand@wt } 
   { 
-    \__fantasycal_base_print_day_name:n { \l_fantasycal_base_current_day_tl } 
+    \__fantasycal_base_print_day_name:n { \l_fantasycal_base_current_weekday_tl } 
+  }
+\cs_new:cpn { __fantasycal@shorthand@w- } 
+  { 
+    \int_eval:n \l_fantasycal_base_current_weekday_tl
   }
 \cs_new:cpn { __fantasycal@shorthand@m.}
   {
