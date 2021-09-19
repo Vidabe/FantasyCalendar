@@ -745,23 +745,14 @@
         \int_compare:nNnF
           \l_fantasycal_base_current_ordinal_int < \l__fantasycal_base_tmpa_int
           { \bool_set_true:N \l__fantasycal_base_date_match_bool }
-%        \ifnum \l_fantasycal_base_current_ordinal_int<\l__fantasycal_base_tmpa_int\relax
-%        \else
-%          \bool_set_true:N \l__fantasycal_base_date_match_bool
-%        \fi
       }
   }
 \pgfkeys
   {
     /pgf/ordinal ~ at ~ least/.cd, .value ~ required, .code=
       {
-        \int_compare:nNnF
-          \l_fantasycal_base_current_ordinal_int < {#1}
+        \int_compare:nNnF \l_fantasycal_base_current_ordinal_int < {#1}
           { \bool_set_true:N \l__fantasycal_base_date_match_bool }
-%        \ifnum \l_fantasycal_base_current_ordinal_int<#1\relax
-%        \else
-%          \bool_set_true:N \l__fantasycal_base_date_match_bool
-%        \fi
       }
   }
 %
@@ -906,7 +897,7 @@
   {
     \seq_item:Nn \l__fantasycal_base_day_names_seq
       {
-        \int_compare:nNnTF {#1} = { \c_zero_int }
+        \int_compare:nNnTF {#1} = { 0 }
           { \l__fantasycal_base_nr_days_per_week_int }
           {#1}
       }
@@ -915,7 +906,7 @@
   {
     \seq_item:Nn \l__fantasycal_base_day_names_short_seq
       {
-        \int_compare:nNnTF {#1} = { \c_zero_int }
+        \int_compare:nNnTF {#1} = { 0 }
           { \l__fantasycal_base_nr_days_per_week_int }
           {#1}
       }
@@ -1580,9 +1571,7 @@
       {
         \tl_show:n { ERROR! ~ No ~ days ~ of ~ week ~ defined! }
       }
-      
-%    \__fantasycal_base_modulo_zero_check:
-    
+          
     \bool_if:NTF \l__fantasycal_base_leap_year_bool
       {
         \seq_set_eq:NN \l__fantasycal_base_tmpa_seq 
@@ -1616,6 +1605,9 @@
 \cs_set_eq:NN \bfcalordinaltoweekday \__fantasycal_base_ordinal_to_weekday:nN
 
 \cs_set_eq:NN \bfcalnumbertominimumdigits \l__fantasycal_base_print_number_to_minimum_digits:nn
+\cs_set_eq:NN \bfcalnumbertominimumdigitsspace \l__fantasycal_base_print_number_to_minimum_digits_space:nn
+\cs_set_eq:NN \bfcalnumbertominimumdigitsbase \l__fantasycal_base_print_number_to_minimum_digits_base:nnn
+
 
 
 \ExplSyntaxOff

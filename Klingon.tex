@@ -2,7 +2,7 @@
 \documentclass[paper=landscape]{scrartcl}
 
 \usepackage{color}
-\typearea{30}
+\usepackage[margin=1cm]{geometry}
 
 \input fantasycalender.code.tex
 
@@ -26,22 +26,13 @@
 \FantasyCalendarAddDays{DaSjaj, povjaj, ghItlhjaj, loghjaj, buqjaj, ghInjaj, lojmItjaj, jaj wa'}
 
 
-\ExplSyntaxOn
-
-\tl_set:Nn \l__fantasycalendar_text_month_tl 
-  {
-    \bfseries
-    Dim \space \l_fantasycalendar_current_year_tl
-    \space -- \space
-    \%mt \space [\%m0]
-}
-
-
-\ExplSyntaxOff
 
 
 \begin{document}
 
-\PrintFantasyCalendarYear{2591} { }
+\PrintFantasyCalendarYear
+  [
+    month text = {Dim \%y- -- \%mt [\%m0]}
+  ]{2591} { }
 
 \end{document}

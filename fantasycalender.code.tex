@@ -886,7 +886,7 @@
                   \pgftransformxshift{0.5\pgf@xa}
                   \int_step_inline:nn { \l__fantasycal_base_nr_days_per_week_int }
                     {
-                      \tl_set:Nx \l_fantasycal_base_current_day_tl { \int_eval:n {##1} }
+                      \tl_set:Nx \l_fantasycal_base_current_weekday_tl { \int_eval:n {##1} }
                       \l__fantasycal_code_week_day_tl
                       \pgftransformxshift{\pgf@xa}
                     }
