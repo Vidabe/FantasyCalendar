@@ -1092,27 +1092,13 @@
 \cs_new:Npn \__fantasycal_base_check_and_setup_leap_year:nN #1 #2
   {
     \int_set:Nn \l__fantasycal_base_tmpa_int {#1}
-    \bool_if:NTF \l__fantasycal_activate_leap_year_bool
+    \__fantasycal_base_get_year_from_ordinal:nN 
+      \l__fantasycal_base_tmpa_int \l__fantasycal_base_year_int
+    \bool_if:NT \l__fantasycal_activate_leap_year_bool
       {
-        \__fantasycal_base_get_year_from_ordinal:nN 
-          \l__fantasycal_base_tmpa_int \l__fantasycal_base_year_int
         \__fantasycal_base_check_if_leap_year:n { \l__fantasycal_base_year_int }
         \__fantasycal_base_setup_current_year: 
-      }{
-        \int_set:Nn \l__fantasycal_base_year_int 
-          { 
-            \int_div_truncate:nn \l__fantasycal_base_tmpa_int 
-              \l__fantasycal_base_default_nr_days_per_year_int 
-          }
-        %% If the ordinal number is equal to the year*number_of_days
-        %% we are actually at the end of last year.
-        \int_compare:nNnT
-          { \l__fantasycal_base_default_nr_days_per_year_int*\l__fantasycal_base_year_int }
-          =
-          { \l__fantasycal_base_tmpa_int }
-          { \int_decr:N \l__fantasycal_base_year_int }
-      }
-    \tl_set:NV #2 \l__fantasycal_base_year_int 
+      }    \tl_set:NV #2 \l__fantasycal_base_year_int 
   }
 
 \cs_new:Npn \__fantasycal_base_ordinal_to_date_shorter:nNNN #1#2#3#4
