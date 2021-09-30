@@ -3,6 +3,7 @@
 *.log
 *.pdf
 *.synctex.gz
+*.synctex(busy)
 build/*
 
 Fantasie2.tex
