@@ -4,7 +4,7 @@
 \ifcsname fantasycalendar.code.tex.loaded\endcsname
   \endinput
 \fi
-\expandafter\def\csname fantasycalendar.code.tex.loaded\endcsname{}
+\expandafter\def\csname fantasycalendar.code.tex.loaded\endcsname {}
 
 
 \makeatletter
@@ -1159,9 +1159,9 @@
 \tl_new:N \l__fantasycal_print_moons_tl
 \seq_new:N \l__fantasycal_moon_seq
 
-\NewDocumentCommand \NewFantasyMoon { m m m }
+\NewDocumentCommand \NewFantasyMoon { m o m m }
   {
-    \DefineNewMoon #1 {#2} {#3}
+    \DefineNewMoon #1 [#2] {#3} {#4}
     \seq_push:Nx \l__fantasycal_moon_seq { \cs_to_str:N #1 }
     \tl_put_right:Nn \l__fantasycal_print_moons_tl
       { #1 { \l_fantasycal_base_current_ordinal_int } \, }

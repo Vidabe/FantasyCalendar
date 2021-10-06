@@ -51,6 +51,54 @@
       }
   }
 
+
+
+
+\str_new:N \l__fantasycal_moon_moon_name_str
+\tl_new:N \l_fantasycal_moon_moon_phase_tl
+
+%% #1: \Name, #2: Options, #3: Lunar Cycle; #4: Offset
+\NewDocumentCommand \DefineNewMoon { m o m m }
+  {
+    \NewDocumentCommand #1 { m }
+      {
+        \tl_set:Nx \l__fantasycal_moon_moon_name_str { \cs_to_str:N #1 }
+        \__fantasycal_moon_moon:nnnn {#2} {#3} {#4} {##1}
+      }
+    \__fantasycal_moon_add_pgf_moon_keys:Nx #1 { \cs_to_str:N #1 }
+    \__fantasycal_moon_storage:Nnn #1 {#3} {#4}
+    \__fantasycal_add_moon_to_calendar_hook:x { \cs_to_str:N #1 }
+  }
+
+
+\cs_new:Npn \__fantasycal_moon_moon:nnnn #1#2#3#4
+  {
+    \__fantasycal_moon_initialize:n {#1}
+    \__fantasycal_moon_calculate_moon_phases:nnn {#2} {#3} {#4}
+    \__fantasycal_moon_setup_savebox:
+    \__fantasycal_moon_provide_savebox_use:Nn
+      \l__fantasycal_moon_setup_str
+      { \__fantasycal_moon_print_moon: }
+}
+
+\tl_new:N \l__fantasycal_moon_color_white_tl
+\tl_new:N \l__fantasycal_moon_color_black_tl
+
+\keys_define:nn { fantasycal/moon/printing }
+  {
+    black-color .tl_set:N = \l__fantasycal_moon_color_black_tl ,
+    white-color .tl_set:N = \l__fantasycal_moon_color_white_tl ,
+  }
+
+\cs_new:Npn \__fantasycal_moon_initialize:n #1
+  {
+    \tl_set:Nn \l__fantasycal_moon_color_white_tl { white }
+    \tl_set:Nn \l__fantasycal_moon_color_black_tl { black }
+    \IfNoValueF {#1}
+      { \keys_set:nn { fantasycal/moon/printing } {#1} }
+  }
+
+
 \cs_new:Npn \__fantasycal_moon_calculate_moon_phases:nnn #1#2#3
   {
     \tl_clear:N \l__fantasycal_moon_right_tl
@@ -149,14 +197,7 @@
     \q_recursion_stop
   }
 
-\cs_new:Npn \__fantasycal_moon_moon:nnn #1#2#3 
-  {
-    \__fantasycal_moon_calculate_moon_phases:nnn {#1} {#2} {#3}
-    \__fantasycal_moon_setup_savebox:
-    \__fantasycal_moon_provide_savebox_use:Nn
-      \l__fantasycal_moon_setup_str
-      { \__fantasycal_moon_print_moon: }
-}
+
 
 \cs_new:Npn \__fantasycal_moon_print_moon:
   {
@@ -173,20 +214,39 @@
     {
       \scope
       \ifcase \__fantasycal_moon_moon_case_int\relax
-        \draw [fill=white, draw=black] (0,0) 
+        \draw 
+          [
+            fill=\l__fantasycal_moon_color_white_tl, 
+            draw=\l__fantasycal_moon_color_black_tl
+          ] 
+          (0,0) 
           circle [ radius = \l_tmpb_dim ]
           node [ centered ]  { \__fantasycal_moon_text_full_tl }
           ;
       \or
-        \draw [fill=black, draw=black] 
+        \draw 
+          [
+            fill=\l__fantasycal_moon_color_black_tl, 
+            draw=\l__fantasycal_moon_color_black_tl
+          ] 
           node [ anchor=center ]  { \__fantasycal_moon_text_new_tl }
           circle [ radius = \l_tmpb_dim ]
           ;
       \or
-        \draw [fill=white, draw=black, text~depth=10pt] (0,0) 
-          circle [radius=\l_tmpb_dim];
+        \draw 
+          [
+            fill=\l__fantasycal_moon_color_white_tl, 
+            draw=\l__fantasycal_moon_color_black_tl, text~depth=10pt] (0,0) 
+            circle [radius=\l_tmpb_dim
+          ];
         %% Remove linewidth to make moon look better
-        \draw [fill=black, draw=black,line~width=0pt] (0,\l_tmpa_dim)
+        \draw 
+          [
+            fill=\l__fantasycal_moon_color_black_tl, 
+            draw=\l__fantasycal_moon_color_black_tl,
+            line~width=0pt
+          ] 
+            (0,\l_tmpa_dim)
             arc [ start ~ angle = 90, end ~ angle = -90, 
               x ~ radius = \l__fantasycal_moon_right_tl ex, 
               y ~ radius = \l_tmpa_dim ]
@@ -207,8 +267,10 @@
     \str_set:Nx \l__fantasycal_moon_setup_str
       {
         \current@color _ \f@size _
-        \bool_if:NF \l__fantasycal_moon_speedup_bool
-          { \l__fantasycal_moon_moon_name_str _ }
+%        \bool_if:NF \l__fantasycal_moon_speedup_bool
+%          { 
+            \l__fantasycal_moon_moon_name_str _ 
+%          }
         \int_use:N \__fantasycal_moon_moon_case_int _
         % <
         \int_compare:nNnT { \__fantasycal_moon_moon_case_int } > { 1 }
@@ -235,21 +297,6 @@
   }
 
 
-\str_new:N \l__fantasycal_moon_moon_name_str
-\tl_new:N \l_fantasycal_moon_moon_phase_tl
-
-%% #1: \Name, #2: Lunar Cycle; #3: Offset
-\NewDocumentCommand \DefineNewMoon { m m m }
-  {
-    \NewDocumentCommand #1 { m }
-      {
-        \tl_set:Nx \l__fantasycal_moon_moon_name_str { \cs_to_str:N #1 }
-        \__fantasycal_moon_moon:nnn {#2} {#3} {##1}
-      }
-    \__fantasycal_moon_add_pgf_moon_keys:Nx #1 { \cs_to_str:N #1 }
-    \__fantasycal_moon_storage:Nnn #1 {#2} {#3}
-    \__fantasycal_add_moon_to_calendar_hook:x { \cs_to_str:N #1 }
-  }
 
 \cs_new:Npn \__fantasycal_moon_storage:Nnn #1#2#3
   {
@@ -1012,7 +1059,10 @@
               \l__fantasycal_moon_loop_depth_int
               {
                 \bool_set_true:N \l__fantasycal_moon_overlap_found_bool 
-                \int_set:Nn \l__fantasycal_moon_tmpa_int { \l__fantasycal_moon_threshold_int + 2 }
+                %% Found it. Break loop by making \l__fantasycal_moon_tmpa_int greater
+                %% than threshold.
+                \int_set:Nn \l__fantasycal_moon_tmpa_int 
+                  { \l__fantasycal_moon_threshold_int + 2 }
                 \int_set:Nn \l__fantasycal_moon_next_phase_ordinal_day_int 
                   { 
                     \seq_item:Nn \l__fantasycal_moon_starting_days_seq { 1 } +
