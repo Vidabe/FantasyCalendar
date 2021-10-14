@@ -460,7 +460,8 @@
 \tl_set:Nn \l__fantasycal_code_day_tl 
   {
     \node
-      ( \__fantasycal_base_suggested_name: ) (today) [ every ~ day  ]
+      ( \__fantasycal_base_suggested_name: ) (today) 
+      [ alias=today , every ~ day  ]
       { 
         \bool_if:NTF \l__fantasycal_box_size_given_bool 
           {
@@ -483,7 +484,7 @@
       {
         \node 
           ( \__fantasycal_base_suggested_name: - box ) 
-          (today-box) [ every ~ box ] 
+          [ alias=today-box , every ~ box ] 
           { 
             \l__fantasycal_text_box_tl 
           } ; 
@@ -1531,8 +1532,8 @@
   {
     \draw 
       [ #1, #2, #3 , transform ~ canvas = { yshift=-\l__fantasycal_task_yshift_dim } ]
-      (\__fantasycal_base_suggested_name: - box.north ~ west) --
-      (\__fantasycal_base_suggested_name: - box.north ~ east);
+      ( \__fantasycal_base_suggested_name: - box.north ~ west) --
+      ( \__fantasycal_base_suggested_name: - box.north ~ east);
   }
 \cs_new:Npn \__fantasycal_task_finish_line:nnn #1#2#3
   {
@@ -1550,7 +1551,7 @@
       }
     \draw [#1,#2,#3]
         %% Start is north west corner - yshift
-        (\__fantasycal_base_suggested_name: - box.north ~ west) 
+        ( \__fantasycal_base_suggested_name: - box.north ~ west) 
         ++ (0,-\l__fantasycal_task_yshift_dim) 
         %% draw line to not-quite right corner
         -- ++ (\l__fantasycal_tmpb_dim,0) 
