@@ -48,7 +48,10 @@
 
 
 \centering
-\PrintFantasyCalendarYear{\the\year}
+\PrintFantasyCalendarYear
+  [
+    calendarweek label left vertical
+  ]{\the\year to \the\year+1}
   {
     if (Birthday) [red, note yearly font=\large]   
     if (Saturday,Sunday) [blue]   

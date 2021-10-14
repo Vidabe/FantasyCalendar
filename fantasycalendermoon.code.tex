@@ -87,7 +87,13 @@
 \keys_define:nn { fantasycal/moon/printing }
   {
     black-color .tl_set:N = \l__fantasycal_moon_color_black_tl ,
+    black-colour .meta:n = { black-color = #1 } ,
+    moon-color .meta:n = { black-color = #1 } ,
+    moon-colour .meta:n = { black-color = #1 } ,
     white-color .tl_set:N = \l__fantasycal_moon_color_white_tl ,
+    white-colour .meta:n = { white-color = #1 } ,
+    sky-color .meta:n = { white-color = #1 } ,
+    sky-colour .meta:n = { white-color = #1 } ,
   }
 
 \cs_new:Npn \__fantasycal_moon_initialize:n #1

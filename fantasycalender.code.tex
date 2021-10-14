@@ -368,22 +368,20 @@
 \cs_new:Npn \__fantasycal_weekday_vspace:
   {
     (
-    \l__fantasycal_week_text_height_dim +
-    \l__fantasycal_week_text_height_seperation_dim
+      \l__fantasycal_week_text_height_dim +
+      \l__fantasycal_week_text_height_seperation_dim
     )
   }
 \cs_new:Npn \__fantasycal_month_vspace:
   {
     (
-    \l__fantasycal_month_text_height_dim +
-    \l__fantasycal_month_text_height_seperation_dim
+      \l__fantasycal_month_text_height_dim +
+      \l__fantasycal_month_text_height_seperation_dim
     )
   }
 \cs_new:Npn \__fantasycal_weekday_plus_month_vspace:
   {
-    (
-    \__fantasycal_weekday_vspace: + \__fantasycal_month_vspace:
-    )
+    ( \__fantasycal_weekday_vspace: + \__fantasycal_month_vspace: )
   }
 
 
@@ -486,7 +484,9 @@
         \node 
           ( \__fantasycal_base_suggested_name: - box ) 
           (today-box) [ every ~ box ] 
-          { \l__fantasycal_text_box_tl } ; 
+          { 
+            \l__fantasycal_text_box_tl 
+          } ; 
       }
   }
 
@@ -1409,7 +1409,7 @@
 \prop_new:N \g__fantasycal_task_used_numbers_prop
 
 \tl_new:N \l__fantasycal_text_task_tl
-\tl_set:Nn \l__fantasycal_text_task_tl { \vfil }
+%\tl_set:Nn \l__fantasycal_text_task_tl { \vfil }
 
 
 \NewDocumentCommand \FantasyCalendarAddTask { m m m m }
@@ -1709,7 +1709,7 @@
       \bool_set_false:N \l__fantasycal_draw_weekday_bool
       \cs_set_eq:NN \__fantasycal_print_if_s: \c_empty_tl
       \tikz@resetexpandcount
-      \tikzset{name=,at={(0,0)}}
+      \tikzset{name= , at={(0,0)} }
       \cs_set_eq:NN \% \__fantsycalendar_shorthand:nn
       \tikzset{every ~ calendar/.try}
       \__fantasycal_print_scanner:
