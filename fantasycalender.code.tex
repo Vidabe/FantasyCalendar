@@ -12,6 +12,8 @@
   { \RequirePackage{tikz} }
 \@ifpackageloaded{ragged2e}{}
   {\RequirePackage{ragged2e}}
+\RequirePackage{zref-savepos}  
+
 \makeatother
 
 \input fantasycalendermoon.code.tex
@@ -75,13 +77,6 @@
 \dim_new:N \l__fantasycal_week_text_width_dim
 \dim_new:N \l__fantasycal_calendarweek_text_height_dim
 \dim_new:N \l__fantasycal_calendarweek_text_width_dim
-
-%\tl_new:N \l__fantasycal_dates_years_start_tl
-%\tl_new:N \l__fantasycal_dates_months_start_tl
-%\tl_new:N \l__fantasycal_dates_days_start_tl
-%\tl_new:N \l__fantasycal_dates_years_end_tl
-%\tl_new:N \l__fantasycal_dates_months_end_tl
-%\tl_new:N \l__fantasycal_dates_days_end_tl
 
 \dim_new:N \l__fantasycal_week_text_height_seperation_dim
 \dim_new:N \l__fantasycal_month_text_height_seperation_dim
@@ -512,7 +507,6 @@
     \l__fantasycal_text_day_tl
     \l__fantasycal_text_day_moon_hook_tl 
     \l__fantasycal_text_day_note_hook_tl
-%    \l__fantasycal_text_task_tl
   }
 \tl_set:Nn \l__fantasycal_text_day_tl { \%d-  }
 \tl_set:Nn \l__fantasycal_text_week_day_tl { \%wt }
@@ -1365,24 +1359,247 @@
 
 
 
+%\int_new:N \l__fantasycal_task_ordinal_start_int
+%\int_new:N \l__fantasycal_task_ordinal_end_int
+%\int_new:N \l__fantasycal_task_color_tl
+%\int_new:N \l__fantasycal_task_linewidth_tl
+%\int_new:N \l__fantasycal_task_priority_tl
+%
+%
+%\clist_new:N \l__fantasycal_task_priorities_clist
+%\clist_set:Nn \l__fantasycal_task_priorities_clist
+%  { immediately, high, medium, low }
+%\clist_map_inline:Nn \l__fantasycal_task_priorities_clist
+%  {
+%    \tl_new:c { l__fantasycal_task_ #1 _draw_tl }
+%  }
+%
+%\keys_define:nn { fantasycal/task }
+%  {
+%    color .tl_set:N = \l__fantasycal_task_color_tl ,
+%    linewidth .tl_set:N = \l__fantasycal_task_linewidth_tl ,
+%    done .code:n = { \tl_set:Nn \l__fantasycal_task_priority_tl { done } } ,
+%    priority .choices:xn = 
+%      { \l__fantasycal_task_priorities_clist , done }
+%      {
+%        \tl_set:NV \l__fantasycal_task_priority_tl \l_keys_choice_tl
+%        \int_case:nn { \l_keys_choice_int }
+%          {
+%            { 1 } { \keys_set:nn { fantasycal/task } { color=red, linewidth=very ~ thick } }
+%            { 2 } { \keys_set:nn { fantasycal/task } { color=orange, linewidth=  thick } }
+%            { 3 } { \keys_set:nn { fantasycal/task } { color=blue, linewidth = semithick } }
+%            { 4 } { \keys_set:nn { fantasycal/task } { color=black, linewidth=thin } }
+%          }
+%      }
+%   ,
+%  }
+%
+%
+%\int_new:N \g__fantasycal_task_number_int
+%\int_new:N \l__fantasycal_task_local_number_int
+%\int_new:N \l__fantasycal_task_text_printed_int
+%
+%\dim_new:N \l__fantasycal_task_yshift_dim
+%
+%\prop_new:N \g__fantasycal_task_used_numbers_prop
+%
+%\tl_new:N \l__fantasycal_text_task_tl
+%%\tl_set:Nn \l__fantasycal_text_task_tl { \vfil }
+%
+%
+%\NewDocumentCommand \FantasyCalendarAddTask { m m m m }
+%  {
+%    \int_gincr:N \g__fantasycal_task_number_int
+%    \__fantasycal_add_task_setup:Vn \g__fantasycal_task_number_int {#3}
+%    \str_if_eq:VnF \l__fantasycal_task_priority_tl { done }
+%      {
+%        \__fantasycal_base_iso_to_ordinal:nN {#1} \l__fantasycal_task_ordinal_start_int
+%        \__fantasycal_base_iso_to_ordinal:nN {#2} \l__fantasycal_task_ordinal_end_int
+%        \__fantasycal_add_task_with_deadlines:VVnVV 
+%          \l__fantasycal_task_ordinal_start_int \l__fantasycal_task_ordinal_end_int
+%          {#4} \l__fantasycal_task_color_tl \l__fantasycal_task_linewidth_tl
+%      }
+%  }
+%
+%\cs_new:Npn \__fantasycal_add_task_setup:nn #1#2
+%  {
+%    \tl_new:c { l__fantasycal_task_ #1 _text_tl }
+%    \tl_new:c { l__fantasycal_task_ #1 _draw_tl }
+%    \int_new:c { l__fantasycal_task_ #1 _shift_int }
+%    \int_set:cn { l__fantasycal_task_ #1 _shift_int } { -1 }
+%    \tl_set:Nn \l__fantasycal_task_color_tl { black }
+%    \tl_clear:N \l__fantasycal_task_linewidth_tl
+%    \tl_set:Nn \l__fantasycal_task_priority_tl { medium }
+%    \keys_set:nn { fantasycal/task } {#2}
+%  }  
+%\cs_generate_variant:Nn \__fantasycal_add_task_setup:nn { Vn }
+%        
+%
+%\cs_new:Npn \__fantasycal_add_task_with_deadlines:nnnnn #1#2#3#4#5
+%  {
+%    % #3: label
+%    \__fantasycal_task_save_save:V \g__fantasycal_task_number_int
+%    \__fantasycal_task_save_text:VnnV \g__fantasycal_task_number_int
+%      {#2} {#3} \l__fantasycal_task_color_tl
+%    \__fantasycal_task_save_draw:Vnnx \g__fantasycal_task_number_int
+%      {#1} {#2} { \l__fantasycal_task_color_tl , \l__fantasycal_task_linewidth_tl }
+%  }
+%\cs_generate_variant:Nn \__fantasycal_add_task_with_deadlines:nnnnn { VVnVV }
+%
+%
+%\cs_new:Npn \__fantasycal_task_save_save:n #1
+%  {
+%    \tl_put_right:cn { l__fantasycal_task_ \l__fantasycal_task_priority_tl _draw_tl } 
+%      { \tl_use:c { l__fantasycal_task_ #1 _draw_tl } }
+%    \tl_put_right:Nn \l__fantasycal_text_task_tl
+%      { \tl_use:c { l__fantasycal_task_ #1 _text_tl } }
+%  }
+%\cs_generate_variant:Nn \__fantasycal_task_save_save:n { V }
+%
+%
+%\cs_new:Npn \__fantasycal_task_save_text:nnnn #1#2#3#4
+%  {
+%    \tl_set:cn { l__fantasycal_task_ #1 _text_tl }
+%      {
+%        \ifdateT { ordinal ~ equals = {#2} }
+%          { \textcolor {#4} {#3} \par }
+%      }
+%  }
+%\cs_generate_variant:Nn \__fantasycal_task_save_text:nnnn { VnnV }
+%
+%\cs_new:Npn \__fantasycal_task_save_draw:nnnn #1#2#3#4
+%  {
+%    \tl_set:cn { l__fantasycal_task_ #1 _draw_tl }
+%      {
+%        \ifdateTF { ordinal ~ between = { #2 and #3 } }
+%          { 
+%            \__fantasycal_task_draw_main:nnnn {#1} {#2} {#3} {#4}
+%          }{ 
+%            \ifdateF { ordinal ~ at ~ most = {#3} }
+%              {
+%                %% Remove
+%                \prop_gremove:Nn \g__fantasycal_task_used_numbers_prop {#1}
+%                \tl_gclear:c { l__fantasycal_task_ #1 _text_tl }
+%                \tl_gclear:c { l__fantasycal_task_ #1 _draw_tl }
+%              }
+%          }
+%      }
+%  }
+%\cs_generate_variant:Nn \__fantasycal_task_save_draw:nnnn { Vnnx }
+%
+%
+%
+%%% Maybe plan for a whole month ahead.
+%\cs_new:Npn \__fantasycal_task_draw_main:nnnn #1#2#3#4
+%  {
+%    \bool_set_false:N \l_tmpa_bool
+%    \int_compare:nNnT { \use:c { l__fantasycal_task_ #1 _shift_int } } < { \c_zero_int }
+%      { 
+%        \bool_set_false:N \l_tmpa_bool
+%        \int_zero:N \l__fantasycal_tmpa_int
+%        \bool_do_until:Nn \l_tmpa_bool
+%          {
+%            \prop_map_inline:Nn \g__fantasycal_task_used_numbers_prop
+%              {
+%                \int_compare:nNnT {##2} = { \l__fantasycal_tmpa_int }
+%                  { \prop_map_break:n { \use_none:nn } }
+%              }
+%            \bool_set_true:N \l_tmpa_bool
+%            \bool_if:NF \l_tmpa_bool { \int_incr:N \l__fantasycal_tmpa_int }
+%          }
+%        \int_gset_eq:cN { l__fantasycal_task_ #1 _shift_int } \l__fantasycal_tmpa_int
+%        \prop_gput:NnV \g__fantasycal_task_used_numbers_prop
+%          {#1} \l__fantasycal_tmpa_int
+%      }
+%    \int_set_eq:Nc \l__fantasycal_task_local_number_int
+%      { l__fantasycal_task_ #1 _shift_int }
+%    \int_set:Nn \l__fantasycal_tmpa_int { 5*\l__fantasycal_task_local_number_int }
+%    \dim_set:Nn \l__fantasycal_task_yshift_dim 
+%      { 5mm + \l__fantasycal_tmpa_int\pgflinewidth }
+%    \ifdateTF { ordinal ~ equals = {#3} }
+%      { \__fantasycal_task_finish_line:nnn {#4} { } { } }
+%      { \__fantasycal_task_draw_line:nnn {#4} { } { } }
+%  }
+%
+%
+%
+%\cs_new:Npn \__fantasycal_task_draw_line:nnn #1#2#3
+%  {
+%    \draw 
+%      [ #1, #2, #3 , transform ~ canvas = { yshift=-\l__fantasycal_task_yshift_dim } ]
+%      ( \__fantasycal_base_suggested_name: - box.north ~ west) --
+%      ( \__fantasycal_base_suggested_name: - box.north ~ east);
+%  }
+%\cs_new:Npn \__fantasycal_task_finish_line:nnn #1#2#3
+%  {
+%    \dim_set:Nn \l__fantasycal_tmpa_dim 
+%      { 
+%        \l__fantasycal_draw_day_yshift_tl 
+%          - \l__fantasycal_task_yshift_dim 
+%          - \l__fantasycal_box_inner_y_sep_dim 
+%          - \l__fantasycal_task_text_printed_int\baselineskip
+%      }
+%    \dim_set:Nn \l__fantasycal_tmpb_dim 
+%      { 
+%        \l__fantasycal_draw_day_xshift_tl - 2\l__fantasycal_box_inner_x_sep_dim 
+%          - \l__fantasycal_tmpa_int\pgflinewidth
+%      }
+%    \draw [#1,#2,#3]
+%        %% Start is north west corner - yshift
+%        ( \__fantasycal_base_suggested_name: - box.north ~ west) 
+%        ++ (0,-\l__fantasycal_task_yshift_dim) 
+%        %% draw line to not-quite right corner
+%        -- ++ (\l__fantasycal_tmpb_dim,0) 
+%        %% and go down
+%        -- ++ (0,-\l__fantasycal_tmpa_dim)
+%        ;
+%    \int_incr:N \l__fantasycal_task_text_printed_int
+%  }
+%
+%\cs_new:Npn \__fantasycal_task_save:nNN #1#2#3
+%  {
+%    \tl_new:c { l__fantasycal_task_ \int_use:N \g__fantasycal_task_number_int _text_tl }
+%    \tl_new:c { l__fantasycal_task_ \int_use:N \g__fantasycal_task_number_int _draw_tl }
+%  }
+%\cs_generate_variant:Nn \__fantasycal_add_task_save:nNN { V }
+%
+%
+\tl_new:N \l__fantasycal_code_task_tl
+\tl_set:Nn \l__fantasycal_code_task_tl
+  { 
+%    \clist_map_inline:Nn \l__fantasycal_task_priorities_clist
+%      { \tl_use:c { l__fantasycal_task_ #1 _draw_tl } }
+  }
+
+
 \int_new:N \l__fantasycal_task_ordinal_start_int
 \int_new:N \l__fantasycal_task_ordinal_end_int
-\int_new:N \l__fantasycal_task_color_tl
-\int_new:N \l__fantasycal_task_linewidth_tl
-\int_new:N \l__fantasycal_task_priority_tl
+\int_new:N \l__fantasycal_task_nr_tasks_today_int
+\tl_new:N \l__fantasycal_task_options_tl
+\tl_new:N \l__fantasycal_task_text_tl
+\tl_new:N \l__fantasycal_task_colour_tl
+\tl_new:N \l__fantasycal_task_linewidth_tl
+\tl_new:N \l__fantasycal_task_priority_tl
+
+\dim_new:N \l__fantasycal_task_xshift_dim
+\dim_set:Nn \l__fantasycal_task_xshift_dim { -5pt }
+\dim_new:N \l__fantasycal_task_yshift_dim
+\dim_set:Nn \l__fantasycal_task_yshift_dim { 5pt }
+\dim_new:N \l__fantasycal_task_base_y_dim
+\dim_set:Nn \l__fantasycal_task_base_y_dim { 2pt }
+
+
 
 
 \clist_new:N \l__fantasycal_task_priorities_clist
 \clist_set:Nn \l__fantasycal_task_priorities_clist
   { immediately, high, medium, low }
-\clist_map_inline:Nn \l__fantasycal_task_priorities_clist
-  {
-    \tl_new:c { l__fantasycal_task_ #1 _draw_tl }
-  }
+%\clist_map_inline:Nn \l__fantasycal_task_priorities_clist
+%  { \tl_new:c { l__fantasycal_task_ #1 _draw_tl } }
 
 \keys_define:nn { fantasycal/task }
   {
-    color .tl_set:N = \l__fantasycal_task_color_tl ,
+    color .tl_set:N = \l__fantasycal_task_colour_tl ,
     linewidth .tl_set:N = \l__fantasycal_task_linewidth_tl ,
     done .code:n = { \tl_set:Nn \l__fantasycal_task_priority_tl { done } } ,
     priority .choices:xn = 
@@ -1391,8 +1608,8 @@
         \tl_set:NV \l__fantasycal_task_priority_tl \l_keys_choice_tl
         \int_case:nn { \l_keys_choice_int }
           {
-            { 1 } { \keys_set:nn { fantasycal/task } { color=red, linewidth=very ~ thick } }
-            { 2 } { \keys_set:nn { fantasycal/task } { color=orange, linewidth=  thick } }
+            { 1 } { \keys_set:nn { fantasycal/task } { color=red, linewidth=ultra ~ thick } }
+            { 2 } { \keys_set:nn { fantasycal/task } { color=orange, linewidth= very ~  thick } }
             { 3 } { \keys_set:nn { fantasycal/task } { color=blue, linewidth = semithick } }
             { 4 } { \keys_set:nn { fantasycal/task } { color=black, linewidth=thin } }
           }
@@ -1401,187 +1618,66 @@
   }
 
 
-\int_new:N \g__fantasycal_task_number_int
-\int_new:N \l__fantasycal_task_local_number_int
-\int_new:N \l__fantasycal_task_text_printed_int
-
-\dim_new:N \l__fantasycal_task_yshift_dim
-
-\prop_new:N \g__fantasycal_task_used_numbers_prop
-
-\tl_new:N \l__fantasycal_text_task_tl
-%\tl_set:Nn \l__fantasycal_text_task_tl { \vfil }
-
 
 \NewDocumentCommand \FantasyCalendarAddTask { m m m m }
   {
-    \int_gincr:N \g__fantasycal_task_number_int
-    \__fantasycal_add_task_setup:Vn \g__fantasycal_task_number_int {#3}
-    \str_if_eq:VnF \l__fantasycal_task_priority_tl { done }
+    \__fantasycal_task_setup:nnnn {#1} {#2} {#3} {#4}
+    \__fantasycal_task_add:VVVV
+      \l__fantasycal_task_ordinal_start_int
+      \l__fantasycal_task_ordinal_end_int
+      \l__fantasycal_task_text_tl
+      \l__fantasycal_task_options_tl
+  }
+
+\cs_new:Npn \__fantasycal_task_setup:nnnn #1#2#3#4
+  {
+    \__fantasycal_base_iso_to_ordinal:nN {#1} \l__fantasycal_task_ordinal_start_int
+    \__fantasycal_base_iso_to_ordinal:nN {#2} \l__fantasycal_task_ordinal_end_int
+    \tl_set:Nn \l__fantasycal_task_options_tl {#3}
+    \tl_set:Nn \l__fantasycal_task_text_tl {#4}
+  }
+
+\cs_new:Npn \__fantasycal_task_add:nnnn #1#2#3#4
+  {
+    \tl_put_right:Nn \l__fantasycal_code_task_tl
       {
-        \__fantasycal_base_iso_to_ordinal:nN {#1} \l__fantasycal_task_ordinal_start_int
-        \__fantasycal_base_iso_to_ordinal:nN {#2} \l__fantasycal_task_ordinal_end_int
-        \__fantasycal_add_task_with_deadlines:VVnVV 
-          \l__fantasycal_task_ordinal_start_int \l__fantasycal_task_ordinal_end_int
-          {#4} \l__fantasycal_task_color_tl \l__fantasycal_task_linewidth_tl
-      }
-  }
-
-\cs_new:Npn \__fantasycal_add_task_setup:nn #1#2
-  {
-    \tl_new:c { l__fantasycal_task_ #1 _text_tl }
-    \tl_new:c { l__fantasycal_task_ #1 _draw_tl }
-    \int_new:c { l__fantasycal_task_ #1 _shift_int }
-    \int_set:cn { l__fantasycal_task_ #1 _shift_int } { -1 }
-    \tl_set:Nn \l__fantasycal_task_color_tl { black }
-    \tl_clear:N \l__fantasycal_task_linewidth_tl
-    \tl_set:Nn \l__fantasycal_task_priority_tl { medium }
-    \keys_set:nn { fantasycal/task } {#2}
-  }  
-\cs_generate_variant:Nn \__fantasycal_add_task_setup:nn { Vn }
-        
-
-\cs_new:Npn \__fantasycal_add_task_with_deadlines:nnnnn #1#2#3#4#5
-  {
-    \__fantasycal_task_save_save:V \g__fantasycal_task_number_int
-    \__fantasycal_task_save_text:VnnV \g__fantasycal_task_number_int
-      {#2} {#3} \l__fantasycal_task_color_tl
-    \__fantasycal_task_save_draw:Vnnx \g__fantasycal_task_number_int
-      {#1} {#2} { \l__fantasycal_task_color_tl , \l__fantasycal_task_linewidth_tl }
-  }
-\cs_generate_variant:Nn \__fantasycal_add_task_with_deadlines:nnnnn { VVnVV }
-
-
-\cs_new:Npn \__fantasycal_task_save_save:n #1
-  {
-    \tl_put_right:cn { l__fantasycal_task_ \l__fantasycal_task_priority_tl _draw_tl } 
-      { \tl_use:c { l__fantasycal_task_ #1 _draw_tl } }
-    \tl_put_right:Nn \l__fantasycal_text_task_tl
-      { \tl_use:c { l__fantasycal_task_ #1 _text_tl } }
-  }
-\cs_generate_variant:Nn \__fantasycal_task_save_save:n { V }
-
-
-\cs_new:Npn \__fantasycal_task_save_text:nnnn #1#2#3#4
-  {
-    \tl_set:cn { l__fantasycal_task_ #1 _text_tl }
-      {
-        \ifdateT { ordinal ~ equals = {#2} }
-          { \textcolor {#4} {#3} \par }
-      }
-  }
-\cs_generate_variant:Nn \__fantasycal_task_save_text:nnnn { VnnV }
-
-\cs_new:Npn \__fantasycal_task_save_draw:nnnn #1#2#3#4
-  {
-    \tl_set:cn { l__fantasycal_task_ #1 _draw_tl }
-      {
-        \ifdateTF { ordinal ~ between = { #2 and #3 } }
+        \ifdateT { ordinal ~ equals = #2 }
           { 
-            \__fantasycal_task_draw_main:nnnn {#1} {#2} {#3} {#4}
-          }{ 
-            \ifdateF { ordinal ~ at ~ most = {#3} }
-              {
-                %% Remove
-                \prop_gremove:Nn \g__fantasycal_task_used_numbers_prop {#1}
-                \tl_gclear:c { l__fantasycal_task_ #1 _text_tl }
-                \tl_gclear:c { l__fantasycal_task_ #1 _draw_tl }
-              }
+            \int_incr:N \l__fantasycal_task_nr_tasks_today_int
+            \__fantasycal_task_finish_todays_tasks:nn {#3} {#4}
           }
       }
   }
-\cs_generate_variant:Nn \__fantasycal_task_save_draw:nnnn { Vnnx }
+\cs_generate_variant:Nn \__fantasycal_task_add:nnnn { VVVV }
 
-
-
-%% Maybe plan for a whole month ahead.
-\cs_new:Npn \__fantasycal_task_draw_main:nnnn #1#2#3#4
+\cs_new:Npn \__fantasycal_task_finish_todays_tasks:nn #1#2
   {
-    \bool_set_false:N \l_tmpa_bool
-    \int_compare:nNnT { \use:c { l__fantasycal_task_ #1 _shift_int } } < { \c_zero_int }
-      { 
-        \bool_set_false:N \l_tmpa_bool
-        \int_zero:N \l__fantasycal_tmpa_int
-        \bool_do_until:Nn \l_tmpa_bool
-          {
-            \prop_map_inline:Nn \g__fantasycal_task_used_numbers_prop
-              {
-                \int_compare:nNnT {##2} = { \l__fantasycal_tmpa_int }
-                  { \prop_map_break:n { \use_none:nn } }
-              }
-            \bool_set_true:N \l_tmpa_bool
-            \bool_if:NF \l_tmpa_bool { \int_incr:N \l__fantasycal_tmpa_int }
-          }
-        \int_gset_eq:cN { l__fantasycal_task_ #1 _shift_int } \l__fantasycal_tmpa_int
-        \prop_gput:NnV \g__fantasycal_task_used_numbers_prop
-          {#1} \l__fantasycal_tmpa_int
-      }
-    \int_set_eq:Nc \l__fantasycal_task_local_number_int
-      { l__fantasycal_task_ #1 _shift_int }
-    \int_set:Nn \l__fantasycal_tmpa_int { 5*\l__fantasycal_task_local_number_int }
-    \dim_set:Nn \l__fantasycal_task_yshift_dim 
-      { 5mm + \l__fantasycal_tmpa_int\pgflinewidth }
-    \ifdateTF { ordinal ~ equals = {#3} }
-      { \__fantasycal_task_finish_line:nnn {#4} { } { } }
-      { \__fantasycal_task_draw_line:nnn {#4} { } { } }
-  }
-
-
-
-\cs_new:Npn \__fantasycal_task_draw_line:nnn #1#2#3
-  {
-    \draw 
-      [ #1, #2, #3 , transform ~ canvas = { yshift=-\l__fantasycal_task_yshift_dim } ]
-      ( \__fantasycal_base_suggested_name: - box.north ~ west) --
-      ( \__fantasycal_base_suggested_name: - box.north ~ east);
-  }
-\cs_new:Npn \__fantasycal_task_finish_line:nnn #1#2#3
-  {
-    \dim_set:Nn \l__fantasycal_tmpa_dim 
-      { 
-        \l__fantasycal_draw_day_yshift_tl 
-          - \l__fantasycal_task_yshift_dim 
-          - \l__fantasycal_box_inner_y_sep_dim 
-          - \l__fantasycal_task_text_printed_int\baselineskip
-      }
-    \dim_set:Nn \l__fantasycal_tmpb_dim 
-      { 
-        \l__fantasycal_draw_day_xshift_tl - 2\l__fantasycal_box_inner_x_sep_dim 
-          - \l__fantasycal_tmpa_int\pgflinewidth
-      }
-    \draw [#1,#2,#3]
-        %% Start is north west corner - yshift
-        ( \__fantasycal_base_suggested_name: - box.north ~ west) 
-        ++ (0,-\l__fantasycal_task_yshift_dim) 
-        %% draw line to not-quite right corner
-        -- ++ (\l__fantasycal_tmpb_dim,0) 
-        %% and go down
-        -- ++ (0,-\l__fantasycal_tmpa_dim)
+    \group_begin:
+      \keys_set:nn { fantasycal/task } {#2}
+      \dim_add:Nn \l__fantasycal_task_base_y_dim 
+        { 
+          \l__fantasycal_box_inner_y_sep_dim + 
+          \l__fantasycal_box_outer_y_sep_dim 
+        }
+      \dim_set:Nn \l_tmpa_dim 
+        {
+          \l__fantasycal_task_base_y_dim + 
+          \baselineskip*( \l__fantasycal_task_nr_tasks_today_int - 1 )
+        }
+      \draw
+        [
+          , transform ~ canvas = 
+              { xshift=\l__fantasycal_task_nr_tasks_today_int\l__fantasycal_task_xshift_dim } 
+          , \l__fantasycal_task_colour_tl 
+          , \l__fantasycal_task_linewidth_tl 
+        ]
+        (today-box.south ~ east) ++ (-3pt,\l_tmpa_dim) 
+         -- ++(3pt,0) 
+        node [anchor=base ~ east] {#1}
+        -- (today-box.north ~ east)
         ;
-    \int_incr:N \l__fantasycal_task_text_printed_int
+      \group_end:
   }
-
-\cs_new:Npn \__fantasycal_task_save:nNN #1#2#3
-  {
-    \tl_new:c { l__fantasycal_task_ \int_use:N \g__fantasycal_task_number_int _text_tl }
-    \tl_new:c { l__fantasycal_task_ \int_use:N \g__fantasycal_task_number_int _draw_tl }
-  }
-\cs_generate_variant:Nn \__fantasycal_add_task_save:nNN { V }
-
-
-\tl_new:N \l__fantasycal_code_task_tl
-\tl_set:Nn \l__fantasycal_code_task_tl
-  { 
-    \clist_map_inline:Nn \l__fantasycal_task_priorities_clist
-      { \tl_use:c { l__fantasycal_task_ #1 _draw_tl } }
-  }
-
-
-
-
-
-
-
 
 
 
@@ -1614,6 +1710,8 @@
 \int_new:N \l__fantasycal_months_to_print_start_int
 \int_new:N \l__fantasycal_months_to_print_end_int
 
+\bool_new:N \l__fantasycal_print_newpage_bool
+\bool_set_true:N \l__fantasycal_print_newpage_bool
 
 \keys_define:nn { fantasycal/print-calendar }
   {
@@ -1628,6 +1726,8 @@
         \__fantasycal_print_fantasycalendar_month_setup_aux:ww #1 \prg_do_nothing:
           to \prg_do_nothing:
       }
+    ,
+    newpage .bool_set:N = \l__fantasycal_print_newpage_bool
   }
 
 
@@ -1686,7 +1786,8 @@
           #3
           ;
         \end{tikzpicture}
-        \newpage
+        \bool_if:NT \l__fantasycal_print_newpage_bool
+          { \newpage }
       }
   }
 
@@ -1828,8 +1929,8 @@
           \__fantasycal_print_if_s:
           \l__fantasycal_code_box_tl
           \l__fantasycal_after_box_hook_tl
-          \l__fantasycal_code_task_tl
           \l__fantasycal_code_day_tl
+          \l__fantasycal_code_task_tl
           \l__fantasycal_at_end_day_tl
         \endscope%
         \l__fantasycal_after_day_tl

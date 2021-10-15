@@ -579,93 +579,92 @@
 \int_new:N \l__fantasycal_base_test_ordinal_int
 \bool_new:N \l__fantasycal_base_test_year_loop_bool
 
-%\cs_new:Npn \__fantasycal_base_get_year_from_ordinal:nN #1#2
-%  {
-%    \group_begin:
-%    %% Start getting an approximate year
-%    \int_set:Nn \l__fantasycal_base_test_year_int 
-%      { \int_div_truncate:nn {#1} { \l__fantasycal_base_default_nr_days_per_year_int } }
-%
-%    %% Now start the loop until we get the year right. 
-%    \bool_set_false:N \l__fantasycal_base_test_year_loop_bool
-%    \bool_do_until:Nn \l__fantasycal_base_test_year_loop_bool
-%      {
-%        %% Check leap year conditions
-%        \__fantasycal_base_check_if_leap_year:n { \l__fantasycal_base_test_year_int }
-%        %% calculate current ordinal
-%        \int_set:Nn \l__fantasycal_base_test_ordinal_int
-%          { 
-%            %% Add 1 in order to make sure the last day of the year is
-%            %% still included
-%            1 +
-%            \__fantasycal_base_print_days_til_start_of_year:n \l__fantasycal_base_test_year_int
-%          }
-%        \int_set:Nn \l__fantasycal_base_test_ordinal_int
-%          { #1 - \l__fantasycal_base_test_ordinal_int }
-%        \int_compare:nNnTF { \l__fantasycal_base_test_ordinal_int } < { \c_zero_int }
-%          { \int_decr:N \l__fantasycal_base_test_year_int }
-%          {
-%            %% test_ordinal is positive!
-%            \__fantasycal_base_get_nr_of_days_this_year:N 
-%              \l__fantasycal_base_nr_days_per_year_int
-%            
-%            % are we within this year or beyond?
-%            \int_compare:nNnTF
-%              \l__fantasycal_base_test_ordinal_int >
-%              \l__fantasycal_base_nr_days_per_year_int
-%              { \int_incr:N \l__fantasycal_base_test_year_int }
-%              { 
-%                %% Found it!
-%                \bool_set_true:N \l__fantasycal_base_test_year_loop_bool 
-%              }
-%          }
-%      }
-%    \exp_args:NNNV
-%    \group_end:
-%    \int_set:Nn #2 \l__fantasycal_base_test_year_int
-%  }
 \cs_new:Npn \__fantasycal_base_get_year_from_ordinal:nN #1#2
   {
     \group_begin:
     %% Start getting an approximate year
-    \int_zero:N \l__fantasycal_base_test_year_int
-    \int_set:Nn \l_fantasycal_base_tmp_ordinal_int {#1}
-    %% If no leap years are defined, this sequence is empty
-    %% and not executed.
-    \seq_map_inline:Nn \l__fantasycal_base_leap_years_years_seq
+    \int_set:Nn \l__fantasycal_base_test_year_int 
+      { \int_div_truncate:nn {#1} { \l__fantasycal_base_default_nr_days_per_year_int } }
+
+    %% Now start the loop until we get the year right. 
+    \bool_set_false:N \l__fantasycal_base_test_year_loop_bool
+    \bool_do_until:Nn \l__fantasycal_base_test_year_loop_bool
       {
-        \int_set_eq:Nc \l__fantasycal_base_tmpa_int
-          { l__fantasycal_base_leap_years_nr_days_per_ ##1 _years }
-        \int_set:Nn \l__fantasycal_base_tmpb_int 
+        %% Check leap year conditions
+        \__fantasycal_base_check_if_leap_year:n { \l__fantasycal_base_test_year_int }
+        \__fantasycal_base_setup_current_year:
+        %% calculate current ordinal
+        \int_set:Nn \l__fantasycal_base_test_ordinal_int
           { 
-            \int_div_truncate:nn { \l_fantasycal_base_tmp_ordinal_int }
-              { \l__fantasycal_base_tmpa_int } 
+            %% Add 1 in order to make sure the last day of the year is
+            %% still included
+            1 +
+            \__fantasycal_base_print_days_til_start_of_year:n \l__fantasycal_base_test_year_int
           }
-        \int_compare:nNnT
-          { \l__fantasycal_base_tmpa_int*\l__fantasycal_base_tmpb_int }
-          =
-          { \l_fantasycal_base_tmp_ordinal_int }
-          { \int_decr:N \l__fantasycal_base_tmpb_int }
-        \int_add:Nn \l__fantasycal_base_test_year_int { \l__fantasycal_base_tmpb_int*##1 }
-        \int_sub:Nn \l_fantasycal_base_tmp_ordinal_int 
-          { \l__fantasycal_base_tmpa_int*\l__fantasycal_base_tmpb_int }
+        \int_set:Nn \l__fantasycal_base_test_ordinal_int
+          { #1 - \l__fantasycal_base_test_ordinal_int }
+        \int_compare:nNnTF { \l__fantasycal_base_test_ordinal_int } < { \c_zero_int }
+          { \int_decr:N \l__fantasycal_base_test_year_int }
+          {
+            %% test_ordinal is positive!
+            
+            % are we within this year or beyond?
+            \int_compare:nNnTF
+              \l__fantasycal_base_test_ordinal_int >
+              \l__fantasycal_base_nr_days_per_year_int
+              { \int_incr:N \l__fantasycal_base_test_year_int }
+              { 
+                %% Found it!
+                \bool_set_true:N \l__fantasycal_base_test_year_loop_bool 
+              }
+          }
       }
-    %% The part with no leap year
-    \int_set:Nn \l__fantasycal_base_tmpb_int 
-      { 
-        \int_div_truncate:nn { \l_fantasycal_base_tmp_ordinal_int }
-          { \l__fantasycal_base_default_nr_days_per_year_int } 
-      }
-    \int_compare:nNnT
-      { \l__fantasycal_base_default_nr_days_per_year_int*\l__fantasycal_base_tmpb_int }
-      =
-      { \l_fantasycal_base_tmp_ordinal_int }
-      { \int_decr:N \l__fantasycal_base_tmpb_int }
-    \int_add:Nn \l__fantasycal_base_test_year_int { \l__fantasycal_base_tmpb_int }
     \exp_args:NNNV
     \group_end:
     \int_set:Nn #2 \l__fantasycal_base_test_year_int
   }
+%\cs_new:Npn \__fantasycal_base_get_year_from_ordinal:nN #1#2
+%  {
+%    \group_begin:
+%    %% Start getting an approximate year
+%    \int_zero:N \l__fantasycal_base_test_year_int
+%    \int_set:Nn \l_fantasycal_base_tmp_ordinal_int {#1}
+%    %% If no leap years are defined, this sequence is empty
+%    %% and not executed.
+%    \seq_map_inline:Nn \l__fantasycal_base_leap_years_years_seq
+%      {
+%        \int_set_eq:Nc \l__fantasycal_base_tmpa_int
+%          { l__fantasycal_base_leap_years_nr_days_per_ ##1 _years }
+%        \int_set:Nn \l__fantasycal_base_tmpb_int 
+%          { 
+%            \int_div_truncate:nn { \l_fantasycal_base_tmp_ordinal_int }
+%              { \l__fantasycal_base_tmpa_int } 
+%          }
+%        \int_compare:nNnT
+%          { \l__fantasycal_base_tmpa_int*\l__fantasycal_base_tmpb_int }
+%          =
+%          { \l_fantasycal_base_tmp_ordinal_int }
+%          { \int_decr:N \l__fantasycal_base_tmpb_int }
+%        \int_add:Nn \l__fantasycal_base_test_year_int { \l__fantasycal_base_tmpb_int*##1 }
+%        \int_sub:Nn \l_fantasycal_base_tmp_ordinal_int 
+%          { \l__fantasycal_base_tmpa_int*\l__fantasycal_base_tmpb_int }
+%      }
+%    %% The part with no leap year
+%    \int_set:Nn \l__fantasycal_base_tmpb_int 
+%      { 
+%        \int_div_truncate:nn { \l_fantasycal_base_tmp_ordinal_int }
+%          { \l__fantasycal_base_default_nr_days_per_year_int } 
+%      }
+%    \int_compare:nNnT
+%      { \l__fantasycal_base_default_nr_days_per_year_int*\l__fantasycal_base_tmpb_int }
+%      =
+%      { \l_fantasycal_base_tmp_ordinal_int }
+%      { \int_decr:N \l__fantasycal_base_tmpb_int }
+%    \int_add:Nn \l__fantasycal_base_test_year_int { \l__fantasycal_base_tmpb_int }
+%    \exp_args:NNNV
+%    \group_end:
+%    \int_set:Nn #2 \l__fantasycal_base_test_year_int
+%  }
 %\cs_new:Npn \__fantasycal_base_get_year_from_ordinal_test_ii:nN #1#2
 %  {
 %    \group_begin:

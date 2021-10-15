@@ -8,6 +8,7 @@ build/*
 
 Fantasie2.tex
 test*.tex
+task_test*.tex
 main_testing*.tex
 
 *.*~
