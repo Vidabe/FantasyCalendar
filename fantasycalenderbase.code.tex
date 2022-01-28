@@ -96,7 +96,11 @@
   {
     \tl_put_right:Nn \l__fantasycal_base_hook_tl {#1}
   }
-
+\tl_new:N \l__fantasycal_base_after_hook_tl
+\NewDocumentCommand \basefantasycalendaraddafterhook { +m }
+  {
+    \tl_put_right:Nn \l__fantasycal_base_after_hook_tl {#1}
+  }
 
 %% Main command to print calendar. Stolen from tikz' calendar
 
@@ -164,6 +168,7 @@
           % Render:
           #4
           % Advance day:
+          \l__fantasycal_base_after_hook_tl
           \int_incr:N \l_fantasycal_base_current_ordinal_int
         }
     \group_end:
